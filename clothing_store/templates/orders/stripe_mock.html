@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Stripe Payment (Mock)</h2>
+
+<p>Order ID: {{ order.id }}</p>
+<p>Amount: ₹{{ order.total_amount }}</p>
+
+<a href="{% url 'stripe_success' order.id %}"
+   class="btn btn-primary">
+   Pay Now (Mock)
+</a>
+
+{% endblock %}

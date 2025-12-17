@@ -3,11 +3,40 @@
 
 <h2>Order #{{ order.id }}</h2>
 
+<!-- ORDER META INFO -->
 <p>
     <strong>Status:</strong>
-    <span class="badge bg-success">{{ order.status }}</span>
+    <span class="badge
+        {% if order.status == 'Pending' %} bg-warning
+        {% elif order.status == 'Paid' %} bg-primary
+        {% elif order.status == 'Shipped' %} bg-info
+        {% elif order.status == 'Delivered' %} bg-success
+        {% else %} bg-danger {% endif %}">
+        {{ order.status }}
+    </span>
 </p>
 
+<p>
+    <strong>Payment Method:</strong>
+    {{ order.payment_method }}
+</p>
+
+<p>
+    <strong>Order Date:</strong>
+    {{ order.created_at }}
+</p>
+
+{% if order.status == "Cancelled" %}
+    <div class="alert alert-danger">
+        <strong>Order Cancelled</strong><br>
+        <strong>Reason:</strong> {{ order.cancel_reason }}<br>
+        <strong>Cancelled At:</strong> {{ order.cancelled_at }}
+    </div>
+{% endif %}
+
+<hr>
+
+<!-- ORDER ITEMS -->
 <table class="table table-bordered">
     <thead class="table-dark">
         <tr>
@@ -27,10 +56,20 @@
     </tbody>
 </table>
 
-<h4>Total: ₹{{ order.total_amount }}</h4>
+<h4>Total Amount: ₹{{ order.total_amount }}</h4>
 
+<hr>
+
+<!-- ACTION BUTTONS -->
 <a href="{% url 'my_orders' %}" class="btn btn-secondary">
     Back to Orders
 </a>
+
+{% if order.can_cancel %}
+    <a href="{% url 'cancel_order' order.id %}"
+       class="btn btn-danger ms-2">
+       Cancel Order
+    </a>
+{% endif %}
 
 {% endblock %}
