@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import UserProfile
+from .models import Address
+
 
 
 # -------------------------
@@ -54,5 +56,26 @@ class UserProfileForm(forms.ModelForm):
             'phone_number': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter phone number'
+            })
+        }
+
+
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = [
+            'full_name',
+            'phone',
+            'address_line',
+            'city',
+            'state',
+            'postal_code',
+            'is_default'
+        ]
+        widgets = {
+            'address_line': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'form-control'
             })
         }

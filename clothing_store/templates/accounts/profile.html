@@ -3,36 +3,36 @@
 
 <div class="row justify-content-center">
     <div class="col-md-6">
+        <div class="card shadow">
 
-        <div class="card shadow-sm">
             <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">👤 User Profile</h4>
+                <h4 class="mb-0">User Profile</h4>
             </div>
 
             <div class="card-body">
 
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-success">
-                            {{ message }}
+                <!-- ✅ PROFILE PHOTO DISPLAY -->
+                {% if profile.profile_photo %}
+                    <div class="text-center mb-3">
+                        <img src="{{ profile.profile_photo.url }}"
+                             class="rounded-circle"
+                             width="120"
+                             height="120"
+                             style="object-fit: cover;">
+                    </div>
+                {% else %}
+                    <div class="text-center mb-3">
+                        <div class="rounded-circle bg-secondary text-white
+                                    d-flex align-items-center justify-content-center mx-auto"
+                             style="width:120px;height:120px;font-size:48px;">
+                            {{ request.user.username|first|upper }}
                         </div>
-                    {% endfor %}
+                    </div>
                 {% endif %}
 
+                <!-- PROFILE FORM -->
                 <form method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-
-                    <!-- PROFILE PHOTO -->
-                    <div class="mb-3 text-center">
-                        {% if profile.profile_photo %}
-                            <img src="{{ profile.profile_photo.url }}"
-                                 class="rounded-circle mb-2"
-                                 width="120" height="120">
-                        {% else %}
-                            <img src="https://via.placeholder.com/120"
-                                 class="rounded-circle mb-2">
-                        {% endif %}
-                    </div>
 
                     <div class="mb-3">
                         <label class="form-label">Profile Photo</label>
@@ -51,22 +51,23 @@
 
                 <hr>
 
-                <!-- ACTION BUTTONS -->
-                <div class="d-grid gap-2">
-                    <a href="{% url 'password_change' %}"
-                       class="btn btn-warning">
-                        🔐 Change Password
-                    </a>
+                <a href="{% url 'password_change' %}"
+                   class="btn btn-warning w-100 mb-2">
+                    🔒 Change Password
+                </a>
+                <a href="{% url 'address_list' %}"
+   class="btn btn-info w-100 mt-2">
+   📍 Manage Addresses
+</a>
 
-                    <a href="{% url 'logout' %}"
-                       class="btn btn-outline-danger">
-                        Logout
-                    </a>
-                </div>
+
+                <a href="{% url 'logout' %}"
+                   class="btn btn-outline-danger w-100">
+                    Logout
+                </a>
 
             </div>
         </div>
-
     </div>
 </div>
 

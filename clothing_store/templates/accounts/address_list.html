@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>My Addresses</h3>
+
+<a href="{% url 'add_address' %}" class="btn btn-primary mb-3">
+    Add New Address
+</a>
+
+{% for address in addresses %}
+<div class="card mb-2">
+    <div class="card-body">
+        <strong>{{ address.full_name }}</strong><br>
+        {{ address.address_line }}<br>
+        {{ address.city }}, {{ address.state }} - {{ address.postal_code }}<br>
+        Phone: {{ address.phone }}
+
+        {% if address.is_default %}
+            <span class="badge bg-success ms-2">Default</span>
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<p>No addresses added yet.</p>
+{% endfor %}
+
+{% endblock %}

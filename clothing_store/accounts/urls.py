@@ -27,4 +27,7 @@ urlpatterns = [
         ),
         name='password_change_done'
     ),
+    path('addresses/', views.address_list, name='address_list'),
+path('addresses/add/', views.add_address, name='add_address'),
+
 ]

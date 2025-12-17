@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>Add Address</h3>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">
+        Save Address
+    </button>
+</form>
+
+{% endblock %}

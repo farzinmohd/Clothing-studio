@@ -7,7 +7,8 @@ from .forms import UserRegistrationForm
 from .models import UserProfile
 from .forms import UserRegistrationForm, UserProfileForm
 from django.contrib.auth.decorators import login_required
-
+from .models import Address
+from .forms import AddressForm
 
 
 # -------------------------
@@ -76,3 +77,41 @@ def profile(request):
         form = UserProfileForm(instance=profile)
 
     return render(request, 'accounts/profile.html', {'form': form})
+
+
+
+
+@login_required
+def address_list(request):
+    addresses = Address.objects.filter(user=request.user)
+    return render(
+        request,
+        'accounts/address_list.html',
+        {'addresses': addresses}
+    )
+
+
+@login_required
+def add_address(request):
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.user = request.user
+
+            if address.is_default:
+                Address.objects.filter(
+                    user=request.user,
+                    is_default=True
+                ).update(is_default=False)
+
+            address.save()
+            return redirect('address_list')
+    else:
+        form = AddressForm()
+
+    return render(
+        request,
+        'accounts/address_form.html',
+        {'form': form}
+    )
