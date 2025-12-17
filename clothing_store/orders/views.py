@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
 from carts.cart import Cart
+from products.models import Product
 from .models import Order, OrderItem
-from django.utils import timezone
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -23,25 +23,37 @@ def checkout(request):
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
 
-        # ✅ Create Order FIRST
+        if payment_method not in ['COD', 'ONLINE']:
+            return redirect('checkout')
+
+        # ✅ Create Order
         order = Order.objects.create(
             user=request.user,
             total_amount=cart.get_total_price(),
             payment_method=payment_method,
-            status='Pending'
+            status='pending'
         )
 
-        # ✅ Create Order Items
+        # ✅ Create Order Items + Reduce Stock
         for item in cart:
+            product = item['product']
+            quantity = item['quantity']
+
+            if product.stock < quantity:
+                return redirect('cart_detail')
+
             OrderItem.objects.create(
                 order=order,
-                product=item['product'],
-                quantity=item['quantity'],
+                product=product,
+                quantity=quantity,
                 price=item['price']
             )
 
+            product.stock -= quantity
+            product.save()
+
         # -----------------------------
-        # 🔥 STRIPE ONLINE PAYMENT
+        # 🔥 STRIPE PAYMENT
         # -----------------------------
         if payment_method == 'ONLINE':
             session = stripe.checkout.Session.create(
@@ -51,7 +63,7 @@ def checkout(request):
                         'price_data': {
                             'currency': 'inr',
                             'product_data': {
-                                'name': f"Order #{order.id}",
+                                'name': f'Order #{order.id}',
                             },
                             'unit_amount': int(order.total_amount * 100),
                         },
@@ -62,9 +74,8 @@ def checkout(request):
                 success_url=request.build_absolute_uri(
                     f'/orders/stripe-success/{order.id}/'
                 ),
-                cancel_url=request.build_absolute_uri('/cart/')
+                cancel_url=request.build_absolute_uri('/orders/checkout/')
             )
-
             return redirect(session.url)
 
         # -----------------------------
@@ -73,7 +84,9 @@ def checkout(request):
         cart.clear()
         return redirect('order_success')
 
-    return render(request, 'orders/checkout.html', {'cart': cart})
+    return render(request, 'orders/checkout.html', {
+        'cart': cart
+    })
 
 
 # ----------------------------------
@@ -82,7 +95,8 @@ def checkout(request):
 @login_required
 def stripe_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    order.status = 'Paid'
+
+    order.status = 'paid'
     order.save()
 
     Cart(request).clear()
@@ -98,43 +112,30 @@ def order_success(request):
 
 
 # ----------------------------------
-# USER ORDERS
+# USER ORDERS LIST
 # ----------------------------------
 @login_required
 def my_orders(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'orders/my_orders.html', {'orders': orders})
+    orders = Order.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+
+    return render(request, 'orders/my_orders.html', {
+        'orders': orders
+    })
 
 
 # ----------------------------------
-# ORDER DETAIL
+# ORDER DETAIL PAGE (IMPORTANT)
 # ----------------------------------
 @login_required
 def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'orders/order_detail.html', {'order': order})
+    order = get_object_or_404(
+        Order,
+        id=order_id,
+        user=request.user
+    )
 
-
-
-@login_required
-def cancel_order(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-
-    if not order.can_cancel():
-        return redirect('order_detail', order_id=order.id)
-
-    if request.method == 'POST':
-        reason = request.POST.get('reason')
-
-        order.status = 'Cancelled'
-        order.cancel_reason = reason
-        order.cancelled_at = timezone.now()
-        order.save()
-
-        # 🔁 MOCK REFUND (if online payment)
-        if order.payment_method == 'ONLINE':
-            print("Refund initiated (mock)")
-
-        return redirect('my_orders')
-
-    return render(request, 'orders/cancel_order.html', {'order': order})
+    return render(request, 'orders/order_detail.html', {
+        'order': order
+    })

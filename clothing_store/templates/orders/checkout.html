@@ -1,23 +1,25 @@
 {% extends 'base.html' %}
-
 {% block content %}
 
 <h2>Checkout</h2>
 
 <table class="table">
-    <tr>
-        <th>Product</th>
-        <th>Qty</th>
-        <th>Price</th>
-    </tr>
-
-    {% for item in cart %}
-    <tr>
-        <td>{{ item.product.name }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>₹{{ item.total_price }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <h4>Total: ₹{{ cart.get_total_price }}</h4>
@@ -25,24 +27,19 @@
 <form method="POST">
     {% csrf_token %}
 
-    <h4 class="mt-4">Select Payment Method</h4>
+    <h5 class="mt-3">Select Payment Method</h5>
 
     <div class="form-check">
-        <input class="form-check-input"
-               type="radio"
-               name="payment_method"
-               value="COD"
-               checked>
+        <input class="form-check-input" type="radio"
+               name="payment_method" value="COD" checked>
         <label class="form-check-label">
             Cash on Delivery
         </label>
     </div>
 
     <div class="form-check">
-        <input class="form-check-input"
-               type="radio"
-               name="payment_method"
-               value="ONLINE">
+        <input class="form-check-input" type="radio"
+               name="payment_method" value="ONLINE">
         <label class="form-check-label">
             Online Payment (Stripe)
         </label>
@@ -54,3 +51,4 @@
 </form>
 
 {% endblock %}
+    
