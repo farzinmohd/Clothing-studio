@@ -54,5 +54,5 @@ class UserProfileForm(forms.ModelForm):
             'phone_number': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter phone number'
-            }),
+            })
         }
