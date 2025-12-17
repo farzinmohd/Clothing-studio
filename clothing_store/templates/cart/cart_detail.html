@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Shopping Cart</h2>
+
+{% if cart.cart %}
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for item in cart %}
+    <tr>
+        <td>{{ item.product.name }}</td>
+        <td>₹{{ item.product.price }}</td>
+        <td>
+            <a href="{% url 'decrease_quantity' item.product.id %}" class="btn btn-sm btn-outline-secondary">−</a>
+            <span class="mx-2">{{ item.quantity }}</span>
+            <a href="{% url 'increase_quantity' item.product.id %}" class="btn btn-sm btn-outline-secondary">+</a>
+        </td>
+        <td>₹{{ item.total_price }}</td>
+        <td>
+            <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-sm btn-danger">
+                Remove
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+</table>
+
+<h4 class="text-end">
+    Total Amount: ₹{{ cart.get_total_price }}
+</h4>
+
+<div class="text-end mt-3">
+    <a href="{% url 'checkout' %}" class="btn btn-success">
+    Proceed to Checkout
+</a>
+
+</div>
+
+{% else %}
+<p>Your cart is empty.</p>
+{% endif %}
+
+{% endblock %}
