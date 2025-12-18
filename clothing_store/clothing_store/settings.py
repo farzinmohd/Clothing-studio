@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 from decouple import config
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -129,7 +132,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -147,3 +157,41 @@ LOGOUT_REDIRECT_URL = 'login'
 STRIPE_PUBLIC_KEY = config("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
 
+JAZZMIN_SETTINGS = {
+    "site_title": "Clothing Store Admin",
+    "site_header": "Clothing Store",
+    "site_brand": "Clothing Store Admin",
+    "site_logo": None,
+
+    "welcome_sign": "Welcome to Clothing Store Admin",
+    "copyright": "Clothing Store",
+
+    "search_model": ["auth.User", "products.Product", "orders.Order"],
+
+    "topmenu_links": [
+        {"name": "View Site", "url": "/", "new_window": True},
+    ],
+
+    "icons": {
+        "auth": "fas fa-users",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users-cog",
+
+        "products.Product": "fas fa-tshirt",
+        "products.Category": "fas fa-tags",
+        "products.ProductVariant": "fas fa-layer-group",
+        "products.ProductImage": "fas fa-image",
+        "products.Review": "fas fa-star",
+
+        "orders.Order": "fas fa-shopping-cart",
+        "orders.OrderItem": "fas fa-box",
+        "orders.Coupon": "fas fa-percent",
+
+        "accounts.UserProfile": "fas fa-id-card",
+    },
+
+    "show_sidebar": True,
+    "navigation_expanded": True,
+
+    "theme": "darkly",   # 🔥 Dark theme
+}

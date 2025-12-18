@@ -8,6 +8,7 @@
 
 <h2 class="mb-4">📊 Admin Dashboard</h2>
 
+<!-- ================= STATS ================= -->
 <div class="row">
     <div class="col-md-4">
         <div class="card stat-card">
@@ -33,7 +34,9 @@
 
 <hr>
 
+<!-- ================= CHARTS ================= -->
 <div class="row mt-4">
+    <!-- Orders by Status -->
     <div class="col-md-6">
         <h5>Orders by Status</h5>
         <ul class="list-group">
@@ -46,26 +49,46 @@
         </ul>
     </div>
 
+    <!-- Monthly Sales Chart -->
     <div class="col-md-6">
         <h5>Monthly Sales</h5>
         <canvas id="salesChart"></canvas>
     </div>
 </div>
 
+<!-- ================= CHART.JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const salesData = {
-        labels: {{ months }},
-        datasets: [{
-            label: 'Monthly Sales',
-            data: {{ totals }},
-            borderWidth: 3,
-            tension: 0.4,
-        }]
-    };
-</script>
+    const labels = [
+        {% for m in months %}
+            "{{ m }}",
+        {% endfor %}
+    ];
 
-<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+    const dataValues = [
+        {% for t in totals %}
+            {{ t }},
+        {% endfor %}
+    ];
+
+    const ctx = document.getElementById('salesChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Sales',
+                data: dataValues,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }]
+        }
+    });
+</script>
 
 {% endblock %}
