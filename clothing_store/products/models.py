@@ -41,3 +41,34 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+
+class ProductVariant(models.Model):
+    SIZE_CHOICES = (
+        ('S', 'Small'),
+        ('M', 'Medium'),
+        ('L', 'Large'),
+        ('XL', 'Extra Large'),
+    )
+
+    COLOR_CHOICES = (
+        ('Black', 'Black'),
+        ('Blue', 'Blue'),
+        ('Red', 'Red'),
+        ('White', 'White'),
+    )
+
+    product = models.ForeignKey(
+        Product,
+        related_name='variants',
+        on_delete=models.CASCADE
+    )
+
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES)
+    color = models.CharField(max_length=20, choices=COLOR_CHOICES)
+    stock = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('product', 'size', 'color')
+
+    def __str__(self):
+        return f"{self.product.name} - {self.size} / {self.color}"

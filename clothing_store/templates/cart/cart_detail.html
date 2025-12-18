@@ -4,54 +4,55 @@
 
 {% block content %}
 
-<h2 class="mb-4">Shopping Cart</h2>
+<h2>Your Cart</h2>
 
-{% if cart.cart %}
+{% if cart|length == 0 %}
+    <p>Your cart is empty.</p>
+    <a href="{% url 'product_list' %}" class="btn btn-primary">
+        Continue Shopping
+    </a>
+{% else %}
 <table class="table table-bordered">
-    <thead class="table-dark">
+    <thead>
         <tr>
             <th>Product</th>
+            <th>Variant</th>
             <th>Price</th>
-            <th>Quantity</th>
+            <th>Qty</th>
             <th>Total</th>
             <th>Action</th>
         </tr>
     </thead>
     <tbody>
-    {% for item in cart %}
-    <tr>
-        <td>{{ item.product.name }}</td>
-        <td>₹{{ item.product.price }}</td>
-        <td>
-            <a href="{% url 'decrease_quantity' item.product.id %}" class="btn btn-sm btn-outline-secondary">−</a>
-            <span class="mx-2">{{ item.quantity }}</span>
-            <a href="{% url 'increase_quantity' item.product.id %}" class="btn btn-sm btn-outline-secondary">+</a>
-        </td>
-        <td>₹{{ item.total_price }}</td>
-        <td>
-            <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-sm btn-danger">
-                Remove
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
+        {% for item in cart %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>
+                Size: {{ item.size }} <br>
+                Color: {{ item.color }}
+            </td>
+            <td>₹{{ item.price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>₹{{ item.total_price }}</td>
+            <td>
+                <a href="{% url 'remove_from_cart' item.product_id|stringformat:'s'|add:'-'|add:item.size|add:'-'|add:item.color %}"
+   class="btn btn-sm btn-danger">
+    Remove
+</a>
 
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <h4 class="text-end">
-    Total Amount: ₹{{ cart.get_total_price }}
+    Total: ₹{{ cart.get_total_price }}
 </h4>
 
-<div class="text-end mt-3">
-    <a href="{% url 'checkout' %}" class="btn btn-success">
+<a href="{% url 'checkout' %}" class="btn btn-success">
     Proceed to Checkout
 </a>
-
-</div>
-
-{% else %}
-<p>Your cart is empty.</p>
 {% endif %}
 
 {% endblock %}
