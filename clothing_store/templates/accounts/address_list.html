@@ -18,6 +18,18 @@
         {% if address.is_default %}
             <span class="badge bg-success ms-2">Default</span>
         {% endif %}
+        <div class="mt-2">
+    <a href="{% url 'edit_address' address.id %}"
+       class="btn btn-sm btn-outline-primary">
+        Edit
+    </a>
+
+    <a href="{% url 'delete_address' address.id %}"
+       class="btn btn-sm btn-outline-danger">
+        Delete
+    </a>
+</div>
+
     </div>
 </div>
 {% empty %}

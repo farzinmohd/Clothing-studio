@@ -1,9 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
+from django.db.models import ProtectedError
 from .forms import UserRegistrationForm, UserProfileForm, AddressForm
 from .models import UserProfile, Address
 
@@ -125,4 +126,67 @@ def add_address(request):
         request,
         'accounts/address_form.html',
         {'form': form}
+    )
+# -------------------------
+# EDIT ADDRESS
+# -------------------------
+@login_required
+def edit_address(request, address_id):
+    address = get_object_or_404(
+        Address,
+        id=address_id,
+        user=request.user
+    )
+
+    if request.method == 'POST':
+        form = AddressForm(request.POST, instance=address)
+        if form.is_valid():
+            updated_address = form.save(commit=False)
+
+            # Handle default address logic
+            if updated_address.is_default:
+                Address.objects.filter(
+                    user=request.user,
+                    is_default=True
+                ).exclude(id=address.id).update(is_default=False)
+
+            updated_address.save()
+            return redirect('address_list')
+    else:
+        form = AddressForm(instance=address)
+
+    return render(
+        request,
+        'accounts/address_form.html',
+        {'form': form}
+    )
+
+
+# -------------------------
+# DELETE ADDRESS
+# -------------------------
+
+@login_required
+def delete_address(request, address_id):
+    address = get_object_or_404(
+        Address,
+        id=address_id,
+        user=request.user
+    )
+
+    if request.method == 'POST':
+        try:
+            address.delete()
+            messages.success(request, 'Address deleted successfully')
+        except ProtectedError:
+            messages.error(
+                request,
+                'This address is used in an order and cannot be deleted.'
+            )
+        return redirect('address_list')
+
+    return render(
+        request,
+        'accounts/address_confirm_delete.html',
+        {'address': address}
     )
