@@ -74,6 +74,12 @@
     Back to Orders
 </a>
 
+<a href="{% url 'download_invoice' order.id %}"
+   class="btn btn-outline-primary ms-2">
+    Download Invoice (PDF)
+</a>
+
+
 {% if order.status == 'pending' or order.status == 'paid' %}
 <form method="post" action="{% url 'cancel_order' order.id %}" class="d-inline">
     {% csrf_token %}

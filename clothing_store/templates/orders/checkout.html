@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Checkout</h2>
+<h2 class="mb-4">Checkout</h2>
 
-<table class="table">
-    <thead>
+<!-- ================= CART SUMMARY ================= -->
+<table class="table table-bordered">
+    <thead class="table-dark">
         <tr>
             <th>Product</th>
+            <th>Variant</th>
             <th>Qty</th>
             <th>Price</th>
         </tr>
@@ -15,6 +17,10 @@
         {% for item in cart %}
         <tr>
             <td>{{ item.product.name }}</td>
+            <td>
+                Size: {{ item.size }} <br>
+                Color: {{ item.color }}
+            </td>
             <td>{{ item.quantity }}</td>
             <td>₹{{ item.total_price }}</td>
         </tr>
@@ -22,28 +28,50 @@
     </tbody>
 </table>
 
-<h4>Total: ₹{{ cart.get_total_price }}</h4>
+<h5 class="mt-3">
+    Subtotal: <strong>₹{{ cart.get_total_price }}</strong>
+</h5>
+
+<hr>
 
 <form method="POST">
     {% csrf_token %}
 
-    <!-- 🔥 ADDRESS SELECTION -->
-    <h5 class="mt-4">Select Delivery Address</h5>
+    <!-- ================= COUPON SECTION ================= -->
+    <h5 class="mt-3">Apply Coupon</h5>
+    <div class="mb-3">
+        <input
+            type="text"
+            name="coupon_code"
+            class="form-control"
+            placeholder="Enter coupon code (optional)">
+    </div>
+
+    <hr>
+
+    <!-- ================= ADDRESS SELECTION ================= -->
+    <h5 class="mt-3">Select Delivery Address</h5>
 
     {% if addresses %}
         {% for address in addresses %}
         <div class="card mb-2">
             <div class="card-body">
-                <label>
-                    <input type="radio" name="address" value="{{ address.id }}">
+                <label class="w-100">
+                    <input
+                        type="radio"
+                        name="address"
+                        value="{{ address.id }}"
+                        required>
+
                     <strong>{{ address.full_name }}</strong><br>
                     {{ address.address_line }}<br>
                     {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
                     Phone: {{ address.phone }}
+
+                    {% if address.is_default %}
+                        <span class="badge bg-success ms-2">Default</span>
+                    {% endif %}
                 </label>
-                {% if address.is_default %}
-                    <span class="badge bg-success ms-2">Default</span>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -54,26 +82,36 @@
         </a>
     {% endif %}
 
-    <!-- 💳 PAYMENT METHOD -->
-    <h5 class="mt-4">Select Payment Method</h5>
+    <hr>
+
+    <!-- ================= PAYMENT METHOD ================= -->
+    <h5 class="mt-3">Select Payment Method</h5>
 
     <div class="form-check">
-        <input class="form-check-input" type="radio"
-               name="payment_method" value="COD" checked>
+        <input
+            class="form-check-input"
+            type="radio"
+            name="payment_method"
+            value="COD"
+            checked>
         <label class="form-check-label">
             Cash on Delivery
         </label>
     </div>
 
     <div class="form-check">
-        <input class="form-check-input" type="radio"
-               name="payment_method" value="ONLINE">
+        <input
+            class="form-check-input"
+            type="radio"
+            name="payment_method"
+            value="ONLINE">
         <label class="form-check-label">
             Online Payment (Stripe)
         </label>
     </div>
 
-    <button type="submit" class="btn btn-success mt-4">
+    <!-- ================= PLACE ORDER ================= -->
+    <button type="submit" class="btn btn-success btn-lg mt-4 w-100">
         Place Order
     </button>
 </form>
