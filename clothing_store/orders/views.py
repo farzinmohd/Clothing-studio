@@ -2,11 +2,14 @@ import stripe
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from carts.cart import Cart
 from products.models import Product
+from accounts.models import Address
 from .models import Order, OrderItem
 
+# ✅ Stripe key
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
@@ -16,19 +19,37 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 @login_required
 def checkout(request):
     cart = Cart(request)
+    addresses = Address.objects.filter(user=request.user)
 
     if len(cart) == 0:
         return redirect('product_list')
 
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
+        address_id = request.POST.get('address')
+
+        # ❌ Address not selected
+        if not address_id:
+            messages.error(request, 'Please select a delivery address')
+            return redirect('checkout')
+
+        try:
+            selected_address = Address.objects.get(
+                id=address_id,
+                user=request.user
+            )
+        except Address.DoesNotExist:
+            messages.error(request, 'Invalid address selected')
+            return redirect('checkout')
 
         if payment_method not in ['COD', 'ONLINE']:
+            messages.error(request, 'Invalid payment method')
             return redirect('checkout')
 
         # ✅ Create Order
         order = Order.objects.create(
             user=request.user,
+            address=selected_address,
             total_amount=cart.get_total_price(),
             payment_method=payment_method,
             status='pending'
@@ -40,6 +61,7 @@ def checkout(request):
             quantity = item['quantity']
 
             if product.stock < quantity:
+                messages.error(request, 'Insufficient stock')
                 return redirect('cart_detail')
 
             OrderItem.objects.create(
@@ -53,39 +75,49 @@ def checkout(request):
             product.save()
 
         # -----------------------------
-        # 🔥 STRIPE PAYMENT
+        # 🔥 STRIPE PAYMENT (FIXED)
         # -----------------------------
         if payment_method == 'ONLINE':
-            session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[
-                    {
-                        'price_data': {
-                            'currency': 'inr',
-                            'product_data': {
-                                'name': f'Order #{order.id}',
+            try:
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    line_items=[
+                        {
+                            'price_data': {
+                                'currency': 'inr',
+                                'product_data': {
+                                    'name': f'Order #{order.id}',
+                                },
+                                # 🔴 MUST be int
+                                'unit_amount': int(order.total_amount * 100),
                             },
-                            'unit_amount': int(order.total_amount * 100),
-                        },
-                        'quantity': 1,
-                    }
-                ],
-                mode='payment',
-                success_url=request.build_absolute_uri(
-                    f'/orders/stripe-success/{order.id}/'
-                ),
-                cancel_url=request.build_absolute_uri('/orders/checkout/')
-            )
-            return redirect(session.url)
+                            'quantity': 1,
+                        }
+                    ],
+                    mode='payment',
+                    success_url=request.build_absolute_uri(
+                        f'/orders/stripe-success/{order.id}/'
+                    ),
+                    cancel_url=request.build_absolute_uri('/orders/checkout/'),
+                )
+
+                # 🔥 IMPORTANT: 303 redirect
+                return redirect(session.url, code=303)
+
+            except Exception as e:
+                messages.error(request, f"Stripe error: {str(e)}")
+                return redirect('checkout')
 
         # -----------------------------
         # ✅ CASH ON DELIVERY
         # -----------------------------
         cart.clear()
+        messages.success(request, 'Order placed successfully')
         return redirect('order_success')
 
     return render(request, 'orders/checkout.html', {
-        'cart': cart
+        'cart': cart,
+        'addresses': addresses
     })
 
 
@@ -95,7 +127,6 @@ def checkout(request):
 @login_required
 def stripe_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-
     order.status = 'paid'
     order.save()
 
@@ -126,7 +157,7 @@ def my_orders(request):
 
 
 # ----------------------------------
-# ORDER DETAIL PAGE (IMPORTANT)
+# ORDER DETAIL PAGE
 # ----------------------------------
 @login_required
 def order_detail(request, order_id):

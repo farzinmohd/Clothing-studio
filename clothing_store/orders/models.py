@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
-from accounts.models import Address   # ✅ NEW
+from accounts.models import Address
 
 
 class Order(models.Model):
@@ -20,10 +20,9 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    # ✅ NEW: Delivery Address
     address = models.ForeignKey(
         Address,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         null=True,
         blank=True
     )
@@ -36,7 +35,6 @@ class Order(models.Model):
         default='pending'
     )
 
-    # ✅ NEW: Payment method
     payment_method = models.CharField(
         max_length=10,
         choices=PAYMENT_METHODS,

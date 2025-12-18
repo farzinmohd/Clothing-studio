@@ -27,7 +27,35 @@
 <form method="POST">
     {% csrf_token %}
 
-    <h5 class="mt-3">Select Payment Method</h5>
+    <!-- 🔥 ADDRESS SELECTION -->
+    <h5 class="mt-4">Select Delivery Address</h5>
+
+    {% if addresses %}
+        {% for address in addresses %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <label>
+                    <input type="radio" name="address" value="{{ address.id }}">
+                    <strong>{{ address.full_name }}</strong><br>
+                    {{ address.address_line }}<br>
+                    {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                    Phone: {{ address.phone }}
+                </label>
+                {% if address.is_default %}
+                    <span class="badge bg-success ms-2">Default</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No address found.</p>
+        <a href="{% url 'add_address' %}" class="btn btn-primary">
+            Add Address
+        </a>
+    {% endif %}
+
+    <!-- 💳 PAYMENT METHOD -->
+    <h5 class="mt-4">Select Payment Method</h5>
 
     <div class="form-check">
         <input class="form-check-input" type="radio"
@@ -45,10 +73,9 @@
         </label>
     </div>
 
-    <button type="submit" class="btn btn-success mt-3">
+    <button type="submit" class="btn btn-success mt-4">
         Place Order
     </button>
 </form>
 
 {% endblock %}
-    
