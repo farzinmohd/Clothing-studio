@@ -11,3 +11,14 @@
     margin-top: 10px;
     font-weight: bold;
 }
+
+/* .chart-box {
+    max-width: 320px;   
+    margin: auto;       
+} */
+ .donut-container {
+    width: 280px;       /* controls donut size */
+    height: 280px;
+    margin: auto;       /* center it */
+}
+

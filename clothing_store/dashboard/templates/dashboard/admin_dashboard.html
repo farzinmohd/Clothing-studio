@@ -36,59 +36,125 @@
 
 <!-- ================= CHARTS ================= -->
 <div class="row mt-4">
-    <!-- Orders by Status -->
+
+    <!-- DONUT: Orders by Status -->
     <div class="col-md-6">
         <h5>Orders by Status</h5>
-        <ul class="list-group">
-            {% for s in status_data %}
-            <li class="list-group-item d-flex justify-content-between">
-                {{ s.status|title }}
-                <span class="badge bg-dark">{{ s.count }}</span>
-            </li>
-            {% endfor %}
-        </ul>
+        <div style="max-width:350px; height:350px;">
+            <canvas id="statusChart"></canvas>
+        </div>
     </div>
 
-    <!-- Monthly Sales Chart -->
+    <!-- LINE: Monthly Sales -->
     <div class="col-md-6">
         <h5>Monthly Sales</h5>
-        <canvas id="salesChart"></canvas>
+        <div style="height:350px;">
+            <canvas id="salesChart"></canvas>
+        </div>
     </div>
+
 </div>
+
+<hr>
+
+<!-- ================= TOP PRODUCTS ================= -->
+<h5 class="mt-4">🏆 Top Selling Products</h5>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Units Sold</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in top_products %}
+        <tr>
+            <td>{{ p.product__name }}</td>
+            <td>{{ p.total_qty }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <!-- ================= CHART.JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    const labels = [
-        {% for m in months %}
-            "{{ m }}",
-        {% endfor %}
-    ];
+/* ================= DONUT CHART ================= */
+const statusCtx = document.getElementById('statusChart').getContext('2d');
 
-    const dataValues = [
-        {% for t in totals %}
-            {{ t }},
-        {% endfor %}
-    ];
-
-    const ctx = document.getElementById('salesChart').getContext('2d');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Monthly Sales',
-                data: dataValues,
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13,110,253,0.2)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true
-            }]
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for s in status_data %}
+                "{{ s.status }}",
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for s in status_data %}
+                    {{ s.count }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#0d6efd',
+                '#198754',
+                '#ffc107',
+                '#dc3545',
+                '#6f42c1'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
         }
-    });
+    }
+});
+
+/* ================= MONTHLY SALES ================= */
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+
+new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: {{ months|safe }},
+        datasets: [{
+            label: 'Monthly Sales',
+            data: {{ totals|safe }},
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13,110,253,0.2)',
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
 </script>
+
+<hr class="my-4">
+
+<!-- ================= REPORT DOWNLOADS ================= -->
+<div class="d-flex gap-3 mb-4">
+    <a href="{% url 'sales_report_pdf' %}" class="btn btn-danger">
+        📄 Download PDF Report
+    </a>
+
+    <a href="{% url 'sales_report_excel' %}" class="btn btn-success">
+        📊 Download Excel Report
+    </a>
+</div>
 
 {% endblock %}

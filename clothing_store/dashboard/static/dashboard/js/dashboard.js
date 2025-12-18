@@ -1,14 +1,14 @@
-const ctx = document.getElementById('salesChart');
+// const ctx = document.getElementById('salesChart');
 
-new Chart(ctx, {
-    type: 'line',
-    data: salesData,
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true
-            }
-        }
-    }
-});
+// new Chart(ctx, {
+//     type: 'line',
+//     data: salesData,
+//     options: {
+//         responsive: true,
+//         plugins: {
+//             legend: {
+//                 display: true
+//             }
+//         }
+//     }
+// });
