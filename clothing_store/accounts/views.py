@@ -2,13 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
-
-from .forms import UserRegistrationForm
-from .models import UserProfile
-from .forms import UserRegistrationForm, UserProfileForm
 from django.contrib.auth.decorators import login_required
-from .models import Address
-from .forms import AddressForm
+
+from .forms import UserRegistrationForm, UserProfileForm, AddressForm
+from .models import UserProfile, Address
 
 
 # -------------------------
@@ -24,10 +21,9 @@ def register(request):
                 password=form.cleaned_data['password']
             )
 
-            # Create user profile automatically
-            UserProfile.objects.create(user=user)
+            # 🔐 Profile will also be created by signals (safe double protection)
+            UserProfile.objects.get_or_create(user=user)
 
-            # Auto login after registration
             auth_login(request, user)
             return redirect('home')
     else:
@@ -63,12 +59,20 @@ def user_logout(request):
     return redirect('login')
 
 
+# -------------------------
+# USER PROFILE (🔥 FIXED)
+# -------------------------
 @login_required
 def profile(request):
-    profile = request.user.userprofile
+    # ✅ SAFE: creates profile if missing
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
 
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        form = UserProfileForm(
+            request.POST,
+            request.FILES,
+            instance=profile
+        )
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully')
@@ -76,11 +80,15 @@ def profile(request):
     else:
         form = UserProfileForm(instance=profile)
 
-    return render(request, 'accounts/profile.html', {'form': form})
+    return render(request, 'accounts/profile.html', {
+        'form': form,
+        'profile': profile
+    })
 
 
-
-
+# -------------------------
+# ADDRESS LIST
+# -------------------------
 @login_required
 def address_list(request):
     addresses = Address.objects.filter(user=request.user)
@@ -91,6 +99,9 @@ def address_list(request):
     )
 
 
+# -------------------------
+# ADD ADDRESS
+# -------------------------
 @login_required
 def add_address(request):
     if request.method == 'POST':

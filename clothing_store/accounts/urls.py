@@ -11,7 +11,7 @@ urlpatterns = [
     # Profile
     path('profile/', views.profile, name='profile'),
 
-    # 🔐 Password Change
+    # Password change
     path(
         'password-change/',
         auth_views.PasswordChangeView.as_view(
@@ -19,7 +19,6 @@ urlpatterns = [
         ),
         name='password_change'
     ),
-
     path(
         'password-change/done/',
         auth_views.PasswordChangeDoneView.as_view(
@@ -27,7 +26,8 @@ urlpatterns = [
         ),
         name='password_change_done'
     ),
-    path('addresses/', views.address_list, name='address_list'),
-path('addresses/add/', views.add_address, name='add_address'),
 
+    # Addresses
+    path('addresses/', views.address_list, name='address_list'),
+    path('addresses/add/', views.add_address, name='add_address'),
 ]
