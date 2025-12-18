@@ -1,52 +1,78 @@
 {% extends 'base.html' %}
-
-{% block title %}Products{% endblock %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
 
-<h2 class="mb-4">Products</h2>
+<div class="container-fluid mt-4">
+    <div class="row">
 
-<div class="row">
-    <div class="col-md-3">
-        <h5>Categories</h5>
-        <ul class="list-group">
-            <a href="{% url 'product_list' %}" class="list-group-item">All</a>
-            {% for category in categories %}
-                <a href="?category={{ category.id }}" class="list-group-item">
-                    {{ category.name }}
-                </a>
-            {% endfor %}
-        </ul>
-    </div>
+        <!-- ================= CATEGORY SIDEBAR ================= -->
+        <div class="col-md-2">
+            <div class="category-box">
+                <h5 class="mb-3">Categories</h5>
+                <ul class="list-group">
+                    <a href="{% url 'product_list' %}" class="list-group-item">
+                        All
+                    </a>
 
-    <div class="col-md-9">
-        <div class="row">
-            {% for product in products %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.name }}</h5>
-                            <p class="card-text">₹{{ product.price }}</p>
+                    {% for category in categories %}
+                    <a href="?category={{ category.id }}" class="list-group-item">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
 
-                            <a href="{% url 'product_detail' product.id %}"
-                               class="btn btn-primary btn-sm">
-                                View Details
-                            </a>
+        <!-- ================= PRODUCTS GRID ================= -->
+        <div class="col-md-10">
+            <div class="row g-4">
 
-                            {% if user.is_authenticated %}
-                            <a href="{% url 'add_to_wishlist' product.id %}"
-                               class="btn btn-outline-danger btn-sm mt-2">
-                                ❤️ Wishlist
-                            </a>
+                {% for product in products %}
+                <div class="col-md-3">
+                    <div class="product-card">
+
+                        <!-- PRODUCT IMAGE -->
+                        <div class="product-image">
+                            {% if product.images.first %}
+                                <img src="{{ product.images.first.image.url }}"
+                                     alt="{{ product.name }}">
+                            {% else %}
+                                <img src="{% static 'images/no-image.png' %}">
                             {% endif %}
                         </div>
+
+                        <!-- PRODUCT INFO -->
+                        <div class="product-info">
+                            <h6 class="product-title">{{ product.name }}</h6>
+                            <p class="product-price">₹{{ product.price }}</p>
+
+                            <!-- ✅ BUTTONS FIXED -->
+                            <div class="product-actions">
+                                <a href="{% url 'product_detail' product.id %}"
+                                   class="btn btn-primary btn-sm">
+                                    View Details
+                                </a>
+
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'add_to_wishlist' product.id %}"
+                                   class="btn btn-outline-danger btn-sm">
+                                    ❤️ Wishlist
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            {% empty %}
+                {% empty %}
                 <p>No products available.</p>
-            {% endfor %}
+                {% endfor %}
+
+            </div>
         </div>
+
     </div>
 </div>
-
 {% endblock %}
