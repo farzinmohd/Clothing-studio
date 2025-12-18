@@ -7,8 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError
 from .forms import UserRegistrationForm, UserProfileForm, AddressForm
 from .models import UserProfile, Address
-from .models import Wishlist
-from django.db import IntegrityError
 
 
 # -------------------------
@@ -192,43 +190,3 @@ def delete_address(request, address_id):
         'accounts/address_confirm_delete.html',
         {'address': address}
     )
-
-
-# -------------------------
-# WISHLIST LIST
-# -------------------------
-@login_required
-def wishlist(request):
-    items = Wishlist.objects.filter(user=request.user).select_related('product')
-    return render(request, 'accounts/wishlist.html', {'items': items})
-
-
-# -------------------------
-# ADD TO WISHLIST
-# -------------------------
-@login_required
-def add_to_wishlist(request, product_id):
-    try:
-        Wishlist.objects.create(
-            user=request.user,
-            product_id=product_id
-        )
-        messages.success(request, 'Added to wishlist')
-    except IntegrityError:
-        messages.info(request, 'Already in your wishlist')
-
-    return redirect(request.META.get('HTTP_REFERER', 'product_list'))
-
-
-# -------------------------
-# REMOVE FROM WISHLIST
-# -------------------------
-@login_required
-def remove_from_wishlist(request, product_id):
-    Wishlist.objects.filter(
-        user=request.user,
-        product_id=product_id
-    ).delete()
-
-    messages.success(request, 'Removed from wishlist')
-    return redirect('wishlist')
