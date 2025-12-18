@@ -19,21 +19,26 @@
             <td>#{{ order.id }}</td>
             <td>₹{{ order.total_amount }}</td>
             <td>
-                <span class="badge 
-                {% if order.status == 'Pending' %} bg-warning
-                {% elif order.status == 'Paid' %} bg-primary
-                {% elif order.status == 'Shipped' %} bg-info
-                {% elif order.status == 'Delivered' %} bg-success
+                <span class="badge
+                {% if order.status == 'pending' %} bg-warning
+                {% elif order.status == 'paid' %} bg-primary
+                {% elif order.status == 'shipped' %} bg-info
+                {% elif order.status == 'delivered' %} bg-success
                 {% else %} bg-danger {% endif %}">
-                    {{ order.status }}
+                    {{ order.get_status_display }}
                 </span>
             </td>
             <td>{{ order.created_at }}</td>
             <td>
-                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-outline-dark">
+                <a href="{% url 'order_detail' order.id %}"
+                   class="btn btn-sm btn-outline-dark">
                     View
                 </a>
             </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No orders yet</td>
         </tr>
         {% endfor %}
     </tbody>

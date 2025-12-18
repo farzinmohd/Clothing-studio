@@ -173,3 +173,19 @@ def order_detail(request, order_id):
     return render(request, 'orders/order_detail.html', {
         'order': order
     })
+
+
+
+
+@login_required
+def cancel_order(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status in ['shipped', 'delivered']:
+        messages.error(request, 'Order cannot be cancelled now.')
+        return redirect('order_detail', order_id=order.id)
+
+    order.status = 'cancelled'
+    order.save()
+    messages.success(request, 'Order cancelled successfully.')
+    return redirect('my_orders')

@@ -7,32 +7,42 @@
 <p>
     <strong>Status:</strong>
     <span class="badge
-        {% if order.status == 'Pending' %} bg-warning
-        {% elif order.status == 'Paid' %} bg-primary
-        {% elif order.status == 'Shipped' %} bg-info
-        {% elif order.status == 'Delivered' %} bg-success
+        {% if order.status == 'pending' %} bg-warning
+        {% elif order.status == 'paid' %} bg-primary
+        {% elif order.status == 'shipped' %} bg-info
+        {% elif order.status == 'delivered' %} bg-success
         {% else %} bg-danger {% endif %}">
-        {{ order.status }}
+        {{ order.get_status_display }}
     </span>
 </p>
 
-<p>
-    <strong>Payment Method:</strong>
-    {{ order.payment_method }}
-</p>
+<p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+<p><strong>Order Date:</strong> {{ order.created_at }}</p>
 
-<p>
-    <strong>Order Date:</strong>
-    {{ order.created_at }}
-</p>
-
-{% if order.status == "Cancelled" %}
-    <div class="alert alert-danger">
-        <strong>Order Cancelled</strong><br>
-        <strong>Reason:</strong> {{ order.cancel_reason }}<br>
-        <strong>Cancelled At:</strong> {{ order.cancelled_at }}
-    </div>
+{% if order.status == "cancelled" %}
+<div class="alert alert-danger">
+    <strong>Order Cancelled</strong><br>
+</div>
 {% endif %}
+
+<hr>
+
+<!-- 🔥 ORDER TIMELINE -->
+<h5>Order Progress</h5>
+<ul class="list-group list-group-horizontal text-center mb-4">
+    <li class="list-group-item {% if order.status != 'pending' %}bg-success text-white{% endif %}">
+        Pending
+    </li>
+    <li class="list-group-item {% if order.status in 'paid shipped delivered' %}bg-success text-white{% endif %}">
+        Paid
+    </li>
+    <li class="list-group-item {% if order.status in 'shipped delivered' %}bg-success text-white{% endif %}">
+        Shipped
+    </li>
+    <li class="list-group-item {% if order.status == 'delivered' %}bg-success text-white{% endif %}">
+        Delivered
+    </li>
+</ul>
 
 <hr>
 
@@ -41,12 +51,12 @@
     <thead class="table-dark">
         <tr>
             <th>Product</th>
-            <th>Quantity</th>
+            <th>Qty</th>
             <th>Price</th>
         </tr>
     </thead>
     <tbody>
-        {% for item in items %}
+        {% for item in order.items.all %}
         <tr>
             <td>{{ item.product.name }}</td>
             <td>{{ item.quantity }}</td>
@@ -56,20 +66,21 @@
     </tbody>
 </table>
 
-<h4>Total Amount: ₹{{ order.total_amount }}</h4>
+<h4>Total: ₹{{ order.total_amount }}</h4>
 
 <hr>
 
-<!-- ACTION BUTTONS -->
 <a href="{% url 'my_orders' %}" class="btn btn-secondary">
     Back to Orders
 </a>
 
-{% if order.can_cancel %}
-    <a href="{% url 'cancel_order' order.id %}"
-       class="btn btn-danger ms-2">
-       Cancel Order
-    </a>
+{% if order.status == 'pending' or order.status == 'paid' %}
+<form method="post" action="{% url 'cancel_order' order.id %}" class="d-inline">
+    {% csrf_token %}
+    <button class="btn btn-danger ms-2">
+        Cancel Order
+    </button>
+</form>
 {% endif %}
 
 {% endblock %}
