@@ -55,7 +55,21 @@
             </button>
         </form>
 
-        <br>
+        {% if user.is_authenticated %}
+    {% if in_wishlist %}
+        <a href="{% url 'wishlist' %}"
+           class="btn btn-success mt-2">
+            View Wishlist
+        </a>
+    {% else %}
+        <a href="{% url 'add_to_wishlist' product.id %}"
+           class="btn btn-outline-danger mt-2">
+             Add to Wishlist
+        </a>
+    {% endif %}
+{% endif %}
+
+        <br><br>
         <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
             ← Back to Products
         </a>

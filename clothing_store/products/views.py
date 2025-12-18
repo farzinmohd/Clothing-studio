@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Category, ProductVariant
-
+from accounts.models import Wishlist
 
 def product_list(request):
     category_id = request.GET.get('category')
@@ -17,13 +17,24 @@ def product_list(request):
     })
 
 
+
+
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_active=True)
     images = product.images.all()
     variants = product.variants.all()
 
-    return render(request, 'products/product_detail.html', {
+    in_wishlist = False
+    if request.user.is_authenticated:
+        in_wishlist = Wishlist.objects.filter(
+            user=request.user,
+            product=product
+        ).exists()
+
+    context = {
         'product': product,
         'images': images,
-        'variants': variants
-    })
+        'variants': variants,
+        'in_wishlist': in_wishlist
+    }
+    return render(request, 'products/product_detail.html', context)

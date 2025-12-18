@@ -65,11 +65,14 @@ def checkout(request):
                 return redirect('cart_detail')
 
             OrderItem.objects.create(
-                order=order,
-                product=product,
-                quantity=quantity,
-                price=item['price']
-            )
+    order=order,
+    product=product,
+    size=item['size'],
+    color=item['color'],
+    quantity=item['quantity'],
+    price=item['price']
+)
+
 
             product.stock -= quantity
             product.save()
