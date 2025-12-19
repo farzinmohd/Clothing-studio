@@ -1,20 +1,56 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
 <div class="container text-center mt-5">
+
     <h2>🧠 AI Skin Tone Recognition</h2>
     <p class="text-muted">Upload a clear face image</p>
 
-    <form method="POST" enctype="multipart/form-data"
-          action="{% url 'ai_result' %}">
+    <!-- FORM -->
+    <form method="POST"
+          enctype="multipart/form-data"
+          action="{% url 'ai_result' %}"
+          onsubmit="startAI()"
+          id="aiForm">
         {% csrf_token %}
 
         <input type="file" name="image"
                class="form-control mb-3" required>
 
-        <button type="submit" class="btn btn-primary">
+        <button class="btn btn-primary" id="analyzeBtn">
             🔍 Analyze Image
         </button>
     </form>
+
+    <!-- AI LOADING -->
+    <div id="aiLoader" class="mt-5 d-none">
+        <div class="spinner-border text-primary mb-3" role="status"></div>
+        <h5 id="aiText">AI is analyzing facial features…</h5>
+        <p class="text-muted">Please wait</p>
+    </div>
+
 </div>
+
+<script>
+function startAI() {
+    document.getElementById("aiForm").classList.add("d-none");
+    document.getElementById("aiLoader").classList.remove("d-none");
+
+    const messages = [
+        "Detecting facial regions…",
+        "Normalizing lighting conditions…",
+        "Analyzing skin tone patterns…",
+        "Matching fashion database…",
+        "Generating recommendations…"
+    ];
+
+    let i = 0;
+    const textEl = document.getElementById("aiText");
+
+    setInterval(() => {
+        textEl.innerText = messages[i % messages.length];
+        i++;
+    }, 1200);
+}
+</script>
 {% endblock %}
