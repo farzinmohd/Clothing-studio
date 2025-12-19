@@ -1,69 +1,95 @@
 from products.models import Product
 
-# ===============================
-# SKIN TONE → ALLOWED COLORS
-# (Normalized to PRODUCT COLORS)
-# ===============================
+# ==========================================
+# CANONICAL COLOR MAP (single source of truth)
+# ==========================================
+COLOR_CANONICAL = {
+    "beige": ["beige", "tan", "cream", "sand"],
+    "blue": ["blue", "light blue", "sky blue", "navy", "royal"],
+    "green": ["green", "olive", "dark green"],
+    "maroon": ["maroon", "burgundy", "wine"],
+    "white": ["white", "off white"],
+    "black": ["black"],
+    "brown": ["brown", "chocolate"],
+    "yellow": ["yellow", "mustard"],
+    "pink": ["pink", "peach"],
+    "mint": ["mint"],
+}
+
+# ==========================================
+# SKIN TONE → BASE COLORS
+# ==========================================
 SKIN_TONE_COLOR_MAP = {
-    "Very Fair": ["Blue", "Pink", "Grey"],
-    "Fair": ["Beige", "Blue", "Green"],
-    "Medium": ["Green", "Blue", "Maroon", "White"],
-    "Olive": ["Mustard", "Brown", "Black", "Green"],
-    "Dark": ["Yellow", "Red", "Blue", "White"],
+    "Very Fair": ["blue", "pink", "grey"],
+    "Fair": ["beige", "blue", "mint", "pink"],
+    "Medium": ["green", "blue", "maroon", "white"],
+    "Olive": ["mustard", "brown", "black", "green"],
+    "Dark": ["yellow", "red", "blue", "white"],
 }
 
-# ===============================
-# NLP COLOR KEYWORDS
-# ===============================
-COLOR_KEYWORDS = {
-    "Green": ["green", "olive"],
-    "Blue": ["blue", "navy", "royal", "cobalt"],
-    "Red": ["red", "maroon"],
-    "White": ["white"],
-    "Black": ["black"],
-    "Yellow": ["yellow", "mustard"],
-    "Brown": ["brown", "beige"],
-    "Pink": ["pink"],
-}
+# ==========================================
+# NORMALIZE ANY COLOR STRING
+# ==========================================
+def normalize_color(value):
+    if not value:
+        return None
 
-# ===============================
-# NLP COLOR DETECTION
-# ===============================
-def detect_color_from_name(product_name):
-    name = product_name.lower()
-    for color, keywords in COLOR_KEYWORDS.items():
-        for word in keywords:
-            if word in name:
-                return color
+    value = value.lower().strip()
+
+    for base, variants in COLOR_CANONICAL.items():
+        if value in variants:
+            return base
+
     return None
 
-# ===============================
-# FINAL AI RECOMMENDER
-# ===============================
+# ==========================================
+# DETECT COLOR FROM NAME
+# ==========================================
+def detect_color_from_name(name):
+    name = name.lower()
+    for base, variants in COLOR_CANONICAL.items():
+        for v in variants:
+            if v in name:
+                return base
+    return None
+
+# ==========================================
+# MAIN RECOMMENDER
+# ==========================================
 def get_recommended_products(skin_tone, limit=6):
-    allowed_colors = SKIN_TONE_COLOR_MAP.get(skin_tone, [])
+    allowed_base_colors = SKIN_TONE_COLOR_MAP.get(skin_tone, [])
 
     matched_products = []
 
-    products = Product.objects.filter(
-        is_active=True
-    ).prefetch_related("images")
+    products = Product.objects.filter(is_active=True).prefetch_related(
+        "images", "variants"
+    )
 
     for product in products:
-        # 1️⃣ Use admin-defined color
-        product_color = product.color
+        detected_colors = set()
 
-        # 2️⃣ Validate admin color against AI rules
-        if product_color in allowed_colors:
+        # 1️⃣ Product main color
+        if product.color:
+            c = normalize_color(product.color)
+            if c:
+                detected_colors.add(c)
+
+        # 2️⃣ Variant colors
+        for variant in product.variants.all():
+            c = normalize_color(variant.color)
+            if c:
+                detected_colors.add(c)
+
+        # 3️⃣ Name fallback
+        name_color = detect_color_from_name(product.name)
+        if name_color:
+            detected_colors.add(name_color)
+
+        # 4️⃣ Match
+        if detected_colors.intersection(allowed_base_colors):
             matched_products.append(product)
-
-        # 3️⃣ NLP fallback if admin color doesn't match
-        else:
-            detected_color = detect_color_from_name(product.name)
-            if detected_color in allowed_colors:
-                matched_products.append(product)
 
         if len(matched_products) >= limit:
             break
 
-    return matched_products, allowed_colors
+    return matched_products, allowed_base_colors
