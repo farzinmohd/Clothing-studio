@@ -1,24 +1,18 @@
+from django.shortcuts import render, redirect
+from django.conf import settings
+from pathlib import Path
+from .skin_tone.detector import detect_skin_tone
+from .skin_tone.recommender import get_recommended_products
 import os
 import time
 import random
-from django.conf import settings
-from django.shortcuts import render, redirect
-
-from .skin_tone.detector import detect_skin_tone
-from .skin_tone.recommender import get_recommended_products
 
 
 def ai_home(request):
-    """
-    AI upload page
-    """
     return render(request, "ai/upload.html")
 
 
 def ai_result(request):
-    """
-    Handle image upload → AI processing → recommendations
-    """
     if request.method != "POST":
         return redirect("ai_home")
 
@@ -26,38 +20,36 @@ def ai_result(request):
     if not image:
         return redirect("ai_home")
 
-    # ===============================
-    # 1️⃣ SAVE IMAGE TEMPORARILY
-    # ===============================
-    ai_media_path = os.path.join(settings.MEDIA_ROOT, "ai_uploads")
-    os.makedirs(ai_media_path, exist_ok=True)
+    # 📂 Save uploaded image
+    upload_dir = os.path.join(settings.MEDIA_ROOT, "ai_uploads")
+    os.makedirs(upload_dir, exist_ok=True)
 
-    image_path = os.path.join(ai_media_path, image.name)
-
-    with open(image_path, "wb+") as destination:
+    image_path = os.path.join(upload_dir, "temp.jpg")
+    with open(image_path, "wb+") as f:
         for chunk in image.chunks():
-            destination.write(chunk)
+            f.write(chunk)
 
-    # ===============================
-    # 2️⃣ AI PROCESSING DELAY (REAL FEEL)
-    # ===============================
-    time.sleep(random.uniform(3, 6))  # ⏳ realistic AI wait
+    # ⏳ Fake AI thinking time (3–6 sec)
+    time.sleep(random.randint(3, 6))
 
-    # ===============================
-    # 3️⃣ SKIN TONE DETECTION
-    # ===============================
-    skin_tone = detect_skin_tone(image_path)
+    # 🧠 AI detection
+    skin_tone, boxed_image_path = detect_skin_tone(image_path)
 
-    # ===============================
-    # 4️⃣ PRODUCT RECOMMENDATION
-    # ===============================
+    # 🎯 Product recommendations
     products, colors = get_recommended_products(skin_tone)
 
-    # ===============================
-    # 5️⃣ RENDER RESULT PAGE
-    # ===============================
+    # 🖼 Convert boxed image path → URL
+    if boxed_image_path:
+        boxed_image_path = Path(boxed_image_path)  # 🔑 FIX
+        boxed_image_url = boxed_image_path.relative_to(
+            settings.MEDIA_ROOT
+        ).as_posix()
+    else:
+        boxed_image_url = None
+
     return render(request, "ai/result.html", {
         "skin_tone": skin_tone,
         "colors": colors,
         "products": products,
+        "boxed_image": boxed_image_url
     })

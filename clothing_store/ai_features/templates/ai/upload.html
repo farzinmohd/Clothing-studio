@@ -14,8 +14,10 @@
           id="aiForm">
         {% csrf_token %}
 
-        <input type="file" name="image"
-               class="form-control mb-3" required>
+        <input type="file"
+               name="image"
+               class="form-control mb-3"
+               required>
 
         <button class="btn btn-primary" id="analyzeBtn">
             🔍 Analyze Image
@@ -25,16 +27,24 @@
     <!-- AI LOADING -->
     <div id="aiLoader" class="mt-5 d-none">
         <div class="spinner-border text-primary mb-3" role="status"></div>
-        <h5 id="aiText">AI is analyzing facial features…</h5>
+        <h5 id="aiText">Initializing AI engine…</h5>
         <p class="text-muted">Please wait</p>
     </div>
 
 </div>
 
 <script>
+let aiInterval = null;
+
 function startAI() {
+    // Hide form
     document.getElementById("aiForm").classList.add("d-none");
+
+    // Show loader
     document.getElementById("aiLoader").classList.remove("d-none");
+
+    // Disable button (safety)
+    document.getElementById("analyzeBtn").disabled = true;
 
     const messages = [
         "Detecting facial regions…",
@@ -47,7 +57,12 @@ function startAI() {
     let i = 0;
     const textEl = document.getElementById("aiText");
 
-    setInterval(() => {
+    // Clear any old interval
+    if (aiInterval) {
+        clearInterval(aiInterval);
+    }
+
+    aiInterval = setInterval(() => {
         textEl.innerText = messages[i % messages.length];
         i++;
     }, 1200);
