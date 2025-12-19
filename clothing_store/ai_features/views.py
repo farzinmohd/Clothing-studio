@@ -1,50 +1,35 @@
 from django.shortcuts import render, redirect
-from django.core.files.storage import default_storage
-import random
+from django.core.files.storage import FileSystemStorage
 
-# -------------------------
-# AI HOME (UPLOAD PAGE)
-# -------------------------
+from .skin_tone.detector import detect_skin_tone
+from .skin_tone.recommender import get_recommended_products
+
 def ai_home(request):
-    if request.method == "POST":
-        image = request.FILES.get('image')
-
-        if image:
-            # Save image temporarily
-            image_path = default_storage.save(
-                f"ai_uploads/{image.name}", image
-            )
-
-            # 🎯 TEMP SKIN TONE LOGIC (AI will come later)
-            skin_tones = ['Fair', 'Medium', 'Dark']
-            detected_tone = random.choice(skin_tones)
-
-            # Store results in session
-            request.session['uploaded_image'] = image_path
-            request.session['skin_tone'] = detected_tone
-
-            return redirect('ai_result')
-
-    return render(request, 'ai/upload.html')
+    return render(request, "ai/ai_home.html")
 
 
-# -------------------------
-# AI RESULT PAGE
-# -------------------------
 def ai_result(request):
-    image_path = request.session.get('uploaded_image')
-    skin_tone = request.session.get('skin_tone')
+    if request.method != "POST":
+        return redirect("ai_home")
 
-    color_map = {
-        'Fair': ['Blue', 'Black', 'Pink'],
-        'Medium': ['White', 'Green', 'Beige'],
-        'Dark': ['Red', 'Yellow', 'Brown'],
-    }
+    image_file = request.FILES.get("image")
+    if not image_file:
+        return redirect("ai_home")
 
-    recommended_colors = color_map.get(skin_tone, [])
+    # Save image
+    fs = FileSystemStorage()
+    filename = fs.save(image_file.name, image_file)
+    image_path = fs.path(filename)
 
-    return render(request, 'ai/result.html', {
-        'image': image_path,
-        'skin_tone': skin_tone,
-        'colors': recommended_colors
+    # 🔥 REAL AI STEP
+    skin_tone = detect_skin_tone(image_path)
+
+    # Product recommendation
+    products, colors = get_recommended_products(skin_tone)
+
+    return render(request, "ai/result.html", {
+        "image_url": fs.url(filename),
+        "skin_tone": skin_tone,
+        "colors": colors,
+        "products": products
     })
