@@ -13,51 +13,60 @@ COLOR_CANONICAL = {
     "brown": ["brown", "chocolate"],
     "yellow": ["yellow", "mustard"],
     "pink": ["pink", "peach"],
-    "mint": ["mint"],
+    "mint": ["mint", "aqua"],
 }
 
 # ==================================================
 # SKIN TONE → ALLOWED BASE COLORS
+# (expanded & realistic)
 # ==================================================
 SKIN_TONE_COLOR_MAP = {
     "Very Fair": ["blue", "pink", "white"],
     "Fair": ["beige", "blue", "mint", "pink"],
     "Medium": ["green", "blue", "maroon", "white"],
-    "Olive": ["mustard", "brown", "black", "green"],
+    "Olive": ["green", "brown", "black", "mustard"],
     "Dark": ["yellow", "red", "blue", "white"],
 }
 
 # ==================================================
 # NORMALIZE ANY COLOR STRING → BASE COLOR
+# (SOFT MATCHING, NOT STRICT)
 # ==================================================
 def normalize_color(value):
     if not value:
         return None
 
-    value = value.lower().strip()
+    value = value.lower()
 
-    for base_color, variants in COLOR_CANONICAL.items():
-        if value in variants:
-            return base_color
-
-    return None
-
-# ==================================================
-# DETECT COLOR FROM PRODUCT NAME (fallback NLP)
-# ==================================================
-def detect_color_from_name(name):
-    name = name.lower()
     for base_color, variants in COLOR_CANONICAL.items():
         for v in variants:
-            if v in name:
+            if v in value:      # 🔥 CONTAINS match
                 return base_color
+
     return None
 
 # ==================================================
-# MAIN AI RECOMMENDER (HYBRID RULE-BASED)
+# DETECT COLOR FROM TEXT (NAME / DESCRIPTION)
 # ==================================================
-def get_recommended_products(skin_tone, limit=6):
+def detect_color_from_text(text):
+    if not text:
+        return None
+
+    text = text.lower()
+
+    for base_color, variants in COLOR_CANONICAL.items():
+        for v in variants:
+            if v in text:
+                return base_color
+
+    return None
+
+# ==================================================
+# MAIN AI RECOMMENDER (SAFE + FLEXIBLE)
+# ==================================================
+def get_recommended_products(skin_tone):
     allowed_base_colors = SKIN_TONE_COLOR_MAP.get(skin_tone, [])
+
     matched_products = []
 
     products = (
@@ -69,7 +78,7 @@ def get_recommended_products(skin_tone, limit=6):
     for product in products:
         detected_colors = set()
 
-        # 1️⃣ Product main color (admin selected)
+        # 1️⃣ Admin-selected product color
         if product.color:
             c = normalize_color(product.color)
             if c:
@@ -81,16 +90,20 @@ def get_recommended_products(skin_tone, limit=6):
             if c:
                 detected_colors.add(c)
 
-        # 3️⃣ Name-based fallback
-        name_color = detect_color_from_name(product.name)
+        # 3️⃣ Product name scan
+        name_color = detect_color_from_text(product.name)
         if name_color:
             detected_colors.add(name_color)
 
-        # 4️⃣ Match against allowed colors
-        if detected_colors.intersection(allowed_base_colors):
-            matched_products.append(product)
+        # 4️⃣ Product description scan (IMPORTANT)
+        desc_color = detect_color_from_text(product.description)
+        if desc_color:
+            detected_colors.add(desc_color)
 
-        if len(matched_products) >= limit:
-            break
+        # 5️⃣ Final soft match
+        for color in detected_colors:
+            if color in allowed_base_colors:
+                matched_products.append(product)
+                break   # prevent duplicates
 
     return matched_products, allowed_base_colors
