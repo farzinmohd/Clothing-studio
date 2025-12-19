@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Result{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+
+    <h2 class="mb-3">🎯 Skin Tone Analysis Result</h2>
+
+    {% if image %}
+        <img src="{{ image.url }}"
+             class="img-fluid rounded shadow mb-4"
+             style="max-height:300px;">
+    {% endif %}
+
+    <h4 class="text-primary">
+        Detected Skin Tone:
+        <strong>{{ skin_tone }}</strong>
+    </h4>
+
+    <hr class="my-4">
+
+    <!-- ================= COLORS ================= -->
+    <h5>👕 Recommended Clothing Colors</h5>
+
+    {% if colors %}
+        <div class="d-flex justify-content-center flex-wrap gap-3 mt-3">
+            {% for color in colors %}
+                <span class="badge bg-dark p-3 fs-6">
+                    {{ color }}
+                </span>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No recommendations available</p>
+    {% endif %}
+
+    <!-- ================= PRODUCTS ================= -->
+    <hr class="my-5">
+
+    <h4 class="mb-4">🛍 Recommended Products For You</h4>
+
+    <div class="row g-4 justify-content-center">
+
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+
+                {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}"
+                         class="card-img-top"
+                         style="height:220px; object-fit:cover;">
+                {% else %}
+                    <img src="{% static 'images/no-image.png' %}"
+                         class="card-img-top"
+                         style="height:220px; object-fit:cover;">
+                {% endif %}
+
+                <div class="card-body">
+                    <h6 class="card-title">{{ product.name }}</h6>
+                    <p class="fw-bold text-success">₹{{ product.price }}</p>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'product_detail' product.id %}"
+                           class="btn btn-sm btn-primary w-50">
+                            View
+                        </a>
+
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'add_to_wishlist' product.id %}"
+                           class="btn btn-sm btn-outline-danger w-50">
+                            ❤️ Wishlist
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No matching products found</p>
+        {% endfor %}
+
+    </div>
+
+    <a href="{% url 'ai_home' %}" class="btn btn-outline-primary mt-5">
+        ⬅ Try Another Image
+    </a>
+
+</div>
+{% endblock %}

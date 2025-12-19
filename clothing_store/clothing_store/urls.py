@@ -3,7 +3,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
-
+from django.conf import settings
+from django.conf.urls.static import static
 def home(request):
     return HttpResponse("Home Page - Login Successful")
 
@@ -15,6 +16,7 @@ urlpatterns = [
     path('cart/', include('carts.urls')),
     path('orders/', include('orders.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('ai/', include('ai_features.urls')),
 
 
 ]

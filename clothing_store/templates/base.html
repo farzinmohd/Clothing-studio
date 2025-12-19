@@ -20,86 +20,97 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+  <ul class="navbar-nav ms-auto">
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'product_list' %}">
-                        Products
-                    </a>
-                </li>
+    {% if user.is_authenticated %}
+    <!-- 🔥 AI ANALYSIS BUTTON (RED BOX POSITION) -->
+    <li class="nav-item">
+    <a class="nav-link fw-semibold text-info" href="{% url 'ai_home' %}">
+        🧠 AI Analysis
+    </a>
+</li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'cart_detail' %}">
-                        Cart
-                        {% if request.session.cart %}
-                            <span class="badge bg-success">
-                                {{ request.session.cart|length }}
-                            </span>
-                        {% endif %}
-                    </a>
-                </li>
+    {% endif %}
 
-                {% if user.is_authenticated %}
-                <!-- USER DROPDOWN -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center"
-                       href="#" role="button" data-bs-toggle="dropdown">
-
-                        {% if user.userprofile.profile_photo %}
-                            <img src="{{ user.userprofile.profile_photo.url }}"
-                                 class="rounded-circle me-2"
-                                 width="35" height="35"
-                                 style="object-fit: cover;">
-                        {% else %}
-                            <div class="rounded-circle bg-danger text-white
-                                        d-flex align-items-center justify-content-center me-2"
-                                 style="width:35px;height:35px;">
-                                {{ user.username|first|upper }}
-                            </div>
-                        {% endif %}
-
-                        {{ user.username }}
-                    </a>
-
-                   <ul class="dropdown-menu dropdown-menu-end">
-    <li>
-        <a class="dropdown-item" href="{% url 'profile' %}">
-            Profile
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'product_list' %}">
+            Products
         </a>
     </li>
 
-    <li>
-        <a class="dropdown-item" href="{% url 'wishlist' %}">
-             My Wishlist ❤️ 
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'cart_detail' %}">
+            Cart
+            {% if request.session.cart %}
+                <span class="badge bg-success">
+                    {{ request.session.cart|length }}
+                </span>
+            {% endif %}
         </a>
     </li>
 
-    <li>
-        <a class="dropdown-item" href="{% url 'my_orders' %}">
-            My Orders
+    {% if user.is_authenticated %}
+    <!-- USER DROPDOWN -->
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle d-flex align-items-center"
+           href="#" role="button" data-bs-toggle="dropdown">
+
+            {% if user.userprofile.profile_photo %}
+                <img src="{{ user.userprofile.profile_photo.url }}"
+                     class="rounded-circle me-2"
+                     width="35" height="35"
+                     style="object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle bg-danger text-white
+                            d-flex align-items-center justify-content-center me-2"
+                     style="width:35px;height:35px;">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+
+            {{ user.username }}
         </a>
+
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+                <a class="dropdown-item" href="{% url 'profile' %}">
+                    Profile
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="{% url 'wishlist' %}">
+                    My Wishlist ❤️
+                </a>
+            </li>
+
+            <li>
+                <a class="dropdown-item" href="{% url 'my_orders' %}">
+                    My Orders
+                </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                    Logout
+                </a>
+            </li>
+        </ul>
     </li>
 
-    <li><hr class="dropdown-divider"></li>
-
-    <li>
-        <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-            Logout
-        </a>
+    {% else %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'login' %}">Login</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'register' %}">Register</a>
+    </li>
+    {% endif %}
+
 </ul>
 
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">Register</a>
-                </li>
-                {% endif %}
-
-            </ul>
         </div>
     </div>
 </nav>

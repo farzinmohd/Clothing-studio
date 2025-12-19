@@ -8,15 +8,19 @@ from .models import (
     Review, Wishlist
 )
 from orders.models import OrderItem
-
+from django.shortcuts import render
+from .models import Product, Category
 
 # -------------------------
 # PRODUCT LIST
 # -------------------------
+
+
 def product_list(request):
     category_id = request.GET.get('category')
 
-    products = Product.objects.filter(is_active=True)
+    products = Product.objects.filter(is_active=True).prefetch_related('images')
+
     if category_id:
         products = products.filter(category_id=category_id)
 

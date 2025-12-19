@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, ProductVariant
-from .models import Review
-
+from .models import (
+    Category, Product, ProductImage,
+    ProductVariant, Review
+)
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
@@ -15,8 +16,12 @@ class ProductVariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'price', 'stock', 'is_active')
-    list_filter = ('category', 'is_active')
+    list_display = (
+        'name', 'category',
+        'price', 'color',  # ✅ SHOW COLOR
+        'stock', 'is_active'
+    )
+    list_filter = ('category', 'color', 'is_active')
     search_fields = ('name',)
     inlines = [ProductImageInline, ProductVariantInline]
 
@@ -26,12 +31,12 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'is_active')
 
 
-admin.site.register(ProductImage)
-admin.site.register(ProductVariant)
-
-
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('product', 'user', 'rating', 'created_at')
     list_filter = ('rating', 'created_at')
     search_fields = ('product__name', 'user__username')
+
+
+admin.site.register(ProductImage)
+admin.site.register(ProductVariant)

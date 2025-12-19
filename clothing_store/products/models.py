@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
 # -------------------------
 # CATEGORY
 # -------------------------
@@ -14,14 +15,36 @@ class Category(models.Model):
 
 
 # -------------------------
-# PRODUCT
+# PRODUCT (FINAL ✅)
 # -------------------------
 class Product(models.Model):
+    COLOR_CHOICES = (
+        ('Black', 'Black'),
+        ('Blue', 'Blue'),
+        ('Red', 'Red'),
+        ('White', 'White'),
+        ('Green', 'Green'),
+        ('Brown', 'Brown'),
+        ('Beige', 'Beige'),
+        ('Yellow', 'Yellow'),
+        ('Pink', 'Pink'),
+    )
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
+
+    # ✅ MAIN COLOR (AI + FILTERING)
+    color = models.CharField(
+        max_length=20,
+        choices=COLOR_CHOICES,
+        null=True,
+        blank=True,
+        help_text="Primary product color used for AI recommendations"
+    )
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,12 +78,7 @@ class ProductVariant(models.Model):
         ('XL', 'Extra Large'),
     )
 
-    COLOR_CHOICES = (
-        ('Black', 'Black'),
-        ('Blue', 'Blue'),
-        ('Red', 'Red'),
-        ('White', 'White'),
-    )
+    COLOR_CHOICES = Product.COLOR_CHOICES  # ✅ reuse
 
     product = models.ForeignKey(
         Product,
@@ -102,7 +120,7 @@ class Review(models.Model):
 
 
 # -------------------------
-# WISHLIST (FINAL & SAFE)
+# WISHLIST
 # -------------------------
 class Wishlist(models.Model):
     user = models.ForeignKey(
