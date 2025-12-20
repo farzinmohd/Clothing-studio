@@ -5,8 +5,10 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
-def home(request):
-    return HttpResponse("Home Page - Login Successful")
+from products.home_views import home
+
+# def home(request):
+#     return HttpResponse("Home Page - Login Successful")
 
 urlpatterns = [
     path('admin/', admin.site.urls),

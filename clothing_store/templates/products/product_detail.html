@@ -6,16 +6,44 @@
 
 <div class="row">
     <!-- ================= PRODUCT IMAGES ================= -->
-    <div class="col-md-6">
-        <div class="row">
+   <!-- ================= PRODUCT IMAGE GALLERY ================= -->
+<div class="col-md-6">
+
+    <div class="d-flex gap-3">
+
+        <!-- 🔽 THUMBNAILS -->
+        <div class="d-flex flex-column gap-2">
             {% for img in images %}
-                <div class="col-6 mb-3">
-                    <img src="{{ img.image.url }}"
-                         class="img-fluid rounded border">
-                </div>
+                <img src="{{ img.image.url }}"
+                     class="img-thumbnail thumb-img {% if forloop.first %}active-thumb{% endif %}"
+                     style="width:70px;height:90px;object-fit:cover;cursor:pointer;"
+                     onclick="changeMainImage('{{ img.image.url }}', this)">
             {% endfor %}
         </div>
+
+        <!-- 🔥 MAIN IMAGE -->
+        <div class="position-relative w-100">
+
+            <img id="mainProductImage"
+                 src="{{ images.first.image.url }}"
+                 class="img-fluid rounded shadow"
+                 style="max-height:520px; width:100%; object-fit:contain; background:#f8f9fa;">
+
+            <!-- 🧊 FLOATING ICONS -->
+            <div class="position-absolute top-0 end-0 p-2 d-flex flex-column gap-2">
+                <button class="btn btn-light rounded-circle shadow-sm">
+                    🔗
+                </button>
+                <button class="btn btn-light rounded-circle shadow-sm">
+                    📦
+                </button>
+            </div>
+
+        </div>
     </div>
+
+</div>
+
 
     <!-- ================= PRODUCT DETAILS ================= -->
     <div class="col-md-6">
@@ -157,5 +185,32 @@
 {% empty %}
     <p>No reviews yet.</p>
 {% endfor %}
+
+<style>
+.thumb-img {
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.thumb-img:hover {
+    border-color: #4361ee;
+}
+
+.active-thumb {
+    border-color: #3a0ca3;
+}
+</style>
+
+<script>
+function changeMainImage(src, el) {
+    document.getElementById('mainProductImage').src = src;
+
+    document.querySelectorAll('.thumb-img').forEach(img => {
+        img.classList.remove('active-thumb');
+    });
+
+    el.classList.add('active-thumb');
+}
+</script>
 
 {% endblock %}

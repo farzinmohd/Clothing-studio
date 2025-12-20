@@ -10,6 +10,9 @@ from .models import (
 from orders.models import OrderItem
 from django.shortcuts import render
 from .models import Product, Category
+from django.db.models import Q
+from django.http import JsonResponse
+from django.db.models import Q
 
 # -------------------------
 # PRODUCT LIST
@@ -18,8 +21,18 @@ from .models import Product, Category
 
 def product_list(request):
     category_id = request.GET.get('category')
+    query = request.GET.get('q')
 
-    products = Product.objects.filter(is_active=True).prefetch_related('images')
+    products = Product.objects.filter(
+        is_active=True
+    ).prefetch_related('images')
+
+    # 🔍 SEARCH LOGIC
+    if query:
+        products = products.filter(
+            Q(name__icontains=query) |
+            Q(category__name__icontains=query)
+        )
 
     if category_id:
         products = products.filter(category_id=category_id)
@@ -28,7 +41,8 @@ def product_list(request):
 
     return render(request, 'products/product_list.html', {
         'products': products,
-        'categories': categories
+        'categories': categories,
+        'query': query
     })
 
 
@@ -130,3 +144,32 @@ def wishlist_view(request):
     return render(request, 'products/wishlist.html', {
         'items': items
     })
+
+
+
+def search_suggestions(request):
+    query = request.GET.get('q', '').strip()
+
+    results = []
+
+    if query:
+        products = Product.objects.filter(
+            is_active=True
+        ).filter(
+            Q(name__icontains=query) |
+            Q(category__name__icontains=query)
+        ).prefetch_related('images', 'category')[:8]
+
+        for product in products:
+            image_url = ""
+            if product.images.first():
+                image_url = product.images.first().image.url
+
+            results.append({
+                'id': product.id,
+                'name': product.name,
+                'category': product.category.name,
+                'image': image_url
+            })
+
+    return JsonResponse({'results': results})
