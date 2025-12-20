@@ -22,27 +22,36 @@ from django.db.models import Q
 def product_list(request):
     category_id = request.GET.get('category')
     query = request.GET.get('q')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
 
-    products = Product.objects.filter(
-        is_active=True
-    ).prefetch_related('images')
+    products = Product.objects.filter(is_active=True).prefetch_related('images')
 
-    # 🔍 SEARCH LOGIC
+    # 🔍 Search
     if query:
         products = products.filter(
             Q(name__icontains=query) |
             Q(category__name__icontains=query)
         )
 
+    # 📂 Category filter
     if category_id:
         products = products.filter(category_id=category_id)
+
+    # 💰 Price filter
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
 
     categories = Category.objects.filter(is_active=True)
 
     return render(request, 'products/product_list.html', {
         'products': products,
         'categories': categories,
-        'query': query
+        'selected_category': category_id,
+        'min_price': min_price,
+        'max_price': max_price,
     })
 
 

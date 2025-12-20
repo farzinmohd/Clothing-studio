@@ -76,3 +76,21 @@
     flex: 1;
     font-size: 13px;
 }
+
+.category-box .list-group-item {
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.category-box .list-group-item:hover {
+    background-color: #f0f2ff;
+}
+
+.category-box .list-group-item.active {
+    background-color: #4361ee;
+    color: #fff;
+    font-weight: 600;
+}
