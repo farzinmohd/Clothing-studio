@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Virtual Try-On Demo{% endblock %}
+
+{% block content %}
+
+<h3 class="mb-3">👕 Virtual Try-On (Improved Interactive Demo)</h3>
+
+<p class="text-muted">
+This demo allows basic adjustment of clothing overlay using sliders.
+It is a prototype and does not represent accurate body fitting.
+</p>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label"><strong>Upload Person Image (JPG/PNG)</strong></label>
+        <input type="file"
+               id="personImageInput"
+               class="form-control"
+               accept="image/png,image/jpeg">
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label"><strong>Select Clothing</strong></label>
+        <select id="clothSelect" class="form-select">
+            <option value="shirt1">Shirt 1</option>
+            <option value="shirt2">Shirt 2</option>
+            <option value="shirt4">Shirt 3</option>
+        </select>
+    </div>
+</div>
+
+<!-- Controls -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Shirt Size</label>
+        <input type="range" id="sizeSlider" class="form-range"
+               min="0.4" max="0.8" step="0.05" value="0.6">
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Vertical Position</label>
+        <input type="range" id="ySlider" class="form-range"
+               min="0.25" max="0.45" step="0.02" value="0.35">
+    </div>
+</div>
+
+<div class="text-center">
+    <canvas id="tryonCanvas"
+            width="350"
+            height="450"
+            style="border:2px dashed #999;"></canvas>
+</div>
+
+<div class="text-center mt-3">
+    <button class="btn btn-primary" onclick="applyTryOn()">Try On</button>
+</div>
+
+<div class="alert alert-info mt-4">
+This interactive demo uses client-side image overlay with manual adjustment.
+Pose detection and cloth warping are planned as future scope.
+</div>
+
+<script>
+const canvas = document.getElementById("tryonCanvas");
+const ctx = canvas.getContext("2d");
+
+const shirts = {
+    shirt1: new Image(),
+    shirt2: new Image(),
+    shirt4: new Image()
+};
+
+shirts.shirt1.src = "{% static 'ai/shirt1.png' %}";
+shirts.shirt2.src = "{% static 'ai/shirt2.png' %}";
+shirts.shirt4.src = "{% static 'ai/shirt4.png' %}";
+
+let personImg = new Image();
+let personLoaded = false;
+
+// Shirt state
+let shirtX = 100;
+let shirtY = 150;
+let shirtWidth = 200;
+let shirtHeight = 220;
+
+let dragging = false;
+let offsetX = 0;
+let offsetY = 0;
+
+function applyTryOn() {
+    const input = document.getElementById("personImageInput");
+    if (!input.files.length) {
+        alert("Upload a person image first");
+        return;
+    }
+
+    personImg = new Image();
+    personImg.onload = () => {
+        personLoaded = true;
+        renderCanvas();
+    };
+    personImg.src = URL.createObjectURL(input.files[0]);
+}
+
+function renderCanvas() {
+    if (!personLoaded) return;
+
+    const selectedShirt = document.getElementById("clothSelect").value;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.drawImage(personImg, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+        shirts[selectedShirt],
+        shirtX,
+        shirtY,
+        shirtWidth,
+        shirtHeight
+    );
+}
+
+// ===== Drag logic =====
+canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (
+        x > shirtX && x < shirtX + shirtWidth &&
+        y > shirtY && y < shirtY + shirtHeight
+    ) {
+        dragging = true;
+        offsetX = x - shirtX;
+        offsetY = y - shirtY;
+    }
+});
+
+canvas.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    shirtX = e.clientX - rect.left - offsetX;
+    shirtY = e.clientY - rect.top - offsetY;
+    renderCanvas();
+});
+
+canvas.addEventListener("mouseup", () => dragging = false);
+canvas.addEventListener("mouseleave", () => dragging = false);
+</script>
+
+
+
+{% endblock %}
