@@ -10,9 +10,12 @@ from .models import (
 )
 from orders.models import OrderItem
 
-# ✅ SAFE AI IMPORT (READ-ONLY)
+# ✅ SAFE AI IMPORTS (READ-ONLY)
 from ai_features.recommendations.personalized import (
     get_personalized_recommendations
+)
+from ai_features.reviews.sentiment import (
+    analyze_review_sentiment
 )
 
 
@@ -31,18 +34,15 @@ def product_list(request):
         .prefetch_related('images')
     )
 
-    # 🔍 Search
     if query:
         products = products.filter(
             Q(name__icontains=query) |
             Q(category__name__icontains=query)
         )
 
-    # 📂 Category filter
     if category_id:
         products = products.filter(category_id=category_id)
 
-    # 💰 Price filter
     if min_price:
         products = products.filter(price__gte=min_price)
     if max_price:
@@ -73,9 +73,23 @@ def product_detail(request, product_id):
     variants = product.variants.all()
     reviews = product.reviews.all()
 
+    # ⭐ Average Rating
     avg_rating = (
         reviews.aggregate(avg=Avg('rating'))['avg'] or 0
     )
+
+    # -------------------------
+    # 🔍 Review Sentiment Analysis (SAFE)
+    # -------------------------
+    enriched_reviews = []
+    for review in reviews:
+        try:
+            sentiment = analyze_review_sentiment(review.comment)
+        except Exception:
+            sentiment = {'label': 'Neutral', 'polarity': 0.0}
+
+        review.sentiment = sentiment
+        enriched_reviews.append(review)
 
     # -------------------------
     # Wishlist check
@@ -98,7 +112,7 @@ def product_detail(request, product_id):
         ).exists()
 
     # -------------------------
-    # 🔥 Personalized Recommendations (SAFE)
+    # 🔥 Personalized Recommendations
     # -------------------------
     personalized_products = []
     if request.user.is_authenticated:
@@ -108,19 +122,16 @@ def product_detail(request, product_id):
                 limit=8
             )
         except Exception:
-            # Absolute safety fallback
             personalized_products = []
 
     return render(request, 'products/product_detail.html', {
         'product': product,
         'images': images,
         'variants': variants,
-        'reviews': reviews,
+        'reviews': enriched_reviews,
         'avg_rating': round(avg_rating, 1),
         'in_wishlist': in_wishlist,
         'can_review': can_review,
-
-        # ✅ NEW (non-breaking)
         'personalized_products': personalized_products,
     })
 
@@ -140,10 +151,7 @@ def add_review(request, product_id):
             request,
             'You already reviewed this product.'
         )
-        return redirect(
-            'product_detail',
-            product_id=product.id
-        )
+        return redirect('product_detail', product_id=product.id)
 
     Review.objects.create(
         user=request.user,
@@ -152,14 +160,8 @@ def add_review(request, product_id):
         comment=request.POST.get('comment')
     )
 
-    messages.success(
-        request,
-        'Review added successfully.'
-    )
-    return redirect(
-        'product_detail',
-        product_id=product.id
-    )
+    messages.success(request, 'Review added successfully.')
+    return redirect('product_detail', product_id=product.id)
 
 
 # -------------------------
@@ -168,20 +170,12 @@ def add_review(request, product_id):
 @login_required
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
     Wishlist.objects.get_or_create(
         user=request.user,
         product=product
     )
-
-    messages.success(
-        request,
-        'Added to wishlist ❤️'
-    )
-    return redirect(
-        'product_detail',
-        product_id=product.id
-    )
+    messages.success(request, 'Added to wishlist ❤️')
+    return redirect('product_detail', product_id=product.id)
 
 
 # -------------------------
@@ -193,11 +187,7 @@ def remove_from_wishlist(request, product_id):
         user=request.user,
         product_id=product_id
     ).delete()
-
-    messages.success(
-        request,
-        'Removed from wishlist'
-    )
+    messages.success(request, 'Removed from wishlist')
     return redirect('wishlist')
 
 
@@ -211,7 +201,6 @@ def wishlist_view(request):
         .filter(user=request.user)
         .select_related('product')
     )
-
     return render(
         request,
         'products/wishlist.html',
@@ -220,7 +209,7 @@ def wishlist_view(request):
 
 
 # -------------------------
-# SEARCH SUGGESTIONS (AJAX)
+# SEARCH SUGGESTIONS
 # -------------------------
 def search_suggestions(request):
     query = request.GET.get('q', '').strip()
