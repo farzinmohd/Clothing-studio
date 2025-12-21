@@ -12,19 +12,19 @@ def cart_detail(request):
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     size = request.POST.get('size')
-    color = request.POST.get('color')
 
-    if not size or not color:
-        messages.error(request, 'Please select size and color')
+    if not size:
+        messages.error(request, 'Please select a size')
         return redirect('product_detail', product_id=product.id)
 
     cart = Cart(request)
-    success = cart.add(product, size, color)
+    success = cart.add(product, size=size)
 
     if not success:
-        messages.error(request, 'Selected variant is out of stock')
+        messages.error(request, 'Selected size is out of stock')
 
     return redirect('cart_detail')
+
 
 
 def remove_from_cart(request, key):

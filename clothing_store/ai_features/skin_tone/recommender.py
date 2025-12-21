@@ -84,18 +84,20 @@ def get_recommended_products(skin_tone):
             if c:
                 detected_colors.add(c)
 
-        # 2️⃣ Variant colors
+        # 2️⃣ Variant colors (SAFE)
         for variant in product.variants.all():
-            c = normalize_color(variant.color)
-            if c:
-                detected_colors.add(c)
+            color_value = getattr(variant, "color", None)
+            if color_value:
+                c = normalize_color(color_value)
+                if c:
+                    detected_colors.add(c)
 
         # 3️⃣ Product name scan
         name_color = detect_color_from_text(product.name)
         if name_color:
             detected_colors.add(name_color)
 
-        # 4️⃣ Product description scan (IMPORTANT)
+        # 4️⃣ Product description scan
         desc_color = detect_color_from_text(product.description)
         if desc_color:
             detected_colors.add(desc_color)
@@ -104,6 +106,7 @@ def get_recommended_products(skin_tone):
         for color in detected_colors:
             if color in allowed_base_colors:
                 matched_products.append(product)
-                break   # prevent duplicates
+                break
 
     return matched_products, allowed_base_colors
+

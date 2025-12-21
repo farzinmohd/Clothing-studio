@@ -94,3 +94,49 @@
     color: #fff;
     font-weight: 600;
 }
+
+/* ================= SIZE SELECTION ================= */
+
+.size-box {
+    position: relative;
+    border: 1px solid #ccc;
+    padding: 10px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+.size-box input {
+    display: none;
+}
+
+.size-box span {
+    display: inline-block;
+}
+
+.size-box:hover {
+    border-color: #000;
+}
+
+/* Selected */
+.size-box input:checked + span {
+    font-weight: 600;
+}
+
+/* Disabled size */
+.size-box.disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.size-box.disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #999;
+    transform: rotate(-45deg);
+}

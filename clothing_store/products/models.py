@@ -72,13 +72,11 @@ class ProductImage(models.Model):
 # -------------------------
 class ProductVariant(models.Model):
     SIZE_CHOICES = (
-        ('S', 'Small'),
-        ('M', 'Medium'),
-        ('L', 'Large'),
-        ('XL', 'Extra Large'),
+        ('S', 'S / 38'),
+        ('M', 'M / 40'),
+        ('L', 'L / 42'),
+        ('XL', 'XL / 44'),
     )
-
-    COLOR_CHOICES = Product.COLOR_CHOICES  # ✅ reuse
 
     product = models.ForeignKey(
         Product,
@@ -86,14 +84,15 @@ class ProductVariant(models.Model):
         on_delete=models.CASCADE
     )
     size = models.CharField(max_length=5, choices=SIZE_CHOICES)
-    color = models.CharField(max_length=20, choices=COLOR_CHOICES)
     stock = models.PositiveIntegerField(default=0)
 
     class Meta:
-        unique_together = ('product', 'size', 'color')
+        unique_together = ('product', 'size')
 
     def __str__(self):
-        return f"{self.product.name} - {self.size}/{self.color}"
+        return f"{self.product.name} - {self.size}"
+
+
 
 
 # -------------------------

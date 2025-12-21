@@ -81,18 +81,26 @@
                 </select>
             </div>
 
-            <!-- Color -->
-            <div class="mb-3">
-                <label class="form-label"><strong>Color</strong></label>
-                <select name="color" class="form-select" required>
-                    <option value="">Select Color</option>
-                    {% for v in variants %}
-                        <option value="{{ v.color }}">
-                            {{ v.color }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+           <!-- ================= SIZE SELECTION ================= -->
+<div class="mb-3">
+    <label class="form-label"><strong>Size</strong></label>
+
+    <div class="d-flex gap-2 flex-wrap">
+        {% for v in variants %}
+            {% if v.stock > 0 %}
+                <label class="size-box">
+                    <input type="radio" name="size" value="{{ v.size }}" required>
+                    <span>{{ v.get_size_display }}</span>
+                </label>
+            {% else %}
+                <div class="size-box disabled">
+                    <span>{{ v.get_size_display }}</span>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
 
             <button type="submit" class="btn btn-primary mt-2">
                 Add to Cart

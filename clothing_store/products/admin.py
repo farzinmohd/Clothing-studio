@@ -12,13 +12,14 @@ class ProductImageInline(admin.TabularInline):
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
     extra = 1
+    fields = ('size', 'stock')
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'category',
-        'price', 'color',  # ✅ SHOW COLOR
+        'price', 'color',   # ✅ KEEP
         'stock', 'is_active'
     )
     list_filter = ('category', 'color', 'is_active')

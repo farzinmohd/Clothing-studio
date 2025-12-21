@@ -82,3 +82,4 @@ def get_personalized_recommendations(user, limit=8):
         )
 
     return recommendations.order_by('-created_at')[:limit]
+
