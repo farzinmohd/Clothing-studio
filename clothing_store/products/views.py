@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q
 from django.contrib import messages
 from django.http import JsonResponse
+import statistics
 
 from .models import (
     Product, Category, ProductVariant,
@@ -10,7 +11,9 @@ from .models import (
 )
 from orders.models import OrderItem
 
-# ✅ SAFE AI IMPORTS (READ-ONLY)
+# =========================
+# SAFE AI IMPORTS (READ-ONLY)
+# =========================
 from ai_features.recommendations.personalized import (
     get_personalized_recommendations
 )
@@ -19,6 +22,9 @@ from ai_features.reviews.sentiment import (
 )
 from ai_features.reviews.fake_detector import (
     detect_fake_review
+)
+from ai_features.reviews.ml_detector import (
+    get_fake_probability
 )
 
 
@@ -66,33 +72,28 @@ def product_list(request):
 # PRODUCT DETAIL
 # -------------------------
 def product_detail(request, product_id):
-    product = get_object_or_404(
-        Product,
-        id=product_id,
-        is_active=True
-    )
+    product = get_object_or_404(Product, id=product_id, is_active=True)
 
     images = product.images.all()
     variants = product.variants.all()
     reviews = product.reviews.select_related('user')
 
-    # ⭐ Average Rating
-    avg_rating = (
-        reviews.aggregate(avg=Avg('rating'))['avg'] or 0
-    )
+    avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
 
-    # -------------------------
-    # 🔍 Review AI Enrichment
-    # -------------------------
     enriched_reviews = []
+
+    # =========================
+    # REVIEW AI ENRICHMENT LOOP
+    # =========================
     for review in reviews:
-        # Sentiment analysis
+
+        # -------- Sentiment Analysis --------
         try:
             sentiment = analyze_review_sentiment(review.comment)
         except Exception:
             sentiment = {'label': 'Neutral', 'polarity': 0.0}
 
-        # Fake review detection (rule-based)
+        # -------- Rule-based Fake Detection --------
         try:
             user_reviews = Review.objects.filter(user=review.user)
             fake_result = detect_fake_review(review, user_reviews)
@@ -103,8 +104,47 @@ def product_detail(request, product_id):
                 'reasons': []
             }
 
+        # Attach base AI results
         review.sentiment = sentiment
         review.fake = fake_result
+
+        # -------- ML Confidence (FOR ALL REVIEWS) --------
+        try:
+            words = review.comment.lower().split()
+            review_length = len(words)
+
+            repetition_ratio = 0.0
+            if review_length > 0:
+                repetition_ratio = 1 - (len(set(words)) / review_length)
+
+            ratings = [r.rating for r in Review.objects.filter(user=review.user)]
+            rating_variance = (
+                statistics.pvariance(ratings)
+                if len(ratings) >= 2 else 0.0
+            )
+
+            sentiment_polarity = sentiment.get('polarity', 0.0)
+            rule_score = fake_result.get('score', 0.0)
+
+            features = [
+                review_length,
+                repetition_ratio,
+                rating_variance,
+                sentiment_polarity,
+                rule_score
+            ]
+
+            prob = get_fake_probability(features)
+
+            # 🔹 Smooth extreme values for UI clarity
+            prob = min(max(prob, 0.05), 0.95)
+
+            # Convert to percentage
+            review.ml_confidence = round(prob * 100, 2)
+
+        except Exception:
+            review.ml_confidence = None
+
         enriched_reviews.append(review)
 
     # -------------------------
@@ -128,7 +168,7 @@ def product_detail(request, product_id):
         ).exists()
 
     # -------------------------
-    # 🔥 Personalized Recommendations
+    # Personalized Recommendations
     # -------------------------
     personalized_products = []
     if request.user.is_authenticated:
@@ -159,14 +199,8 @@ def product_detail(request, product_id):
 def add_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    if Review.objects.filter(
-        user=request.user,
-        product=product
-    ).exists():
-        messages.error(
-            request,
-            'You already reviewed this product.'
-        )
+    if Review.objects.filter(user=request.user, product=product).exists():
+        messages.error(request, 'You already reviewed this product.')
         return redirect('product_detail', product_id=product.id)
 
     Review.objects.create(
@@ -186,12 +220,7 @@ def add_review(request, product_id):
 @login_required
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
-    Wishlist.objects.get_or_create(
-        user=request.user,
-        product=product
-    )
-
+    Wishlist.objects.get_or_create(user=request.user, product=product)
     messages.success(request, 'Added to wishlist ❤️')
     return redirect('product_detail', product_id=product.id)
 
@@ -201,11 +230,7 @@ def add_to_wishlist(request, product_id):
 # -------------------------
 @login_required
 def remove_from_wishlist(request, product_id):
-    Wishlist.objects.filter(
-        user=request.user,
-        product_id=product_id
-    ).delete()
-
+    Wishlist.objects.filter(user=request.user, product_id=product_id).delete()
     messages.success(request, 'Removed from wishlist')
     return redirect('wishlist')
 
@@ -215,17 +240,8 @@ def remove_from_wishlist(request, product_id):
 # -------------------------
 @login_required
 def wishlist_view(request):
-    items = (
-        Wishlist.objects
-        .filter(user=request.user)
-        .select_related('product')
-    )
-
-    return render(
-        request,
-        'products/wishlist.html',
-        {'items': items}
-    )
+    items = Wishlist.objects.filter(user=request.user).select_related('product')
+    return render(request, 'products/wishlist.html', {'items': items})
 
 
 # -------------------------

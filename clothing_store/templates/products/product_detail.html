@@ -160,6 +160,11 @@
             ⚠ Suspicious
         </span>
     {% endif %}
+{% if review.ml_confidence %}
+    <div class="small text-muted mt-1">
+        ML confidence: {{ review.ml_confidence|floatformat:2 }}%
+    </div>
+{% endif %}
 
     <p class="mt-2 mb-1">{{ review.comment }}</p>
     <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
