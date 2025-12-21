@@ -140,3 +140,46 @@
     background: #999;
     transform: rotate(-45deg);
 }
+
+/* ================= SIZE BOX UI ================= */
+
+.size-box-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.size-box {
+    min-width: 55px;
+    padding: 10px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.2s ease;
+}
+
+.size-box:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.size-box.active {
+    border-color: #000;
+    background: #000;
+    color: #fff;
+}
+
+.size-box.disabled {
+    color: #aaa;
+    border: 1.5px dashed #ccc;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+/* :optional */
+
+.size-box.disabled:hover {
+    border-color: #ccc;
+    color: #aaa;
+}
