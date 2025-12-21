@@ -53,3 +53,29 @@ def ai_result(request):
         "products": products,
         "boxed_image": boxed_image_url
     })
+
+def virtual_tryon_demo(request):
+    """
+    Concept-level Virtual Try-On demo page.
+    No OpenCV runs here.
+    This is for UI + future scope demonstration only.
+    """
+    return render(request, 'ai/virtual_tryon_demo.html')
+
+def virtual_tryon_demo(request):
+    face_y = None
+
+    if request.method == "POST" and request.FILES.get("image"):
+        img = request.FILES["image"]
+        path = f"media/tmp/{img.name}"
+
+        with open(path, "wb+") as f:
+            for chunk in img.chunks():
+                f.write(chunk)
+
+        from ai_features.virtual_tryon.face_detect import detect_face_y
+        face_y = detect_face_y(path)
+
+    return render(request, "ai/virtual_tryon_demo.html", {
+        "face_y": face_y
+    })
