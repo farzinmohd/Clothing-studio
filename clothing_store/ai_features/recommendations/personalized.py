@@ -5,10 +5,16 @@ from orders.models import OrderItem
 
 def get_personalized_recommendations(user, limit=8):
     """
-    Recommend products based on:
-    - Wishlist history
-    - Purchase history
-    - Category & color preference
+    SAFE Personalized Recommendation Engine
+
+    Signals used:
+    - Wishlist (strong)
+    - Purchase history (stronger)
+    - Category preference
+    - Color preference
+
+    ⚠️ Does NOT modify data
+    ⚠️ Does NOT affect cart / orders / admin
     """
 
     # -------------------------
@@ -23,9 +29,11 @@ def get_personalized_recommendations(user, limit=8):
         order__user=user
     ).select_related('product')
 
+    # 🔁 Fallback: no behavior at all
     if not wishlisted_products.exists() and not ordered_items.exists():
-        # Fallback: latest products
-        return Product.objects.filter(is_active=True).order_by('-created_at')[:limit]
+        return Product.objects.filter(
+            is_active=True
+        ).order_by('-created_at')[:limit]
 
     # -------------------------
     # 2. Extract preferences
@@ -35,21 +43,25 @@ def get_personalized_recommendations(user, limit=8):
     color_counter = Counter()
     excluded_product_ids = set()
 
+    # ❤️ Wishlist signal
     for item in wishlisted_products:
         product = item.product
         excluded_product_ids.add(product.id)
 
-        if product.category:
-            category_counter[product.category_id] += 2  # wishlist = strong signal
+        if product.category_id:
+            category_counter[product.category_id] += 2
+
         if product.color:
             color_counter[product.color] += 2
 
+    # 🛒 Purchase signal (stronger)
     for item in ordered_items:
         product = item.product
         excluded_product_ids.add(product.id)
 
-        if product.category:
-            category_counter[product.category_id] += 3  # purchase = stronger signal
+        if product.category_id:
+            category_counter[product.category_id] += 3
+
         if product.color:
             color_counter[product.color] += 3
 
@@ -66,20 +78,36 @@ def get_personalized_recommendations(user, limit=8):
     ]
 
     # -------------------------
-    # 4. Recommend products
+    # 4. Build recommendation query
     # -------------------------
 
     recommendations = Product.objects.filter(
-        is_active=True,
-        category_id__in=top_categories
+        is_active=True
     ).exclude(
         id__in=excluded_product_ids
     )
 
+    # Apply category preference if exists
+    if top_categories:
+        recommendations = recommendations.filter(
+            category_id__in=top_categories
+        )
+
+    # Apply color preference if exists
     if top_colors:
         recommendations = recommendations.filter(
             color__in=top_colors
         )
 
-    return recommendations.order_by('-created_at')[:limit]
+    # -------------------------
+    # 5. Final fallback safety
+    # -------------------------
 
+    if not recommendations.exists():
+        recommendations = Product.objects.filter(
+            is_active=True
+        ).exclude(
+            id__in=excluded_product_ids
+        )
+
+    return recommendations.order_by('-created_at')[:limit]

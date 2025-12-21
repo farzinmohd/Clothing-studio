@@ -10,8 +10,10 @@ from .models import (
 )
 from orders.models import OrderItem
 
-# ✅ AI Personalized Recommendation (SAFE IMPORT)
-from ai_features.recommendations.personalized import get_personalized_recommendations
+# ✅ SAFE AI IMPORT (READ-ONLY)
+from ai_features.recommendations.personalized import (
+    get_personalized_recommendations
+)
 
 
 # -------------------------
@@ -23,7 +25,11 @@ def product_list(request):
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
 
-    products = Product.objects.filter(is_active=True).prefetch_related('images')
+    products = (
+        Product.objects
+        .filter(is_active=True)
+        .prefetch_related('images')
+    )
 
     # 🔍 Search
     if query:
@@ -57,13 +63,23 @@ def product_list(request):
 # PRODUCT DETAIL
 # -------------------------
 def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id, is_active=True)
+    product = get_object_or_404(
+        Product,
+        id=product_id,
+        is_active=True
+    )
 
     images = product.images.all()
     variants = product.variants.all()
     reviews = product.reviews.all()
-    avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
 
+    avg_rating = (
+        reviews.aggregate(avg=Avg('rating'))['avg'] or 0
+    )
+
+    # -------------------------
+    # Wishlist check
+    # -------------------------
     in_wishlist = False
     if request.user.is_authenticated:
         in_wishlist = Wishlist.objects.filter(
@@ -71,6 +87,9 @@ def product_detail(request, product_id):
             product=product
         ).exists()
 
+    # -------------------------
+    # Review eligibility
+    # -------------------------
     can_review = False
     if request.user.is_authenticated:
         can_review = OrderItem.objects.filter(
@@ -78,13 +97,19 @@ def product_detail(request, product_id):
             product=product
         ).exists()
 
-    # 🔥 SAFE ADDITION: Personalized Recommendations
+    # -------------------------
+    # 🔥 Personalized Recommendations (SAFE)
+    # -------------------------
     personalized_products = []
     if request.user.is_authenticated:
-        personalized_products = get_personalized_recommendations(
-            request.user,
-            limit=8
-        )
+        try:
+            personalized_products = get_personalized_recommendations(
+                request.user,
+                limit=8
+            )
+        except Exception:
+            # Absolute safety fallback
+            personalized_products = []
 
     return render(request, 'products/product_detail.html', {
         'product': product,
@@ -95,7 +120,7 @@ def product_detail(request, product_id):
         'in_wishlist': in_wishlist,
         'can_review': can_review,
 
-        # ✅ New (does NOT affect existing templates)
+        # ✅ NEW (non-breaking)
         'personalized_products': personalized_products,
     })
 
@@ -107,9 +132,18 @@ def product_detail(request, product_id):
 def add_review(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    if Review.objects.filter(user=request.user, product=product).exists():
-        messages.error(request, 'You already reviewed this product.')
-        return redirect('product_detail', product_id=product.id)
+    if Review.objects.filter(
+        user=request.user,
+        product=product
+    ).exists():
+        messages.error(
+            request,
+            'You already reviewed this product.'
+        )
+        return redirect(
+            'product_detail',
+            product_id=product.id
+        )
 
     Review.objects.create(
         user=request.user,
@@ -118,8 +152,14 @@ def add_review(request, product_id):
         comment=request.POST.get('comment')
     )
 
-    messages.success(request, 'Review added successfully.')
-    return redirect('product_detail', product_id=product.id)
+    messages.success(
+        request,
+        'Review added successfully.'
+    )
+    return redirect(
+        'product_detail',
+        product_id=product.id
+    )
 
 
 # -------------------------
@@ -134,8 +174,14 @@ def add_to_wishlist(request, product_id):
         product=product
     )
 
-    messages.success(request, 'Added to wishlist ❤️')
-    return redirect('product_detail', product_id=product.id)
+    messages.success(
+        request,
+        'Added to wishlist ❤️'
+    )
+    return redirect(
+        'product_detail',
+        product_id=product.id
+    )
 
 
 # -------------------------
@@ -148,7 +194,10 @@ def remove_from_wishlist(request, product_id):
         product_id=product_id
     ).delete()
 
-    messages.success(request, 'Removed from wishlist')
+    messages.success(
+        request,
+        'Removed from wishlist'
+    )
     return redirect('wishlist')
 
 
@@ -157,11 +206,17 @@ def remove_from_wishlist(request, product_id):
 # -------------------------
 @login_required
 def wishlist_view(request):
-    items = Wishlist.objects.filter(user=request.user).select_related('product')
+    items = (
+        Wishlist.objects
+        .filter(user=request.user)
+        .select_related('product')
+    )
 
-    return render(request, 'products/wishlist.html', {
-        'items': items
-    })
+    return render(
+        request,
+        'products/wishlist.html',
+        {'items': items}
+    )
 
 
 # -------------------------
@@ -172,12 +227,15 @@ def search_suggestions(request):
     results = []
 
     if query:
-        products = Product.objects.filter(
-            is_active=True
-        ).filter(
-            Q(name__icontains=query) |
-            Q(category__name__icontains=query)
-        ).prefetch_related('images', 'category')[:8]
+        products = (
+            Product.objects
+            .filter(is_active=True)
+            .filter(
+                Q(name__icontains=query) |
+                Q(category__name__icontains=query)
+            )
+            .prefetch_related('images', 'category')[:8]
+        )
 
         for product in products:
             image_url = ""
