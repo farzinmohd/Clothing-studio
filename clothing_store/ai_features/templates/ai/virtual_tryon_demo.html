@@ -144,8 +144,35 @@ canvas.addEventListener("mousemove", (e) => {
 
 canvas.addEventListener("mouseup", () => dragging = false);
 canvas.addEventListener("mouseleave", () => dragging = false);
-</script>
 
+// ===== Slider controls =====
+document.getElementById("sizeSlider").addEventListener("input", (e) => {
+    const scale = parseFloat(e.target.value);
+    shirtWidth = canvas.width * scale;
+    shirtHeight = shirtWidth * 1.1; // maintain shirt aspect ratio
+    renderCanvas();
+});
+
+document.getElementById("ySlider").addEventListener("input", (e) => {
+    shirtY = canvas.height * parseFloat(e.target.value);
+    renderCanvas();
+});
+
+
+</script>
+{% if pose_data %}
+<script>
+    // Auto-align shirt using AI pose detection
+    const pose = {{ pose_data|safe }};
+
+    if (pose) {
+        shirtWidth = pose.width * 1.4;
+        shirtHeight = shirtWidth * 1.1;
+        shirtX = (canvas.width - shirtWidth) / 2;
+        shirtY = pose.y + 10;
+    }
+</script>
+{% endif %}
 
 
 {% endblock %}

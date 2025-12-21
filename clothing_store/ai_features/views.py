@@ -6,6 +6,7 @@ from .skin_tone.recommender import get_recommended_products
 import os
 import time
 import random
+from ai_features.virtual_tryon.pose_detect import detect_shoulders
 
 
 def ai_home(request):
@@ -62,8 +63,9 @@ def virtual_tryon_demo(request):
     """
     return render(request, 'ai/virtual_tryon_demo.html')
 
+
 def virtual_tryon_demo(request):
-    face_y = None
+    pose_data = None
 
     if request.method == "POST" and request.FILES.get("image"):
         img = request.FILES["image"]
@@ -73,9 +75,8 @@ def virtual_tryon_demo(request):
             for chunk in img.chunks():
                 f.write(chunk)
 
-        from ai_features.virtual_tryon.face_detect import detect_face_y
-        face_y = detect_face_y(path)
+        pose_data = detect_shoulders(path)
 
     return render(request, "ai/virtual_tryon_demo.html", {
-        "face_y": face_y
+        "pose_data": pose_data
     })
