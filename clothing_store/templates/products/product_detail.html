@@ -142,32 +142,32 @@
 <h4>Customer Reviews</h4>
 
 {% for review in reviews %}
-    <div class="border rounded p-3 mb-3">
-        <strong>{{ review.user.username }}</strong>
-        <span class="text-warning ms-2">{{ review.rating }} ⭐</span>
+<div class="border rounded p-3 mb-3">
+    <strong>{{ review.user.username }}</strong>
+    <span class="text-warning ms-2">{{ review.rating }} ⭐</span>
 
-        {% if review.sentiment.label == "Positive" %}
-            <span class="badge bg-success ms-2">
-                😊 Positive
-            </span>
-        {% elif review.sentiment.label == "Negative" %}
-            <span class="badge bg-danger ms-2">
-                😞 Negative
-            </span>
-        {% else %}
-            <span class="badge bg-secondary ms-2">
-                😐 Neutral
-            </span>
-        {% endif %}
+    {% if review.sentiment.label == "Positive" %}
+        <span class="badge bg-success ms-2">😊 Positive</span>
+    {% elif review.sentiment.label == "Negative" %}
+        <span class="badge bg-danger ms-2">😞 Negative</span>
+    {% else %}
+        <span class="badge bg-secondary ms-2">😐 Neutral</span>
+    {% endif %}
 
-        <p class="mt-2 mb-1">{{ review.comment }}</p>
-        <small class="text-muted">
-            {{ review.created_at|date:"d M Y" }}
-        </small>
-    </div>
+    {% if review.fake.is_suspicious %}
+        <span class="badge bg-warning text-dark ms-2"
+              title="{{ review.fake.reasons|join:', ' }}">
+            ⚠ Suspicious
+        </span>
+    {% endif %}
+
+    <p class="mt-2 mb-1">{{ review.comment }}</p>
+    <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+</div>
 {% empty %}
-    <p>No reviews yet.</p>
+<p>No reviews yet.</p>
 {% endfor %}
+
 
 
 <!-- ================= RECOMMENDATIONS ================= -->

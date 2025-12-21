@@ -17,6 +17,9 @@ from ai_features.recommendations.personalized import (
 from ai_features.reviews.sentiment import (
     analyze_review_sentiment
 )
+from ai_features.reviews.fake_detector import (
+    detect_fake_review
+)
 
 
 # -------------------------
@@ -71,7 +74,7 @@ def product_detail(request, product_id):
 
     images = product.images.all()
     variants = product.variants.all()
-    reviews = product.reviews.all()
+    reviews = product.reviews.select_related('user')
 
     # ⭐ Average Rating
     avg_rating = (
@@ -79,16 +82,29 @@ def product_detail(request, product_id):
     )
 
     # -------------------------
-    # 🔍 Review Sentiment Analysis (SAFE)
+    # 🔍 Review AI Enrichment
     # -------------------------
     enriched_reviews = []
     for review in reviews:
+        # Sentiment analysis
         try:
             sentiment = analyze_review_sentiment(review.comment)
         except Exception:
             sentiment = {'label': 'Neutral', 'polarity': 0.0}
 
+        # Fake review detection (rule-based)
+        try:
+            user_reviews = Review.objects.filter(user=review.user)
+            fake_result = detect_fake_review(review, user_reviews)
+        except Exception:
+            fake_result = {
+                'is_suspicious': False,
+                'score': 0.0,
+                'reasons': []
+            }
+
         review.sentiment = sentiment
+        review.fake = fake_result
         enriched_reviews.append(review)
 
     # -------------------------
@@ -170,10 +186,12 @@ def add_review(request, product_id):
 @login_required
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+
     Wishlist.objects.get_or_create(
         user=request.user,
         product=product
     )
+
     messages.success(request, 'Added to wishlist ❤️')
     return redirect('product_detail', product_id=product.id)
 
@@ -187,6 +205,7 @@ def remove_from_wishlist(request, product_id):
         user=request.user,
         product_id=product_id
     ).delete()
+
     messages.success(request, 'Removed from wishlist')
     return redirect('wishlist')
 
@@ -201,6 +220,7 @@ def wishlist_view(request):
         .filter(user=request.user)
         .select_related('product')
     )
+
     return render(
         request,
         'products/wishlist.html',
