@@ -1,24 +1,22 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.contrib import messages
+from django.http import JsonResponse
 
 from .models import (
     Product, Category, ProductVariant,
     Review, Wishlist
 )
 from orders.models import OrderItem
-from django.shortcuts import render
-from .models import Product, Category
-from django.db.models import Q
-from django.http import JsonResponse
-from django.db.models import Q
+
+# ✅ AI Personalized Recommendation (SAFE IMPORT)
+from ai_features.recommendations.personalized import get_personalized_recommendations
+
 
 # -------------------------
 # PRODUCT LIST
 # -------------------------
-
-
 def product_list(request):
     category_id = request.GET.get('category')
     query = request.GET.get('q')
@@ -80,6 +78,14 @@ def product_detail(request, product_id):
             product=product
         ).exists()
 
+    # 🔥 SAFE ADDITION: Personalized Recommendations
+    personalized_products = []
+    if request.user.is_authenticated:
+        personalized_products = get_personalized_recommendations(
+            request.user,
+            limit=8
+        )
+
     return render(request, 'products/product_detail.html', {
         'product': product,
         'images': images,
@@ -88,6 +94,9 @@ def product_detail(request, product_id):
         'avg_rating': round(avg_rating, 1),
         'in_wishlist': in_wishlist,
         'can_review': can_review,
+
+        # ✅ New (does NOT affect existing templates)
+        'personalized_products': personalized_products,
     })
 
 
@@ -155,10 +164,11 @@ def wishlist_view(request):
     })
 
 
-
+# -------------------------
+# SEARCH SUGGESTIONS (AJAX)
+# -------------------------
 def search_suggestions(request):
     query = request.GET.get('q', '').strip()
-
     results = []
 
     if query:
