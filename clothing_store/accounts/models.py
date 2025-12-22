@@ -9,6 +9,7 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
 class Address(models.Model):
     user = models.ForeignKey(
         User,
@@ -27,6 +28,27 @@ class Address(models.Model):
     def __str__(self):
         return f"{self.full_name} - {self.city}"
 
+# -------------------------
+# BODY MEASUREMENTS (NEW)
+# -------------------------
+class UserMeasurements(models.Model):
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+    )
 
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='body_measurements'
+    )
+    height_cm = models.FloatField(help_text="Height in cm")
+    weight_kg = models.FloatField(help_text="Weight in kg")
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    age = models.PositiveIntegerField()
 
+    updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"{self.user.username} - {self.height_cm}cm / {self.weight_kg}kg"

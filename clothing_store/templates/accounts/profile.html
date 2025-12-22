@@ -11,23 +11,20 @@
 
             <div class="card-body">
 
-                <!-- ✅ PROFILE PHOTO DISPLAY -->
+                <!-- PROFILE PHOTO -->
                 {% if profile.profile_photo %}
-                    <div class="text-center mb-3">
-                        <img src="{{ profile.profile_photo.url }}"
-                             class="rounded-circle"
-                             width="120"
-                             height="120"
-                             style="object-fit: cover;">
-                    </div>
+                <div class="text-center mb-3">
+                    <img src="{{ profile.profile_photo.url }}" class="rounded-circle"
+                         width="120" height="120" style="object-fit:cover;">
+                </div>
                 {% else %}
-                    <div class="text-center mb-3">
-                        <div class="rounded-circle bg-secondary text-white
-                                    d-flex align-items-center justify-content-center mx-auto"
-                             style="width:120px;height:120px;font-size:48px;">
-                            {{ request.user.username|first|upper }}
-                        </div>
+                <div class="text-center mb-3">
+                    <div class="rounded-circle bg-secondary text-white
+                                d-flex align-items-center justify-content-center mx-auto"
+                         style="width:120px;height:120px;font-size:48px;">
+                        {{ request.user.username|first|upper }}
                     </div>
+                </div>
                 {% endif %}
 
                 <!-- PROFILE FORM -->
@@ -51,19 +48,96 @@
 
                 <hr>
 
-                <a href="{% url 'password_change' %}"
-                   class="btn btn-warning w-100 mb-2">
+                <!-- BODY MEASUREMENTS -->
+                <h5 class="mb-3">My Body Measurements</h5>
+
+                <form id="measureForm">
+                    <div class="row g-2">
+
+                        <div class="col-6">
+                            <label class="small">Height (cm)</label>
+                            <input type="number" id="p_height"
+                                   class="form-control form-control-sm"
+                                   value="{{ measurements.height_cm|default:'' }}" required>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="small">Weight (kg)</label>
+                            <input type="number" id="p_weight"
+                                   class="form-control form-control-sm"
+                                   value="{{ measurements.weight_kg|default:'' }}" required>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="small">Age</label>
+                            <input type="number" id="p_age"
+                                   class="form-control form-control-sm"
+                                   value="{{ measurements.age|default:'' }}" required>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="small">Gender</label>
+                            <select id="p_gender" class="form-select form-select-sm">
+                                <option value="M" {% if is_gender_m %}selected{% endif %}>
+                                    Male
+                                </option>
+                                <option value="F" {% if is_gender_f %}selected{% endif %}>
+                                    Female
+                                </option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-outline-primary btn-sm w-100 mt-2">
+                        Update Measurements
+                    </button>
+
+                    <div id="p_msg"
+                         class="text-success small mt-1 d-none">
+                        Saved!
+                    </div>
+                </form>
+
+                <script>
+                    document.getElementById('measureForm').addEventListener('submit', function (e) {
+                        e.preventDefault();
+
+                        let height = document.getElementById('p_height').value;
+                        let weight = document.getElementById('p_weight').value;
+                        let age = document.getElementById('p_age').value;
+                        let gender = document.getElementById('p_gender').value;
+
+                        fetch('/ai/predict-size/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ height, weight, age, gender })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                let msg = document.getElementById('p_msg');
+                                msg.innerText =
+                                    `Saved! Recommended Size: ${data.recommended_size}`;
+                                msg.classList.remove('d-none');
+                                setTimeout(() => msg.classList.add('d-none'), 3000);
+                            }
+                        });
+                    });
+                </script>
+
+                <hr>
+
+                <a href="{% url 'password_change' %}" class="btn btn-warning w-100 mb-2">
                     🔒 Change Password
                 </a>
-                <a href="{% url 'address_list' %}"
-   class="btn btn-info w-100 mt-2">
-   📍 Manage Addresses
-</a>
 
-<br>
+                <a href="{% url 'address_list' %}" class="btn btn-info w-100 mb-2">
+                    📍 Manage Addresses
+                </a>
 
-                <a href="{% url 'logout' %}"
-                   class="btn btn-outline-danger w-100">
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100">
                     Logout
                 </a>
 

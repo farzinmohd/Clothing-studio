@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
 from django.db.models import ProtectedError
+
 from .forms import UserRegistrationForm, UserProfileForm, AddressForm
 from .models import UserProfile, Address
 
@@ -22,7 +22,7 @@ def register(request):
                 password=form.cleaned_data['password']
             )
 
-            # 🔐 Profile will also be created by signals (safe double protection)
+            # Ensure profile exists
             UserProfile.objects.get_or_create(user=user)
 
             auth_login(request, user)
@@ -42,8 +42,7 @@ def user_login(request):
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
-
-        if user is not None:
+        if user:
             auth_login(request, user)
             return redirect('home')
         else:
@@ -61,13 +60,14 @@ def user_logout(request):
 
 
 # -------------------------
-# USER PROFILE (🔥 FIXED)
+# USER PROFILE (✅ FINAL FIX)
 # -------------------------
 @login_required
 def profile(request):
-    # ✅ SAFE: creates profile if missing
-    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    # Always ensure profile exists
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
+    # Handle profile form
     if request.method == 'POST':
         form = UserProfileForm(
             request.POST,
@@ -81,10 +81,29 @@ def profile(request):
     else:
         form = UserProfileForm(instance=profile)
 
-    return render(request, 'accounts/profile.html', {
+    # -------------------------
+    # BODY MEASUREMENTS (SAFE)
+    # -------------------------
+    measurements = None
+    if hasattr(request.user, 'body_measurements'):
+        measurements = request.user.body_measurements
+
+    # Gender flags (NO template comparison)
+    is_gender_m = False
+    is_gender_f = False
+    if measurements and measurements.gender:
+        is_gender_m = measurements.gender == 'M'
+        is_gender_f = measurements.gender == 'F'
+
+    context = {
         'form': form,
-        'profile': profile
-    })
+        'profile': profile,
+        'measurements': measurements,
+        'is_gender_m': is_gender_m,
+        'is_gender_f': is_gender_f,
+    }
+
+    return render(request, 'accounts/profile.html', context)
 
 
 # -------------------------
@@ -111,6 +130,7 @@ def add_address(request):
             address = form.save(commit=False)
             address.user = request.user
 
+            # Handle default address
             if address.is_default:
                 Address.objects.filter(
                     user=request.user,
@@ -127,6 +147,8 @@ def add_address(request):
         'accounts/address_form.html',
         {'form': form}
     )
+
+
 # -------------------------
 # EDIT ADDRESS
 # -------------------------
@@ -143,7 +165,6 @@ def edit_address(request, address_id):
         if form.is_valid():
             updated_address = form.save(commit=False)
 
-            # Handle default address logic
             if updated_address.is_default:
                 Address.objects.filter(
                     user=request.user,
@@ -165,7 +186,6 @@ def edit_address(request, address_id):
 # -------------------------
 # DELETE ADDRESS
 # -------------------------
-
 @login_required
 def delete_address(request, address_id):
     address = get_object_or_404(

@@ -7,7 +7,11 @@ import os
 import time
 import random
 from ai_features.virtual_tryon.pose_detect import detect_shoulders
-
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .size_recommendation.model import predict_size
+from accounts.models import UserMeasurements
 
 def ai_home(request):
     return render(request, "ai/upload.html")
@@ -55,14 +59,6 @@ def ai_result(request):
         "boxed_image": boxed_image_url
     })
 
-def virtual_tryon_demo(request):
-    """
-    Concept-level Virtual Try-On demo page.
-    No OpenCV runs here.
-    This is for UI + future scope demonstration only.
-    """
-    return render(request, 'ai/virtual_tryon_demo.html')
-
 
 def virtual_tryon_demo(request):
     pose_data = None
@@ -70,6 +66,9 @@ def virtual_tryon_demo(request):
     if request.method == "POST" and request.FILES.get("image"):
         img = request.FILES["image"]
         path = f"media/tmp/{img.name}"
+        
+        # Ensure dir exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
         with open(path, "wb+") as f:
             for chunk in img.chunks():
@@ -80,3 +79,49 @@ def virtual_tryon_demo(request):
     return render(request, "ai/virtual_tryon_demo.html", {
         "pose_data": pose_data
     })
+
+# -------------------------
+# 📏 SIZE RECOMMENDATION API
+# -------------------------
+@csrf_exempt
+def predict_size_api(request):
+    """
+    API: POST /ai/predict-size/
+    JSON Body: { "height": 180, "weight": 75, "age": 25, "gender": "M" }
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            height = float(data.get("height"))
+            weight = float(data.get("weight"))
+            age = int(data.get("age"))
+            gender = data.get("gender") # 'M' or 'F'
+            
+            if gender not in ['M', 'F']:
+                gender = 'M' # Default fallback
+            
+            size, confidence = predict_size(height, weight, age, gender)
+            
+            # Save to user profile if logged in
+            if request.user.is_authenticated:
+                UserMeasurements.objects.update_or_create(
+                    user=request.user,
+                    defaults={
+                        'height_cm': height,
+                        'weight_kg': weight,
+                        'age': age,
+                        'gender': gender
+                    }
+                )
+
+            return JsonResponse({
+                "status": "success",
+                "recommended_size": size,
+                "confidence": confidence
+            })
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+    return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
