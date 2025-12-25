@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from carts.cart import Cart
 from accounts.models import Address
 from products.models import ProductVariant
+from django.utils import timezone
 from .models import Order, OrderItem, Coupon
 
 # ✅ Stripe key
@@ -31,6 +32,13 @@ def checkout(request):
 
     discount_amount = Decimal('0')
     applied_coupon = None
+
+    # 🔥 FETCH ACTIVE COUPONS FOR UI
+    available_coupons = Coupon.objects.filter(
+        active=True,
+        expiry_date__gte=timezone.now().date(),
+        min_order_amount__lte=cart.get_total_price()
+    )
 
     if request.method == 'POST':
         payment_method = request.POST.get('payment_method')
@@ -155,7 +163,8 @@ def checkout(request):
 
     return render(request, 'orders/checkout.html', {
         'cart': cart,
-        'addresses': addresses
+        'addresses': addresses,
+        'available_coupons': available_coupons
     })
 
 
