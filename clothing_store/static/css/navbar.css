@@ -1,0 +1,211 @@
+/* Custom Navbar Styling - Nordic Clean Theme */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --nav-bg: rgba(255, 255, 255, 0.98);
+    --nav-text: #1f2937; /* Gray 800 */
+    --nav-text-hover: #059669; /* Emerald 600 */
+    --accent-color: #10b981; /* Emerald 500 */
+    --accent-hover: #059669; /* Emerald 600 */
+    --search-bg: #f3f4f6; /* Gray 100 */
+    --border-color: #e5e7eb; /* Gray 200 */
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: #f9fafb; /* Very light gray bg */
+}
+
+/* Navbar Container */
+.navbar-custom {
+    background-color: var(--nav-bg);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 0; /* Spacious */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Minimal shadow */
+}
+
+/* Logo Styling */
+.navbar-brand-custom {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    color: #111827; /* Near Black */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: #111827;
+}
+
+/* Add a clean dot or accent to logo if desired (pseudo-element) */
+.navbar-brand-custom::after {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    margin-top: 6px;
+}
+
+/* Search Bar */
+.search-input-custom {
+    background-color: var(--search-bg);
+    border: 1px solid transparent;
+    color: #1f2937 !important;
+    border-radius: 8px; /* Soft square */
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.search-input-custom:focus {
+    background-color: #ffffff;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); /* Soft emerald ring */
+}
+
+.search-input-custom::placeholder {
+    color: #9ca3af;
+}
+
+/* Suggestions Box */
+#suggestionBox {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-top: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+#suggestionBox .list-group-item {
+    padding: 12px 16px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+#suggestionBox .list-group-item:hover {
+    background-color: #f0fdf4; /* Very light emerald bg */
+    color: #065f46;
+}
+
+/* Navigation Links */
+.nav-link-custom {
+    color: var(--nav-text) !important;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.nav-link-custom:hover {
+    color: var(--nav-text-hover) !important;
+    background-color: rgba(16, 185, 129, 0.08); /* Hint of emerald */
+}
+
+/* Action Buttons */
+.btn-nav-primary {
+    background-color: var(--accent-color);
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.25rem;
+    border-radius: 50rem; /* Pill */
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.btn-nav-primary:hover {
+    background-color: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+    color: white;
+}
+
+.btn-nav-outline {
+    background-color: transparent;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    font-weight: 500;
+    padding: 0.6rem 1.25rem;
+    border-radius: 50rem; /* Pill */
+    transition: all 0.2s;
+}
+
+.btn-nav-outline:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background-color: white;
+}
+
+/* Cart Badge */
+.cart-badge {
+    background-color: #10b981; /* Emerald 500 */
+    color: white;
+    border: 2px solid #ffffff;
+    min-width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    top: -5px !important;
+    right: -8px !important;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+    border-radius: 50%; /* Perfect circle */
+    padding: 0 4px; /* Accommodate double digits */
+}
+
+/* User Avatar */
+.nav-avatar {
+    border: 2px solid #e5e7eb;
+}
+
+.nav-link-custom:hover .nav-avatar {
+    border-color: var(--accent-color);
+}
+
+/* Mobile Toggler */
+.navbar-toggler-icon {
+    filter: none !important; /* Standard dark icon */
+    opacity: 0.6;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Dropdown - Clean Light Theme */
+.navbar-nav .dropdown-menu {
+    background-color: #ffffff !important;
+    border: 1px solid #f3f4f6 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin-top: 10px !important; /* Spacing from nav */
+}
+
+.navbar-nav .dropdown-item {
+    border-radius: 8px;
+    color: #4b5563 !important; /* Gray 600 */
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    margin-bottom: 2px;
+    transition: all 0.2s;
+}
+
+.navbar-nav .dropdown-item:hover {
+    background-color: #ecfdf5 !important; /* Light Emerald */
+    color: #059669 !important; /* Dark Emerald */
+    transform: translateX(3px); /* Subtle slide */
+}
+
+.navbar-nav .dropdown-divider {
+    border-top: 1px solid #f3f4f6 !important;
+    margin: 0.5rem 0;
+}
