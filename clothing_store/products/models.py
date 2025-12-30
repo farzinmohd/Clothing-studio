@@ -50,6 +50,7 @@ class Product(models.Model):
     base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Original price before AI adjustment")
     view_count = models.PositiveIntegerField(default=0)
     cart_add_count = models.PositiveIntegerField(default=0)
+    units_sold = models.PositiveIntegerField(default=0)
     current_demand_score = models.IntegerField(default=50, help_text="0-100 score. 50 is neutral.")
 
     is_active = models.BooleanField(default=True)

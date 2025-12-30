@@ -18,30 +18,33 @@ def train_pricing_model():
     # 1. Generate Synthetic Data
     data = []
     for _ in range(1000):
-        views = np.random.randint(0, 500)
-        cart_adds = np.random.randint(0, 50)
-        stock = np.random.randint(0, 100)
+        # 🔹 SMALL SCALE DATASET (User Request)
+        views = np.random.randint(0, 30)       # Max 30 views
+        cart_adds = np.random.randint(0, 5)    # Max 5 carts
+        units_sold = np.random.randint(0, 10)  # Max 10 sales
+        stock = np.random.randint(0, 20)       # Max 20 stock
         
-        # Heuristic for "True Demand Score" (The target we want AI to learn)
-        # Views weight: 0.3, Cart weight: 2.0 (stronger signal), Stock penalty (scarcity)
+        # Adjusted Heuristic for Small Numbers
+        # Views: 20 views -> 40 pts
+        # Sales: 2 sales -> 40 pts (Sales is VERY strong signal)
         
-        score = (views * 0.1) + (cart_adds * 3.0)
+        score = (views * 2.0) + (cart_adds * 10.0) + (units_sold * 20.0)
         
-        # Scarcity Multiplier
-        if stock < 5:
-            score *= 1.5
-        elif stock > 50:
+        # Scarcity Multiplier (Low stock is now < 3)
+        if stock < 3:
+            score *= 1.3
+        elif stock > 10:
             score *= 0.8
             
         # Normalize roughly to 0-100
         score = min(max(score, 0), 100)
         
-        data.append([views, cart_adds, stock, score])
+        data.append([views, cart_adds, units_sold, stock, score])
 
-    df = pd.DataFrame(data, columns=['views', 'cart_adds', 'stock', 'demand_score'])
+    df = pd.DataFrame(data, columns=['views', 'cart_adds', 'units_sold', 'stock', 'demand_score'])
 
     # 2. Train Model
-    X = df[['views', 'cart_adds', 'stock']]
+    X = df[['views', 'cart_adds', 'units_sold', 'stock']]
     y = df['demand_score']
 
     model = RandomForestRegressor(n_estimators=100, random_state=42)
@@ -70,8 +73,9 @@ def predict_demand_score(product):
     features = pd.DataFrame([[
         product.view_count,
         product.cart_add_count,
+        product.units_sold,
         total_stock
-    ]], columns=['views', 'cart_adds', 'stock'])
+    ]], columns=['views', 'cart_adds', 'units_sold', 'stock'])
     
     score = model.predict(features)[0]
     return int(score)

@@ -62,9 +62,9 @@
                 <li class="nav-item position-relative">
                     <a class="nav-link-custom" href="{% url 'cart_detail' %}">
                         <span style="font-size: 1.25rem;">🛒</span>
-                        {% if request.session.cart %}
+                        {% if cart_count > 0 %}
                             <span class="position-absolute rounded-pill cart-badge">
-                                {{ request.session.cart|length }}
+                                {{ cart_count }}
                             </span>
                         {% endif %}
                     </a>

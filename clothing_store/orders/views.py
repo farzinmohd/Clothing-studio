@@ -157,6 +157,12 @@ def checkout(request):
         # -----------------------------
         # ✅ CASH ON DELIVERY
         # -----------------------------
+        # 🔥 Update Sales Stats (Dynamic Pricing)
+        for item in cart:
+            p = item['product']
+            p.units_sold += item['quantity']
+            p.save()
+
         cart.clear()
         messages.success(request, 'Order placed successfully')
         return redirect('order_success')
@@ -176,6 +182,12 @@ def stripe_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     order.status = 'paid'
     order.save()
+
+    # 🔥 Update Sales Stats (Dynamic Pricing)
+    for item in order.items.all():
+        product = item.product
+        product.units_sold += item.quantity
+        product.save()
 
     Cart(request).clear()
     messages.success(request, 'Payment successful!')
