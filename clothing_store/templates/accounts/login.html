@@ -1,40 +1,42 @@
 {% extends 'base.html' %}
-
-{% block title %}Login{% endblock %}
+{% load static %}
+{% block title %}Login | Tailored Elegence{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
 
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow">
-            <div class="card-body">
-                <h3 class="text-center mb-4">User Login</h3>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="h3 fw-bold">Welcome Back</h1>
+            <p class="auth-subtitle">Please enter your details to sign in.</p>
+        </div>
 
-                <form method="post">
-                    {% csrf_token %}
+        <form method="post">
+            {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-success w-100">
-                        Login
-                    </button>
-                </form>
-
-                <p class="text-center mt-3">
-                    Don’t have an account?
-                    <a href="{% url 'register' %}">Register</a>
-                </p>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
             </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <label class="form-label mb-0">Password</label>
+                    <a href="#" class="small text-muted text-decoration-none">Forgot password?</a>
+                </div>
+                <input type="password" name="password" class="form-control mt-2" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                Sign In
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? 
+            <a href="{% url 'register' %}" class="auth-link">Create account</a>
         </div>
     </div>
 </div>
-
 {% endblock %}

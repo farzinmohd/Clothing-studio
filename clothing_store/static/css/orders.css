@@ -360,3 +360,117 @@ body {
     background: #fecaca;
 }
 
+
+/* --- ORDER SUCCESS PAGE --- */
+
+/* --- ORDER SUCCESS PAGE (PREMIUM REDESIGN) --- */
+.order-success-container {
+    max-width: 550px;
+    margin: 5rem auto;
+    text-align: center;
+    background: white;
+    padding: 3.5rem;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -5px rgba(15, 23, 42, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.order-success-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, #0f172a, #fbbf24);
+}
+
+.success-icon-wrapper {
+    width: 90px;
+    height: 90px;
+    background: #0f172a; /* Navy background */
+    color: #fbbf24; /* Gold Icon */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+    animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+.success-icon-wrapper svg {
+    width: 45px;
+    height: 45px;
+    stroke-width: 3px;
+}
+
+.success-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.04em;
+}
+
+.success-message {
+    color: #64748b;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.success-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.btn-view-order {
+    background: #0f172a;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+    width: 100%;
+    display: block;
+}
+
+.btn-view-order:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    color: white;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.btn-continue-shopping {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    padding: 0.75rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.btn-continue-shopping:hover {
+    color: #0f172a;
+    background: transparent;
+    text-decoration: underline;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+}
