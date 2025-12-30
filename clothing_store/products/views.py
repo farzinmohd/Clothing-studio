@@ -179,6 +179,12 @@ def product_detail(request, product_id):
             )
         except Exception:
             personalized_products = []
+            
+    # -------------------------
+    # Collaborative Filtering (People Also Bought)
+    # -------------------------
+    from ai_features.collaborative_filtering import get_collaborative_recommendations
+    collaborative_products = get_collaborative_recommendations(product.id, top_n=4)
 
     return render(request, 'products/product_detail.html', {
         'product': product,
@@ -189,6 +195,7 @@ def product_detail(request, product_id):
         'in_wishlist': in_wishlist,
         'can_review': can_review,
         'personalized_products': personalized_products,
+        'collaborative_products': collaborative_products,
     })
 
 

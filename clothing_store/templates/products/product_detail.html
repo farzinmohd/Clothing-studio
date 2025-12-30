@@ -203,6 +203,30 @@
     </div>
 </div>
 
+<!-- ================= COLLABORATIVE FILTERING ================= -->
+{% if collaborative_products %}
+<hr class="mt-5">
+<h4 class="mb-4 fw-bold">People Who Bought This Also Bought</h4>
+<div class="row g-3">
+    {% for p in collaborative_products %}
+    <div class="col-6 col-md-3">
+        <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s;">
+            <a href="{% url 'product_detail' p.id %}" class="text-decoration-none text-dark">
+                {% if p.images.first %}
+                <img src="{{ p.images.first.image.url }}" class="card-img-top rounded-3" style="height:220px; object-fit:cover;">
+                {% endif %}
+                <div class="card-body p-2 text-center">
+                    <h6 class="mb-1 text-truncate">{{ p.name }}</h6>
+                    <p class="fw-bold text-primary mb-0">₹{{ p.price }}</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+
 <!-- ================= MODALS & SCRIPTS ================= -->
 <!-- SIZE PREDICTION MODAL (Preserved from original) -->
 <div class="modal fade" id="sizeModal" tabindex="-1">
