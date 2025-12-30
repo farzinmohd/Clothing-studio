@@ -1,106 +1,166 @@
 {% extends 'base.html' %}
-{% block title %}Home | Clothing Store{% endblock %}
+{% load static %}
+{% block title %}Modern Fashion Store{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/homepage.css' %}">
 
-<!-- 🔥 HERO SECTION -->
-<section class="bg-light p-5 rounded text-center mb-5">
-    <h1 class="fw-bold">Discover Your Perfect Style</h1>
-    <p class="text-muted">
-        AI-powered fashion recommendations tailored for you
-    </p>
-
-    {% if not user.is_authenticated %}
-        <a href="{% url 'login' %}" class="btn btn-dark btn-lg mt-3">
-            Login to Start Shopping
-        </a>
-    {% endif %}
-</section>
-
-<!-- ⭐ RECOMMENDED PRODUCTS -->
-<section class="mb-5">
-    <h3 class="mb-4">Recommended For You</h3>
-
-    <div class="row">
-        {% for product in recommended_products %}
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow-sm">
-
-                    {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}"
-                             class="card-img-top"
-                             style="height:250px; object-fit:cover;">
-                    {% endif %}
-
-                    <div class="card-body text-center">
-                        <h6>{{ product.name }}</h6>
-                        <p class="fw-bold">₹{{ product.price }}</p>
-
-                        <a href="{% url 'product_detail' product.id %}"
-                           class="btn btn-outline-dark btn-sm">
-                            View Details
-                        </a>
-
-                        {% if not user.is_authenticated %}
-                            <p class="text-muted mt-2 small">
-                                Login to purchase
-                            </p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        {% empty %}
-            <p>No recommended products available.</p>
-        {% endfor %}
+<!-- 🎬 HERO SECTION -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">Elevate Your Everyday Style.</h1>
+        <p class="hero-subtitle">Discover the latest collection of premium menswear curated by AI.</p>
+        <div class="d-flex gap-3">
+            <a href="{% url 'product_list' %}" class="btn btn-light btn-hero text-dark">Shop Now</a>
+            <a href="{% url 'ai_home' %}" class="btn btn-outline-light btn-hero">AI Stylist</a>
+        </div>
     </div>
 </section>
 
-<!-- 🆕 LATEST PRODUCTS -->
-<section class="mb-5">
-    <h3 class="mb-4">Latest Arrivals</h3>
+<!-- 🚚 SERVICE ICONS -->
+<section class="container py-5 border-bottom">
+    <div class="row text-center text-muted">
+        <div class="col-md-3">
+            <div class="h3 mb-2">🚀</div>
+            <h6 class="text-uppercase fw-bold text-dark">Free Shipping</h6>
+            <small>On all orders over ₹1000</small>
+        </div>
+        <div class="col-md-3">
+            <div class="h3 mb-2">↩️</div>
+            <h6 class="text-uppercase fw-bold text-dark">Easy Returns</h6>
+            <small>30-day return policy</small>
+        </div>
+        <div class="col-md-3">
+            <div class="h3 mb-2">🛡️</div>
+            <h6 class="text-uppercase fw-bold text-dark">Secure Payment</h6>
+            <small>100% secure guarantee</small>
+        </div>
+        <div class="col-md-3">
+            <div class="h3 mb-2">🎧</div>
+            <h6 class="text-uppercase fw-bold text-dark">24/7 Support</h6>
+            <small>Dedicated support</small>
+        </div>
+    </div>
+</section>
 
-    <div class="row">
+<!-- 🔥 FEATURED PRODUCTS (NEW ARRIVALS) -->
+<section class="container py-5 mt-4">
+    <div class="section-header">
+        <h2 class="section-title">New Arrivals</h2>
+        <p class="section-subtitle">Fresh styles just landed. Explore the latest trends in men's fashion.</p>
+    </div>
+
+    <div class="row g-4">
         {% for product in latest_products %}
-            <div class="col-md-3 mb-4">
-                <div class="card h-100 shadow-sm">
-
+        <div class="col-6 col-md-3">
+            <div class="product-card-premium">
+                <div class="product-image-wrapper">
                     {% if product.images.first %}
-                        <img src="{{ product.images.first.image.url }}"
-                             class="card-img-top"
-                             style="height:250px; object-fit:cover;">
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
                     {% endif %}
-
-                    <div class="card-body text-center">
-                        <h6>{{ product.name }}</h6>
-                        <p class="fw-bold">₹{{ product.price }}</p>
-
-                        <a href="{% url 'product_detail' product.id %}"
-                           class="btn btn-outline-dark btn-sm">
-                            View Details
-                        </a>
-                    </div>
+                    <a href="{% url 'product_detail' product.id %}" class="btn btn-quick-view stretched-link">Quick View</a>
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <div class="product-title">{{ product.name }}</div>
+                    <div class="product-price">₹{{ product.price }}</div>
                 </div>
             </div>
-        {% empty %}
-            <p>No latest products available.</p>
+        </div>
         {% endfor %}
     </div>
 </section>
 
-<!-- 🤖 AI SKIN TONE CTA -->
-<section class="bg-dark text-white p-5 rounded text-center">
-    <h3>Not Sure What Suits You?</h3>
-    <p>Use our AI Skin Tone Analyzer for personalized outfit recommendations</p>
+<!-- 📂 CATEGORIES GRID -->
+<section class="container py-5">
+    <div class="section-header">
+        <h2 class="section-title">Shop by Category</h2>
+    </div>
+    <div class="row g-4">
+        <!-- Manually curated category images or placeholders -->
+        <div class="col-md-6">
+            <a href="{% url 'product_list' %}?category=1" class="text-decoration-none">
+                <div class="category-card">
+                    <img src="https://images.unsplash.com/photo-1617137968427-85924c809a10?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                    <div class="category-overlay"></div>
+                    <div class="category-content">
+                        <h2 class="display-6 fw-bold">Men's Shirts</h2>
+                        <span class="btn btn-outline-light rounded-0 mt-2">Explore Collection</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6">
+            <div class="row g-4">
+                <div class="col-12">
+                    <a href="{% url 'product_list' %}?category=2" class="text-decoration-none">
+                        <div class="category-card" style="height: 190px;">
+                            <img src="https://images.unsplash.com/photo-1542272617-08f083d03a6a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                            <div class="category-overlay"></div>
+                            <div class="category-content">
+                                <h4 class="fw-bold">Trousers</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-12">
+                    <a href="{% url 'product_list' %}?category=3" class="text-decoration-none">
+                        <div class="category-card" style="height: 190px;">
+                            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80">
+                            <div class="category-overlay"></div>
+                            <div class="category-content">
+                                <h4 class="fw-bold">T-Shirts</h4>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    {% if user.is_authenticated %}
-        <a href="{% url 'ai_home' %}" class="btn btn-light mt-2">
-            Try AI Analysis
-        </a>
-    {% else %}
-        <a href="{% url 'login' %}" class="btn btn-outline-light mt-2">
-            Login to Use AI Feature
-        </a>
-    {% endif %}
+<!-- 🌟 SUMMER SALE BANNER -->
+<section class="promo-banner mt-5">
+    <div class="container text-center">
+        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-3">LIMITED OFFER</span>
+        <h2 class="display-4 fw-bold mb-3">End of Season Sale</h2>
+        <p class="lead text-muted mb-4">Up to 40% off on selected premium styles. Don't miss out.</p>
+        <a href="{% url 'product_list' %}" class="btn btn-dark btn-lg px-5 rounded-0">Shop Sample Sale</a>
+    </div>
+</section>
+
+<!-- ⭐ RECOMMENDED FOR YOU -->
+<section class="container py-5">
+    <div class="section-header">
+        <h2 class="section-title">Curated For You</h2>
+        <p class="section-subtitle">Items based on your browsing history and preferences.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for product in recommended_products %}
+        <div class="col-6 col-md-3">
+            <div class="product-card-premium">
+                <div class="product-image-wrapper">
+                    {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+                    {% endif %}
+                    <a href="{% url 'product_detail' product.id %}" class="btn btn-quick-view stretched-link">Quick View</a>
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ product.category.name }}</div>
+                    <div class="product-title">{{ product.name }}</div>
+                    <div class="product-price">₹{{ product.price }}</div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center text-muted">
+            <p>Start browsing to get personalized recommendations.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-dark mt-2">Browse Store</a>
+        </div>
+        {% endfor %}
+    </div>
 </section>
 
 {% endblock %}

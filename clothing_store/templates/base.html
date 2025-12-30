@@ -131,9 +131,82 @@
 </div>
 
 
-<div class="container mt-4">
     {% block content %}{% endblock %}
 </div>
+
+<!-- FOOTER -->
+<footer class="bg-white border-top mt-5 pt-5 pb-3">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Brand & Newsletter -->
+            <div class="col-lg-4 col-md-6">
+                <a class="navbar-brand-custom text-decoration-none mb-3 d-block" href="#">Tailored Elegence</a>
+                <p class="text-muted small">
+                    Elevating menswear with AI-driven personalization. Experience fashion that fits your lifestyle.
+                </p>
+                <form class="mt-4">
+                    <label class="form-label small fw-bold text-uppercase text-secondary">Subscribe for updates</label>
+                    <div class="input-group">
+                        <input type="email" class="form-control" placeholder="Your email address" style="border-right:0;">
+                        <button class="btn btn-dark" type="button">Subscribe</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Shop Links -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-3">Shop</h6>
+                <ul class="list-unstyled text-muted small">
+                    <li class="mb-2"><a href="{% url 'product_list' %}" class="text-decoration-none text-muted">New Arrivals</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Best Sellers</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Men's Shirts</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Trousers</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Sale</a></li>
+                </ul>
+            </div>
+
+            <!-- Support Links -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-3">Support</h6>
+                <ul class="list-unstyled text-muted small">
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Help Center</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Order Tracking</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Returns & Refunds</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Size Guide</a></li>
+                    <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <!-- Company & Social -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="text-uppercase fw-bold mb-3">Contact</h6>
+                <ul class="list-unstyled text-muted small mb-4">
+                    <li class="mb-2">📍 123 Fashion Street, Kochi, Kerala</li>
+                    <li class="mb-2">📞 +91 987 654 3210</li>
+                    <li class="mb-2">✉️ support@tailoredelegence.com</li>
+                </ul>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-dark fs-5 text-decoration-none">📷</a>
+                    <a href="#" class="text-dark fs-5 text-decoration-none">📘</a>
+                    <a href="#" class="text-dark fs-5 text-decoration-none">🐦</a>
+                    <a href="#" class="text-dark fs-5 text-decoration-none">▶️</a>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5 opacity-25">
+
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start small text-muted">
+                &copy; 2024 Tailored Elegence. All rights reserved.
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <span class="ms-3 small text-muted">Privacy Policy</span>
+                <span class="ms-3 small text-muted">Terms of Service</span>
+            </div>
+        </div>
+    </div>
+</footer>
 <script>
 const searchInput = document.getElementById('searchInput');
 const suggestionBox = document.getElementById('suggestionBox');
