@@ -1,12 +1,35 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Order Placed! | Tailored Elegence{% endblock %}
 
 {% block content %}
-<div class="text-center mt-5">
-    <h2 class="text-success">Order Placed Successfully 🎉</h2>
-    <p>Thank you for your purchase.</p>
+<link rel="stylesheet" href="{% static 'css/orders.css' %}">
 
-    <a href="{% url 'product_list' %}" class="btn btn-primary mt-3">
-        Continue Shopping
-    </a>
+<div class="container mb-5">
+    <div class="order-success-container">
+        
+        <!-- Animated Check Icon -->
+        <div class="success-icon-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+
+        <h1 class="success-title">Order Placed!</h1>
+        <p class="success-message">
+            Thank you for your purchase. Your order has been securely processed and confirmed.
+        </p>
+
+        <div class="success-actions">
+            <!-- Assuming we can link to the latest order if we had the ID, but generically: -->
+             <a href="{% url 'my_orders' %}" class="btn-view-order">
+                View My Orders
+            </a>
+            <a href="{% url 'product_list' %}" class="btn-continue-shopping">
+                Continue Shopping
+            </a>
+        </div>
+
+    </div>
 </div>
 {% endblock %}

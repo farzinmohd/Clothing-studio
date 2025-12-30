@@ -1,149 +1,171 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}My Profile | Tailored Elegence{% endblock %}
+
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow">
+<div class="profile-container">
 
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">User Profile</h4>
+    <!-- LEFT SIDEBAR -->
+    <div class="profile-sidebar">
+        <div class="profile-avatar-wrapper">
+            {% if profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}" class="profile-avatar">
+            {% else %}
+                <div class="avatar-placeholder">
+                    {{ request.user.username|first|upper }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="profile-name">{{ request.user.first_name }} {{ request.user.last_name }}</div>
+        <div class="profile-email">@{{ request.user.username }}</div>
+
+        <nav class="profile-menu">
+            <a href="#" class="menu-link active">
+                <span>👤</span> Profile Details
+            </a>
+            <a href="{% url 'my_orders' %}" class="menu-link">
+                <span>📦</span> My Orders
+            </a>
+            <a href="{% url 'address_list' %}" class="menu-link">
+                <span>📍</span> Addresses
+            </a>
+            <a href="{% url 'password_change' %}" class="menu-link">
+                <span>🔒</span> Security
+            </a>
+            <hr class="my-2 border-light">
+            <a href="{% url 'logout' %}" class="menu-link danger">
+                <span>🚪</span> Logout
+            </a>
+        </nav>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div class="profile-content">
+
+        <!-- 1. PERSONAL INFO -->
+        <div class="content-card">
+            <div class="card-title">
+                <span>✨</span> Personal Information
             </div>
-
-            <div class="card-body">
-
-                <!-- PROFILE PHOTO -->
-                {% if profile.profile_photo %}
-                <div class="text-center mb-3">
-                    <img src="{{ profile.profile_photo.url }}" class="rounded-circle"
-                         width="120" height="120" style="object-fit:cover;">
-                </div>
-                {% else %}
-                <div class="text-center mb-3">
-                    <div class="rounded-circle bg-secondary text-white
-                                d-flex align-items-center justify-content-center mx-auto"
-                         style="width:120px;height:120px;font-size:48px;">
-                        {{ request.user.username|first|upper }}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- PROFILE FORM -->
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <div class="mb-3">
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12 mb-4">
                         <label class="form-label">Profile Photo</label>
-                        {{ form.profile_photo }}
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
-                        {{ form.phone_number }}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">
-                        Update Profile
-                    </button>
-                </form>
-
-                <hr>
-
-                <!-- BODY MEASUREMENTS -->
-                <h5 class="mb-3">My Body Measurements</h5>
-
-                <form id="measureForm">
-                    <div class="row g-2">
-
-                        <div class="col-6">
-                            <label class="small">Height (cm)</label>
-                            <input type="number" id="p_height"
-                                   class="form-control form-control-sm"
-                                   value="{{ measurements.height_cm|default:'' }}" required>
+                        <div class="d-flex align-items-center">
+                            <label for="id_profile_photo" class="btn btn-outline-dark btn-sm">
+                                📷 Choose File
+                            </label>
+                            <input type="file" name="profile_photo" id="id_profile_photo" class="d-none" onchange="updateFileName(this)">
+                            <span id="file-name" class="ms-3 text-muted small">
+                                {% if profile.profile_photo %}
+                                    Current: {{ profile.profile_photo.name|slice:":20" }}...
+                                {% else %}
+                                    No file chosen
+                                {% endif %}
+                            </span>
                         </div>
-
-                        <div class="col-6">
-                            <label class="small">Weight (kg)</label>
-                            <input type="number" id="p_weight"
-                                   class="form-control form-control-sm"
-                                   value="{{ measurements.weight_kg|default:'' }}" required>
-                        </div>
-
-                        <div class="col-6">
-                            <label class="small">Age</label>
-                            <input type="number" id="p_age"
-                                   class="form-control form-control-sm"
-                                   value="{{ measurements.age|default:'' }}" required>
-                        </div>
-
-                        <div class="col-6">
-                            <label class="small">Gender</label>
-                            <select id="p_gender" class="form-select form-select-sm">
-                                <option value="M" {% if is_gender_m %}selected{% endif %}>
-                                    Male
-                                </option>
-                                <option value="F" {% if is_gender_f %}selected{% endif %}>
-                                    Female
-                                </option>
-                            </select>
-                        </div>
-
                     </div>
-
-                    <button type="submit"
-                            class="btn btn-outline-primary btn-sm w-100 mt-2">
-                        Update Measurements
-                    </button>
-
-                    <div id="p_msg"
-                         class="text-success small mt-1 d-none">
-                        Saved!
-                    </div>
-                </form>
+                </div>
 
                 <script>
-                    document.getElementById('measureForm').addEventListener('submit', function (e) {
-                        e.preventDefault();
-
-                        let height = document.getElementById('p_height').value;
-                        let weight = document.getElementById('p_weight').value;
-                        let age = document.getElementById('p_age').value;
-                        let gender = document.getElementById('p_gender').value;
-
-                        fetch('/ai/predict-size/', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ height, weight, age, gender })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                let msg = document.getElementById('p_msg');
-                                msg.innerText =
-                                    `Saved! Recommended Size: ${data.recommended_size}`;
-                                msg.classList.remove('d-none');
-                                setTimeout(() => msg.classList.add('d-none'), 3000);
-                            }
-                        });
-                    });
+                    function updateFileName(input) {
+                        const fileName = input.files[0] ? input.files[0].name : "No file chosen";
+                        document.getElementById('file-name').innerText = fileName;
+                    }
                 </script>
-
-                <hr>
-
-                <a href="{% url 'password_change' %}" class="btn btn-warning w-100 mb-2">
-                    🔒 Change Password
-                </a>
-
-                <a href="{% url 'address_list' %}" class="btn btn-info w-100 mb-2">
-                    📍 Manage Addresses
-                </a>
-
-                <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100">
-                    Logout
-                </a>
-
-            </div>
+                <div class="mb-4">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone_number" value="{{ profile.phone_number }}" class="form-control" placeholder="+91...">
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
         </div>
+
+        <!-- 2. AI MEASUREMENTS -->
+        <div class="content-card">
+            <div class="card-title">
+                <span>📏</span> AI Body Measurements
+            </div>
+            <p class="text-muted small mb-4">
+                Update your details to get accurate AI size recommendations.
+            </p>
+
+            <form id="measureForm">
+                <div class="measurements-grid">
+                    <div class="measurement-item">
+                        <label class="form-label mb-1">Height (cm)</label>
+                        <input type="number" id="p_height" class="form-control" value="{{ measurements.height_cm|default:'' }}" placeholder="175" required>
+                    </div>
+                    <div class="measurement-item">
+                        <label class="form-label mb-1">Weight (kg)</label>
+                        <input type="number" id="p_weight" class="form-control" value="{{ measurements.weight_kg|default:'' }}" placeholder="70" required>
+                    </div>
+                    <div class="measurement-item">
+                        <label class="form-label mb-1">Age</label>
+                        <input type="number" id="p_age" class="form-control" value="{{ measurements.age|default:'' }}" placeholder="25" required>
+                    </div>
+                    <div class="measurement-item">
+                        <label class="form-label mb-1">Gender</label>
+                        <select id="p_gender" class="form-select">
+                            <option value="M" {% if is_gender_m %}selected{% endif %}>Male</option>
+                            <option value="F" {% if is_gender_f %}selected{% endif %}>Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex align-items-center justify-content-between">
+                    <div id="p_msg" class="text-success small fw-bold d-none">
+                        ✅ Saved!
+                    </div>
+                    <button type="submit" class="btn btn-outline-dark btn-sm px-4">
+                        Update & Predict Size
+                    </button>
+                </div>
+            </form>
+        </div>
+
     </div>
 </div>
 
+<script>
+    document.getElementById('measureForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        let height = document.getElementById('p_height').value;
+        let weight = document.getElementById('p_weight').value;
+        let age = document.getElementById('p_age').value;
+        let gender = document.getElementById('p_gender').value;
+
+        // Visual feedback button loading
+        const btn = e.target.querySelector('button');
+        const originalText = btn.innerText;
+        btn.innerText = 'Calculating...';
+        btn.disabled = true;
+
+        fetch('/ai/predict-size/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ height, weight, age, gender })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerText = originalText;
+            btn.disabled = false;
+
+            if (data.status === 'success') {
+                let msg = document.getElementById('p_msg');
+                msg.innerHTML = `✅ Saved! Recommended: <strong>${data.recommended_size}</strong>`;
+                msg.classList.remove('d-none');
+                setTimeout(() => msg.classList.add('d-none'), 5000);
+            }
+        });
+    });
+</script>
 {% endblock %}
