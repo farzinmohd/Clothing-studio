@@ -1,92 +1,161 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Order #{{ order.id }} Details | Tailored Elegence{% endblock %}
+
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/orders.css' %}">
 
-<h2>Order #{{ order.id }}</h2>
+<div class="container mb-5">
+    
+    <!-- Top Nav -->
+    <div class="mt-4 mb-4">
+        <a href="{% url 'my_orders' %}" class="text-decoration-none text-muted small fw-bold">
+            ← BACK TO ORDERS
+        </a>
+    </div>
 
-<!-- ORDER META INFO -->
-<p>
-    <strong>Status:</strong>
-    <span class="badge
-        {% if order.status == 'pending' %} bg-warning
-        {% elif order.status == 'paid' %} bg-primary
-        {% elif order.status == 'shipped' %} bg-info
-        {% elif order.status == 'delivered' %} bg-success
-        {% else %} bg-danger {% endif %}">
-        {{ order.get_status_display }}
-    </span>
-</p>
+    <!-- HEADER CARD -->
+    <div class="detail-header-card">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h2 class="mb-1 fw-bold">Order #{{ order.id }}</h2>
+                <p class="text-muted mb-0">Placed on {{ order.created_at|date:"F d, Y, h:i A" }}</p>
+            </div>
+            
+            {% if order.status == 'delivered' %}
+            <div class="status-badge status-delivered fs-6 px-3 py-2">
+                ✅ Delivered
+            </div>
+            {% elif order.status == 'cancelled' %}
+            <div class="status-badge status-cancelled fs-6 px-3 py-2">
+                ❌ Cancelled
+            </div>
+            {% else %}
+            <div class="status-badge status-paid fs-6 px-3 py-2">
+                ⏳ {{ order.get_status_display }}
+            </div>
+            {% endif %}
+        </div>
 
-<p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
-<p><strong>Order Date:</strong> {{ order.created_at }}</p>
+        <div class="order-meta-grid">
+            <div class="meta-item">
+                <label>Payment Method</label>
+                <div>{{ order.payment_method }}</div>
+            </div>
+            <div class="meta-item">
+                <label>Total Amount</label>
+                <div>₹{{ order.total_amount }}</div>
+            </div>
+            <div class="meta-item">
+                <label>Items Count</label>
+                <div>{{ order.items.count }} Item(s)</div>
+            </div>
+        </div>
+    </div>
 
-{% if order.status == "cancelled" %}
-<div class="alert alert-danger">
-    <strong>Order Cancelled</strong><br>
+    {% if order.status != 'cancelled' %}
+    <!-- PROGRESS TIMELINE -->
+    <div class="timeline-container">
+        <div class="timeline">
+            <!-- PENDING STEP -->
+            <div class="timeline-step 
+                {% if order.status == 'pending' %}active
+                {% elif order.status in 'paid shipped delivered' %}completed{% endif %}">
+                <div class="step-icon">1</div>
+                <div class="step-label">Pending</div>
+            </div>
+
+            <!-- PAID STEP -->
+            <div class="timeline-step 
+                {% if order.status == 'paid' %}active
+                {% elif order.status in 'shipped delivered' %}completed{% endif %}">
+                <div class="step-icon">2</div>
+                <div class="step-label">Paid</div>
+            </div>
+
+            <!-- SHIPPED STEP -->
+            <div class="timeline-step 
+                {% if order.status == 'shipped' %}active
+                {% elif order.status == 'delivered' %}completed{% endif %}">
+                <div class="step-icon">3</div>
+                <div class="step-label">Shipped</div>
+            </div>
+
+            <!-- DELIVERED STEP -->
+            <div class="timeline-step 
+                {% if order.status == 'delivered' %}completed active{% endif %}">
+                <div class="step-icon">4</div>
+                <div class="step-label">Delivered</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger text-center mb-5">
+        <strong>This order has been cancelled.</strong>
+    </div>
+    {% endif %}
+
+    <!-- ITEMS LIST -->
+    <h5 class="fw-bold mb-3">Items in this Order</h5>
+    <div class="items-card">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="text-center">Quantity</th>
+                    <th class="text-end">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>
+                        <div class="item-name">{{ item.product.name }}</div>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-end fw-bold">₹{{ item.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FOOTER SUMMARY & ACTIONS -->
+    <div class="order-footer">
+        
+        <!-- Left: Actions -->
+        <div class="order-actions-area">
+            <a href="{% url 'download_invoice' order.id %}" class="btn-invoice text-decoration-none">
+                📄 Download Invoice
+            </a>
+
+            {% if order.status == 'pending' or order.status == 'paid' %}
+            <form method="post" action="{% url 'cancel_order' order.id %}">
+                {% csrf_token %}
+                <button class="btn-cancel">
+                    Cancel Order
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Right: Totals -->
+        <div class="order-totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>₹{{ order.total_amount }}</span>
+            </div>
+            <div class="total-row">
+                <span>Shipping</span>
+                <span>Free</span>
+            </div>
+            <div class="total-row final">
+                <span>Total</span>
+                <span>₹{{ order.total_amount }}</span>
+            </div>
+        </div>
+
+    </div>
+
 </div>
-{% endif %}
-
-<hr>
-
-<!-- 🔥 ORDER TIMELINE -->
-<h5>Order Progress</h5>
-<ul class="list-group list-group-horizontal text-center mb-4">
-    <li class="list-group-item {% if order.status != 'pending' %}bg-success text-white{% endif %}">
-        Pending
-    </li>
-    <li class="list-group-item {% if order.status in 'paid shipped delivered' %}bg-success text-white{% endif %}">
-        Paid
-    </li>
-    <li class="list-group-item {% if order.status in 'shipped delivered' %}bg-success text-white{% endif %}">
-        Shipped
-    </li>
-    <li class="list-group-item {% if order.status == 'delivered' %}bg-success text-white{% endif %}">
-        Delivered
-    </li>
-</ul>
-
-<hr>
-
-<!-- ORDER ITEMS -->
-<table class="table table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>Product</th>
-            <th>Qty</th>
-            <th>Price</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in order.items.all %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>₹{{ item.price }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<h4>Total: ₹{{ order.total_amount }}</h4>
-
-<hr>
-
-<a href="{% url 'my_orders' %}" class="btn btn-secondary">
-    Back to Orders
-</a>
-
-<a href="{% url 'download_invoice' order.id %}"
-   class="btn btn-outline-primary ms-2">
-    Download Invoice (PDF)
-</a>
-
-
-{% if order.status == 'pending' or order.status == 'paid' %}
-<form method="post" action="{% url 'cancel_order' order.id %}" class="d-inline">
-    {% csrf_token %}
-    <button class="btn btn-danger ms-2">
-        Cancel Order
-    </button>
-</form>
-{% endif %}
-
 {% endblock %}

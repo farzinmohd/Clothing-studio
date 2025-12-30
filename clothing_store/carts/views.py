@@ -31,3 +31,11 @@ def remove_from_cart(request, key):
     cart = Cart(request)
     cart.remove(key)
     return redirect('cart_detail')
+
+
+def update_cart(request, key):
+    cart = Cart(request)
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity', 1))
+        cart.update(key, quantity)
+    return redirect('cart_detail')

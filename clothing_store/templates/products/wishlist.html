@@ -1,45 +1,53 @@
 {% extends 'base.html' %}
-
-{% block title %}My Wishlist{% endblock %}
+{% load static %}
+{% block title %}My Wishlist | Tailored Elegence{% endblock %}
 
 {% block content %}
+<div class="container mb-5">
+    <link rel="stylesheet" href="{% static 'css/cart_wishlist.css' %}">
 
-<h2 class="mb-4">❤️ My Wishlist</h2>
+    <div class="page-header mt-4 mb-5">
+        <h1 class="page-title">My Wishlist ❤️</h1>
+    </div>
 
-{% if items %}
-<div class="row">
-    {% for item in items %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
+    {% if items %}
+    <div class="wishlist-grid">
+        {% for item in items %}
+        <div class="wishlist-card">
+            <div class="wishlist-img-container">
+                {% if item.product.images.first %}
+                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-muted">
+                        No Image
+                    </div>
+                {% endif %}
 
-                <h5 class="card-title">{{ item.product.name }}</h5>
-                <p class="card-text">
-                    ₹{{ item.product.price }}
-                </p>
+                <a href="{% url 'remove_from_wishlist' item.product.id %}" class="btn-remove-wish" title="Remove from Wishlist">
+                    ✕
+                </a>
+            </div>
 
-                <a href="{% url 'product_detail' item.product.id %}"
-                   class="btn btn-sm btn-primary">
+            <div class="wishlist-body text-center">
+                <h5 class="wishlist-title">{{ item.product.name }}</h5>
+                <div class="wishlist-price">₹{{ item.product.price }}</div>
+                
+                <a href="{% url 'product_detail' item.product.id %}" class="btn btn-dark w-100 rounded-pill btn-sm">
                     View Product
                 </a>
-
-                <a href="{% url 'remove_from_wishlist' item.product.id %}"
-                   class="btn btn-sm btn-danger ms-2">
-                    Remove
-                </a>
-
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-3" style="font-size: 3rem;">💔</div>
+        <h3 class="mb-3">Your wishlist is empty</h3>
+        <a href="{% url 'product_list' %}" class="btn btn-outline-dark rounded-pill">
+            Browse Collections
+        </a>
+    </div>
+    {% endif %}
 </div>
-{% else %}
-<div class="alert alert-info">
-    Your wishlist is empty ❤️
-</div>
-<a href="{% url 'product_list' %}" class="btn btn-secondary">
-    Browse Products
-</a>
-{% endif %}
 
 {% endblock %}

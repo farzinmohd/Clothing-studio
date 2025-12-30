@@ -1,0 +1,313 @@
+/* Cart & Wishlist Premium Styling */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --page-bg: #f9fafb;
+    --card-bg: #ffffff;
+    --primary-text: #0f172a;
+    --muted-text: #64748b;
+    --accent-color: #10b981; /* Emerald */
+    --border-color: #e2e8f0;
+}
+
+body {
+    background-color: var(--page-bg);
+    font-family: 'Outfit', sans-serif;
+}
+
+/* --- PAGE HEADERS --- */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--primary-text);
+    font-size: 2rem;
+}
+
+/* --- CART STYLING --- */
+.cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 2rem;
+}
+
+@media (max-width: 992px) {
+    .cart-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cart-item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.cart-item-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.cart-img-wrapper {
+    width: 100px;
+    height: 120px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f1f5f9;
+}
+
+.cart-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cart-info {
+    flex-grow: 1;
+}
+
+.cart-product-title {
+    font-weight: 600;
+    color: var(--primary-text);
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+.cart-product-meta {
+    font-size: 0.85rem;
+    color: var(--muted-text);
+    margin-bottom: 0.5rem;
+}
+
+.cart-price {
+    font-weight: 700;
+    color: var(--primary-text);
+}
+
+/* Quantity Controls */
+.quantity-control {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px; /* Rounded rect, not full pill */
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+}
+
+.qty-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: white;
+    border-radius: 6px; /* Soft square */
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.qty-btn svg {
+    width: 10px;
+    height: 10px;
+}
+
+.qty-btn:hover:not(:disabled) {
+    background: var(--primary-text);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.qty-btn:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.qty-btn:disabled {
+    color: #cbd5e1;
+    background: #f1f5f9;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.qty-input {
+    width: 36px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    padding: 0;
+    margin: 0;
+}
+
+/* Remove Button */
+.btn-remove-cart {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    background: transparent; /* No bg by default */
+    border: 1px solid transparent;
+    border-radius: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+}
+
+.btn-remove-cart svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s;
+}
+
+.btn-remove-cart:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
+}
+
+.btn-remove-cart:hover svg {
+    transform: scale(1.1);
+}
+
+/* Hide Quantity Badge since we have controls now */
+.qty-badge {
+    display: none;
+}
+
+/* Cart Summary Box */
+.cart-summary {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--muted-text);
+}
+
+.summary-total {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--primary-text);
+}
+
+.btn-checkout {
+    width: 100%;
+    background: var(--primary-text);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    margin-top: 1.5rem;
+    transition: all 0.2s;
+}
+
+.btn-checkout:hover {
+    background: #1e293b;
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* --- WISHLIST STYLING --- */
+.wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.wishlist-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wishlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.wishlist-img-container {
+    height: 300px; /* Taller for fashion */
+    background: #f8fafc;
+    position: relative;
+}
+
+.wishlist-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-remove-wish {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.btn-remove-wish:hover {
+    color: #ef4444;
+    transform: scale(1.1);
+}
+
+.wishlist-body {
+    padding: 1.25rem;
+}
+
+.wishlist-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wishlist-price {
+    color: var(--muted-text);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}

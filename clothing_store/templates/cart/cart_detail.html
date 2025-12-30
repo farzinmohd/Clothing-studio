@@ -1,68 +1,120 @@
 {% extends 'base.html' %}
-
-{% block title %}Your Cart{% endblock %}
+{% load static %}
+{% block title %}Shopping Cart | Tailored Elegence{% endblock %}
 
 {% block content %}
+<div class="container mb-5">
+    <link rel="stylesheet" href="{% static 'css/cart_wishlist.css' %}">
 
-<h2>Your Cart</h2>
+    <div class="page-header mt-4">
+        <h1 class="page-title">Your Bag</h1>
+    </div>
 
-{% if not cart.cart %}
-    <p>Your cart is empty.</p>
-    <a href="{% url 'product_list' %}" class="btn btn-primary">
-        Continue Shopping
-    </a>
-{% else %}
-    <!-- table -->
+    {% if not cart.cart %}
+    <div class="text-center py-5">
+        <div class="mb-4" style="font-size: 4rem;">🛍️</div>
+        <h3 class="mb-3">Your cart is empty</h3>
+        <p class="text-muted mb-4">Looks like you haven't added anything to your cart yet.</p>
+        <a href="{% url 'product_list' %}" class="btn btn-dark px-4 py-2 rounded-pill">Start Shopping</a>
+    </div>
+    {% else %}
 
+    <div class="cart-layout">
+        <!-- LEFT: CART ITEMS -->
+        <div class="cart-items">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small">{{ cart.cart|length }} Items</span>
+            </div>
 
+            {% for item in cart %}
+            <div class="cart-item-card">
+                <!-- Image -->
+                <div class="cart-img-wrapper">
+                    {% if item.product.images.first %}
+                        <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-muted small">
+                            No Image
+                        </div>
+                    {% endif %}
+                </div>
 
-<table class="table table-bordered align-middle">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Variant</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Total</th>
-            <th>Action</th>
-        </tr>
-    </thead>
+                <!-- Info -->
+                <div class="cart-info">
+                    <a href="{% url 'product_detail' item.product.id %}" class="cart-product-title d-block">
+                        {{ item.product.name }}
+                    </a>
+                    
+                    <div class="cart-product-meta">
+                        {% if item.size %} <span>Size: {{ item.size }}</span> {% endif %}
+                        {% if item.color %} <span class="ms-2">Color: {{ item.color }}</span> {% endif %}
+                    </div>
 
-    <tbody>
-        {% for item in cart %}
-        <tr>
-            <td>{{ item.product.name }}</td>
+                    <div class="d-flex align-items-center mt-3">
+                        <!-- QTY CONTROL (Modern Pill) -->
+                        <form action="{% url 'update_cart' item.key %}" method="POST" class="d-flex align-items-center quantity-control">
+                            {% csrf_token %}
+                            <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" 
+                                    class="qty-btn" {% if item.quantity == 1 %}disabled{% endif %}>
+                                <svg width="12" height="2" viewBox="0 0 12 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1H11"/></svg>
+                            </button>
+                            <input type="text" class="qty-input" value="{{ item.quantity }}" readonly>
+                            <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" 
+                                    class="qty-btn">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 1V11M1 6H11"/></svg>
+                            </button>
+                        </form>
 
-            <td>
-                <strong>Size:</strong> {{ item.size }}<br>
-                {% if item.color %}
-                    <strong>Color:</strong> {{ item.color }}
-                {% endif %}
-            </td>
+                        <span class="cart-price ms-auto">₹{{ item.total_price }}</span>
+                    </div>
+                </div>
 
-            <td>₹{{ item.price }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>₹{{ item.total_price }}</td>
-
-            <td>
-                <a href="{% url 'remove_from_cart' item.key %}"
-                   class="btn btn-sm btn-danger">
-                    Remove
+                <!-- Action: SVG Trash Icon -->
+                <a href="{% url 'remove_from_cart' item.key %}" class="btn-remove-cart" title="Remove item">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
                 </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </div>
+            {% endfor %}
 
-<h4 class="text-end mt-3">
-    Total: ₹{{ cart.get_total_price }}
-</h4>
+            <div class="mt-4">
+                <a href="{% url 'product_list' %}" class="text-decoration-none text-muted small">
+                    ← Continue Shopping
+                </a>
+            </div>
+        </div>
 
-<a href="{% url 'checkout' %}" class="btn btn-success">
-    Proceed to Checkout
-</a>
+        <!-- RIGHT: SUMMARY -->
+        <div class="cart-summary">
+            <h5 class="fw-bold mb-4">Order Summary</h5>
+            
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>₹{{ cart.get_total_price }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping estimate</span>
+                <span>Calculated at checkout</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax estimate</span>
+                <span>—</span>
+            </div>
 
-{% endif %}
+            <div class="summary-total">
+                <span>Total</span>
+                <span>₹{{ cart.get_total_price }}</span>
+            </div>
+
+            <a href="{% url 'checkout' %}" class="btn btn-checkout">
+                Checkout Securely
+            </a>
+            
+            <div class="text-center mt-3 small text-muted">
+                🔒 Secure Checkout
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 
 {% endblock %}

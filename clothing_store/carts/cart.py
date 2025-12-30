@@ -57,6 +57,14 @@ class Cart:
     def save(self):
         self.session.modified = True
 
+    def update(self, key, quantity):
+        if key in self.cart:
+            if quantity > 0:
+                self.cart[key]['quantity'] = quantity
+            else:
+                del self.cart[key]
+            self.save()
+
     def remove(self, key):
         if key in self.cart:
             del self.cart[key]

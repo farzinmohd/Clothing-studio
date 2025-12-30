@@ -1,159 +1,202 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block title %}Secure Checkout | Tailored Elegence{% endblock %}
+
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
 
-<h2 class="mb-4">Checkout</h2>
+<div class="checkout-container">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="checkout-grid">
 
-<!-- ================= CART SUMMARY ================= -->
-<table class="table table-bordered">
-    <thead class="table-dark">
-        <tr>
-            <th>Product</th>
-            <th>Variant</th>
-            <th>Qty</th>
-            <th>Price</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in cart %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td>
-                Size: {{ item.size }} <br>
-                Color: {{ item.color }}
-            </td>
-            <td>{{ item.quantity }}</td>
-            <td>₹{{ item.total_price }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            <!-- LEFT COLUMN: INPUTS -->
+            <div class="checkout-main-col">
+                <h2 class="mb-4 fw-bold">Checkout</h2>
 
-<h5 class="mt-3">
-    Subtotal: <strong>₹{{ cart.get_total_price }}</strong>
-</h5>
-
-<hr>
-
-<form method="POST">
-    {% csrf_token %}
-
-    <!-- ================= COUPON SECTION ================= -->
-    <h5 class="mt-3">Apply Coupon</h5>
-
-    <!-- 🔥 AVAILABLE COUPONS UI -->
-    {% if available_coupons %}
-    <div class="mb-3">
-        <label class="form-label small text-muted">Available Coupons:</label>
-        <div class="list-group">
-            {% for coupon in available_coupons %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong class="text-primary">{{ coupon.code }}</strong>
-                    <span class="badge bg-secondary ms-2">
-                        {% if coupon.discount_type == 'percent' %}
-                            {{ coupon.discount_value|floatformat:0 }}% OFF
-                        {% else %}
-                            ₹{{ coupon.discount_value }} OFF
-                        {% endif %}
-                    </span>
-                    <br>
-                    <small class="text-muted">Expires: {{ coupon.expiry_date }}</small>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyCoupon('{{ coupon.code }}')">
-                    Apply
-                </button>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <script>
-        function applyCoupon(code) {
-            const input = document.getElementById('couponInput');
-            input.value = code;
-            input.focus();
-            // Optional: Scroll to input
-            input.scrollIntoView({behavior: 'smooth', block: 'center'});
-        }
-    </script>
-    {% endif %}
-
-    <div class="mb-3">
-        <input
-            type="text"
-            id="couponInput"
-            name="coupon_code"
-            class="form-control"
-            placeholder="Enter coupon code (optional)">
-    </div>
-
-    <hr>
-
-    <!-- ================= ADDRESS SELECTION ================= -->
-    <h5 class="mt-3">Select Delivery Address</h5>
-
-    {% if addresses %}
-        {% for address in addresses %}
-        <div class="card mb-2">
-            <div class="card-body">
-                <label class="w-100">
-                    <input
-                        type="radio"
-                        name="address"
-                        value="{{ address.id }}"
-                        required>
-
-                    <strong>{{ address.full_name }}</strong><br>
-                    {{ address.address_line }}<br>
-                    {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
-                    Phone: {{ address.phone }}
-
-                    {% if address.is_default %}
-                        <span class="badge bg-success ms-2">Default</span>
+                <!-- 1. ADDRESS -->
+                <div class="form-card">
+                    <div class="section-title">
+                        📍 Delivery Address
+                    </div>
+                    
+                    {% if addresses %}
+                        <div class="d-flex flex-column gap-3">
+                        {% for address in addresses %}
+                            <label class="address-card {% if address.is_default %}selected{% endif %}" onclick="selectAddress(this)">
+                                <input
+                                    type="radio"
+                                    name="address"
+                                    value="{{ address.id }}"
+                                    {% if address.is_default %}checked{% endif %}
+                                    required>
+                                
+                                <div class="pe-4">
+                                    <strong>{{ address.full_name }}</strong>
+                                    {% if address.is_default %}
+                                        <span class="badge bg-dark ms-2" style="font-size:0.7em;">Default</span>
+                                    {% endif %}
+                                    <div class="text-muted mt-1 small">
+                                        {{ address.address_line }}<br>
+                                        {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                                        Phone: {{ address.phone }}
+                                    </div>
+                                </div>
+                            </label>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">No saved addresses found.</p>
+                            <a href="{% url 'add_address' %}" class="btn btn-outline-dark btn-sm">
+                                + Add New Address
+                            </a>
+                        </div>
                     {% endif %}
-                </label>
+
+                    <div class="mt-3">
+                        <a href="{% url 'add_address' %}" class="text-decoration-none small text-primary fw-bold">
+                            + Add Another Address
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. PAYMENT -->
+                <div class="form-card">
+                    <div class="section-title">
+                        💳 Payment Method
+                    </div>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment_method" value="COD" checked>
+                        <span class="payment-icon">💵</span>
+                        <div>
+                            <strong>Cash on Delivery (COD)</strong>
+                            <div class="small text-muted">Pay when you receive your order</div>
+                        </div>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment_method" value="ONLINE">
+                        <span class="payment-icon">💳</span>
+                        <div>
+                            <strong>Online Payment</strong>
+                            <div class="small text-muted">Secure payment via Stripe</div>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- 3. COUPON -->
+                <div class="form-card">
+                    <div class="section-title">
+                        🎟️ Coupon Code
+                    </div>
+
+                    <!-- Available Coupons List -->
+                    {% if available_coupons %}
+                    <div class="mb-3">
+                        <label class="form-label small text-muted text-uppercase fw-bold">Available Offers</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for coupon in available_coupons %}
+                            <button type="button" class="btn btn-sm btn-outline-success dashed-border" onclick="applyCoupon('{{ coupon.code }}')">
+                                <span class="fw-bold">{{ coupon.code }}</span>
+                                <small class="text-dark ms-1">
+                                    -{% if coupon.discount_type == 'percent' %}{{ coupon.discount_value|floatformat:0 }}%{% else %}₹{{ coupon.discount_value }}{% endif %}
+                                </small>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="coupon-input-group">
+                        <input type="text" id="couponInput" name="coupon_code" placeholder="Enter code here" class="form-control">
+                        <!-- We rely on server logic to apply, this is just input. The user submits the main form to apply? 
+                             Or usually there is a separate Apply button. 
+                             The original code had just one main form.
+                             Let's keep it simple: User enters code, and it gets applied on Place Order OR we can add a little JS to submit?
+                             For now, let's stick to the original logic: "Enter coupon code (optional)". 
+                             Wait, if they assume entering checks it, they might be disappointed.
+                             Ideally we should have an apply button. But the original code handled it inside the main POST.
+                             Let's trust the user to fill it. 
+                        -->
+                    </div>
+                    <small class="text-muted">Code will be validated on order placement.</small>
+                </div>
+
             </div>
+
+            <!-- RIGHT COLUMN: SUMMARY -->
+            <div class="checkout-summary-col">
+                <div class="checkout-summary">
+                    <h4 class="mb-4">Order Summary</h4>
+                    
+                    <!-- Items Scroller -->
+                    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 2rem; padding-right: 5px;">
+                        {% for item in cart %}
+                        <div class="summary-item">
+                            {% if item.product.images.first %}
+                                <img src="{{ item.product.images.first.image.url }}" class="item-img">
+                            {% else %}
+                                <div class="item-img text-muted d-flex align-items-center justify-content-center small">No Img</div>
+                            {% endif %}
+                            
+                            <div class="item-details">
+                                <div class="item-name">{{ item.product.name }}</div>
+                                <div class="item-meta">
+                                    Qty: {{ item.quantity }} | Size: {{ item.size }}
+                                </div>
+                            </div>
+                            <div class="item-price">
+                                ₹{{ item.total_price }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="summary-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>₹{{ cart.get_total_price }}</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Shipping</span>
+                            <span class="text-success">Free</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span>₹{{ cart.get_total_price }}</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-place-order">
+                        Place Order (₹{{ cart.get_total_price }})
+                    </button>
+                    
+                    <div class="text-center mt-3 text-muted small">
+                        <span class="me-2">🔒 SSL Secure Payment</span>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
-        {% endfor %}
-    {% else %}
-        <p>No address found.</p>
-        <a href="{% url 'add_address' %}" class="btn btn-primary">
-            Add Address
-        </a>
-    {% endif %}
+    </form>
+</div>
 
-    <hr>
+<script>
+    function selectAddress(element) {
+        document.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        element.querySelector('input[type="radio"]').checked = true;
+    }
 
-    <!-- ================= PAYMENT METHOD ================= -->
-    <h5 class="mt-3">Select Payment Method</h5>
-
-    <div class="form-check">
-        <input
-            class="form-check-input"
-            type="radio"
-            name="payment_method"
-            value="COD"
-            checked>
-        <label class="form-check-label">
-            Cash on Delivery
-        </label>
-    </div>
-
-    <div class="form-check">
-        <input
-            class="form-check-input"
-            type="radio"
-            name="payment_method"
-            value="ONLINE">
-        <label class="form-check-label">
-            Online Payment (Stripe)
-        </label>
-    </div>
-
-    <!-- ================= PLACE ORDER ================= -->
-    <button type="submit" class="btn btn-success btn-lg mt-4 w-100">
-        Place Order
-    </button>
-</form>
+    function applyCoupon(code) {
+        document.getElementById('couponInput').value = code;
+        // Optional visual feedback
+        document.getElementById('couponInput').focus();
+    }
+</script>
 
 {% endblock %}
