@@ -20,7 +20,11 @@ def add_to_cart(request, product_id):
     cart = Cart(request)
     success = cart.add(product, size=size)
 
-    if not success:
+    if success:
+        # ✅ TRACK CART ADDS (For Dynamic Pricing)
+        product.cart_add_count += 1
+        product.save()
+    else:
         messages.error(request, 'Selected size is out of stock')
 
     return redirect('cart_detail')

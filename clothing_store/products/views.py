@@ -80,6 +80,15 @@ def product_detail(request, product_id):
 
     avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
 
+    # ✅ TRACK VIEWS (Simple counter)
+    product.view_count += 1
+    
+    # Ensure base_price is set (Self-healing data)
+    if product.base_price is None:
+        product.base_price = product.price
+        
+    product.save()
+
     enriched_reviews = []
 
     # =========================
