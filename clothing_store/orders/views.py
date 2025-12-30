@@ -219,9 +219,22 @@ def cancel_order(request, order_id):
         messages.error(request, 'Order cannot be cancelled now.')
         return redirect('order_detail', order_id=order.id)
 
+    # 🔥 RESTORE STOCK LOGIC
+    for item in order.items.all():
+        try:
+            variant = ProductVariant.objects.get(
+                product=item.product,
+                size=item.size
+            )
+            variant.stock += item.quantity
+            variant.save()  # This triggers the signal to update Main Product Stock
+        except ProductVariant.DoesNotExist:
+            # If variant was deleted, we just skip restoring stock for it
+            pass
+
     order.status = 'cancelled'
     order.save()
-    messages.success(request, 'Order cancelled successfully.')
+    messages.success(request, 'Order cancelled successfully and stock restored.')
     return redirect('my_orders')
 
 

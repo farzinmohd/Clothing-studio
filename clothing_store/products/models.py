@@ -139,3 +139,26 @@ class Wishlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ❤️ {self.product.name}"
+
+
+# -------------------------
+# SIGNALS (STOCK SYNC)
+# -------------------------
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+from django.db.models import Sum
+
+@receiver(post_save, sender=ProductVariant)
+@receiver(post_delete, sender=ProductVariant)
+def update_product_stock(sender, instance, **kwargs):
+    """
+    Auto-update Product stock whenever a Variant is saved or deleted.
+    Main Product Stock = Sum of all Variant Stocks
+    """
+    product = instance.product
+    total_stock = product.variants.aggregate(total=Sum('stock'))['total'] or 0
+    
+    # Only update if changed to avoid recursion loops (though save logic is clean)
+    if product.stock != total_stock:
+        product.stock = total_stock
+        product.save()
