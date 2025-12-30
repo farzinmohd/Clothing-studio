@@ -1,115 +1,126 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}Shop Collection | Tailored Elegence{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/products.css' %}">
+<link rel="stylesheet" href="{% static 'css/product_list_modern.css' %}">
 
-<div class="container-fluid mt-4">
-    <div class="row">
+<div class="page-container">
+    <div class="row g-5">
 
-        <!-- ================= CATEGORY SIDEBAR ================= -->
-    <!-- ================= FILTER SIDEBAR ================= -->
-<div class="col-md-2">
-    <div class="category-box shadow-sm p-3 rounded bg-white">
+        <!-- ================= FILTER SIDEBAR ================= -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="filter-sidebar">
+                
+                <div class="filter-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                    Filters
+                </div>
 
-        <h5 class="mb-4">Filter By</h5>
+                <!-- 📂 CATEGORIES -->
+                <div class="filter-section-title">Categories</div>
+                <ul class="category-list">
+                    <li class="category-item">
+                        <a href="{% url 'product_list' %}"
+                           class="category-link {% if not selected_category %}active{% endif %}">
+                           All Products
+                        </a>
+                    </li>
+                    {% for category in categories %}
+                    <li class="category-item">
+                        <a href="?category={{ category.id }}"
+                           class="category-link {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">
+                            {{ category.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
 
-        <!-- 📂 CATEGORIES -->
-        <h6 class="text-muted mb-2">Categories</h6>
-        <ul class="list-group mb-4">
+                <hr class="my-4 border-light">
 
-            <a href="{% url 'product_list' %}"
-               class="list-group-item {% if not selected_category %}active{% endif %}">
-                All
-            </a>
+                <!-- 💰 PRICE FILTER -->
+                <div class="filter-section-title">Price Range</div>
+                <form method="get">
+                    {% if selected_category %}
+                        <input type="hidden" name="category" value="{{ selected_category }}">
+                    {% endif %}
 
-            {% for category in categories %}
-            <a href="?category={{ category.id }}"
-               class="list-group-item {% if selected_category == category.id|stringformat:'s' %}active{% endif %}">
-                {{ category.name }}
-            </a>
-            {% endfor %}
-        </ul>
+                    <div class="price-inputs">
+                        <input type="number" name="min_price" class="price-input" 
+                               placeholder="Min ₹" value="{{ min_price }}">
+                        <input type="number" name="max_price" class="price-input" 
+                               placeholder="Max ₹" value="{{ max_price }}">
+                    </div>
 
-        <!-- 💰 PRICE FILTER -->
-        <h6 class="text-muted mb-2">Price</h6>
-        <form method="get">
-
-            {% if selected_category %}
-                <input type="hidden" name="category" value="{{ selected_category }}">
-            {% endif %}
-
-            <div class="mb-2">
-                <input type="number"
-                       name="min_price"
-                       class="form-control"
-                       placeholder="Min ₹"
-                       value="{{ min_price }}">
+                    <button class="btn-filter">
+                        Apply Filter
+                    </button>
+                </form>
             </div>
-
-            <div class="mb-3">
-                <input type="number"
-                       name="max_price"
-                       class="form-control"
-                       placeholder="Max ₹"
-                       value="{{ max_price }}">
-            </div>
-
-            <button class="btn btn-dark w-100 btn-sm">
-                Apply Filter
-            </button>
-        </form>
-
-    </div>
-</div>
+        </div>
 
 
         <!-- ================= PRODUCTS GRID ================= -->
-        <div class="col-md-10">
-            <div class="row g-4">
+        <div class="col-lg-9">
+            
+            <!-- HEADER / RESULTS COUNT -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 fw-bold mb-0">Collection</h2>
+                <span class="text-muted small">{{ products|length }} Items Found</span>
+            </div>
 
+            <div class="product-grid">
                 {% for product in products %}
-                <div class="col-md-3">
-                    <div class="product-card">
+                <div class="product-card fade-in-up">
+                    
+                    <!-- WISHLIST BTN (Top Right) -->
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'add_to_wishlist' product.id %}" class="btn-wishlist" title="Add to Wishlist">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </a>
+                    {% endif %}
 
-                        <!-- PRODUCT IMAGE -->
-                        <div class="product-image">
+                    <!-- IMAGE WRAPPER -->
+                    <div class="product-image-wrapper">
+                        <a href="{% url 'product_detail' product.id %}" class="d-block w-100 h-100">
                             {% if product.images.first %}
-                                <img src="{{ product.images.first.image.url }}"
-                                     alt="{{ product.name }}">
+                                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="product-img">
                             {% else %}
-                                <img src="{% static 'images/no-image.png' %}">
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light text-muted">No Image</div>
                             {% endif %}
+                        </a>
+
+                        <!-- OVERLAY ACTION -->
+                        <div class="product-overlay">
+                            <a href="{% url 'product_detail' product.id %}" class="btn-quick-view">
+                                View Details
+                            </a>
                         </div>
-
-                        <!-- PRODUCT INFO -->
-                        <div class="product-info">
-                            <h6 class="product-title">{{ product.name }}</h6>
-                            <p class="product-price">₹{{ product.price }}</p>
-
-                            <!-- ✅ BUTTONS FIXED -->
-                            <div class="product-actions">
-                                <a href="{% url 'product_detail' product.id %}"
-                                   class="btn btn-primary btn-sm">
-                                    View Details
-                                </a>
-
-                                {% if user.is_authenticated %}
-                                <a href="{% url 'add_to_wishlist' product.id %}"
-                                   class="btn btn-outline-danger btn-sm">
-                                    ❤️ Wishlist
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-
                     </div>
+
+                    <!-- INFO -->
+                    <div class="product-details">
+                        <!-- Try to show category name if available on product object, else static/hidden -->
+                        <div class="product-category">Men's Fashion</div> 
+                        
+                        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none">
+                            <h3 class="product-title">{{ product.name }}</h3>
+                        </a>
+                        
+                        <div class="product-price">₹{{ product.price }}</div>
+                    </div>
+
                 </div>
                 {% empty %}
-                <p>No products available.</p>
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted mb-3" style="font-size: 3rem;">🔍</div>
+                    <h4>No products found</h4>
+                    <p class="text-muted">Try clearing filters or check back later.</p>
+                    <a href="{% url 'product_list' %}" class="btn btn-outline-dark mt-2">Clear Filters</a>
+                </div>
                 {% endfor %}
-
             </div>
+
         </div>
 
     </div>
