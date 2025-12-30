@@ -210,3 +210,18 @@ def delete_address(request, address_id):
         'accounts/address_confirm_delete.html',
         {'address': address}
     )
+
+
+# -------------------------
+# DELETE ACCOUNT
+# -------------------------
+@login_required
+def delete_account(request):
+    if request.method == 'POST':
+        user = request.user
+        auth_logout(request)  # Logout before delete to avoid session issues
+        user.delete()         # Cascade deletes profile, orders, addresses
+        messages.success(request, 'Your account has been successfully deleted.')
+        return redirect('home')
+
+    return render(request, 'accounts/delete_account_confirm.html')

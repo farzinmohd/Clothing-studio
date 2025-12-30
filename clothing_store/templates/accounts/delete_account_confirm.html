@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Delete Account | Tailored Elegence{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body text-center p-5">
+                    <div class="text-danger mb-3" style="font-size: 3rem;">⚠️</div>
+                    <h2 class="card-title fw-bold text-danger mb-3">Delete Account?</h2>
+                    <p class="text-muted mb-4">
+                        Are you sure you want to delete your account? <br>
+                        <strong>This action cannot be undone.</strong> All your data, orders, and saved items will be permanently removed.
+                    </p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                Yes, Delete My Account
+                            </button>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                                Cancel, Keep My Account
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
