@@ -9,10 +9,12 @@
 ### 🧠 AI & Machine Learning
 
 - **📷 Visual Search ("Shop the Look")**: Upload any photo (e.g., from Pinterest), and our **ResNet50 + Color Histogram** engine will find the most similar products in your catalog based on **Style & Color**.
-- **📏 Smart Size Predictor**: Enter your height, weight, and age to get an instant size recommendation (S/M/L/XL) with confidence scoring.
-- **🎨 Skin Tone Analysis**: Upload a selfie to detect your skin tone (Cool/Warm/Neutral) and get personalized color recommendations.
-- **🤖 Virtual Try-On**: (Beta) Visualize how clothes might look on your body shape.
-- **📈 Dynamic Pricing**: AI algorithms adjust product prices based on real-time demand signals.
+
+* **🏷️ Smart Tagging**: Automatically tagging products using **MobileNetV2** (Object Detection) and **K-Means Clustering** (Color Analysis).
+* **📏 Smart Size Predictor**: Enter your height, weight, and age to get an instant size recommendation (S/M/L/XL) with confidence scoring.
+* **🎨 Skin Tone Analysis**: Upload a selfie to detect your skin tone (Cool/Warm/Neutral) and get personalized color recommendations.
+* **🤖 Virtual Try-On**: (Beta) Visualize how clothes might look on your body shape.
+* **📈 Dynamic Pricing**: AI algorithms adjust product prices based on real-time demand signals.
 
 ### 🛍️ Core E-Commerce
 

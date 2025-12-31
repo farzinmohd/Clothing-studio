@@ -195,6 +195,9 @@ def product_detail(request, product_id):
     from ai_features.collaborative_filtering import get_collaborative_recommendations
     collaborative_products = get_collaborative_recommendations(product.id, top_n=4)
 
+    # ✅ Parse AI Tags
+    tag_list = [t.strip() for t in product.tags.split(',')] if product.tags else []
+
     return render(request, 'products/product_detail.html', {
         'product': product,
         'images': images,
@@ -205,6 +208,7 @@ def product_detail(request, product_id):
         'can_review': can_review,
         'personalized_products': personalized_products,
         'collaborative_products': collaborative_products,
+        'ai_tags': tag_list,  # ✅ Pass to template
     })
 
 

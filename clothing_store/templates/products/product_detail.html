@@ -58,6 +58,17 @@
                     </div>
                 </div>
 
+                <!-- AI TAGS UI -->
+                {% if ai_tags %}
+                <div class="mt-2 mb-3">
+                    {% for tag in ai_tags %}
+                        <span class="badge rounded-pill bg-light text-secondary border me-1 small" style="font-weight: 500;">
+                            #{{ tag }}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <div class="description-text">
                     {{ product.description }}
                 </div>

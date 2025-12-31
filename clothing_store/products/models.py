@@ -45,6 +45,9 @@ class Product(models.Model):
         help_text="Primary product color used for AI recommendations"
     )
 
+    # ✅ AI TAGS
+    tags = models.TextField(blank=True, help_text="AI-generated tags (e.g., 'Shirt, Red, Casual')")
+
     # ✅ DYNAMIC PRICING & DEMAND TRACKING
     is_dynamic_pricing = models.BooleanField(default=True, help_text="Enable AI-driven price adjustments")
     base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Original price before AI adjustment")
