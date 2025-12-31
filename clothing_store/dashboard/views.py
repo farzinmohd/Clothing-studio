@@ -2,8 +2,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.core.management import call_command
+from django.contrib import messages
 
 import csv
 from reportlab.pdfgen import canvas
@@ -24,7 +26,7 @@ def admin_dashboard(request):
     )
 
     # Orders by status
-    status_data = (
+    status_data = list(
         Order.objects
         .values('status')
         .annotate(count=Count('id'))
@@ -80,7 +82,7 @@ def sales_report_pdf(request):
     orders = Order.objects.all()
 
     for order in orders:
-        line = f"Order #{order.id} | {order.user} | ₹{order.total_amount} | {order.status}"
+        line = f"Order #{order.id} | {order.user} | {order.total_amount} | {order.status}"
         p.drawString(50, y, line)
         y -= 20
 
@@ -113,3 +115,14 @@ def sales_report_excel(request):
         ])
 
     return response
+
+# ================= UPDATE PRICES TRIGGER =================
+@staff_member_required
+def trigger_pricing_update(request):
+    try:
+        call_command('update_dynamic_prices')
+        messages.success(request, 'Dynamic Pricing Update Triggered Successfully! 🚀')
+    except Exception as e:
+        messages.error(request, f'Error updating prices: {str(e)}')
+    
+    return redirect('admin_dashboard')

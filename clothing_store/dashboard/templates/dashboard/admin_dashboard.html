@@ -77,71 +77,74 @@
     </tbody>
 </table>
 
-<!-- ================= CHART.JS ================= -->
+<!-- ================= DATA VALIDATION (JSON Scripts) ================= -->
+{{ months|json_script:"months-data" }}
+{{ totals|json_script:"totals-data" }}
+{{ status_data|json_script:"status-data" }}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-/* ================= DONUT CHART ================= */
-const statusCtx = document.getElementById('statusChart').getContext('2d');
+    // Helper to safely parse JSON from script tags
+    const getJsonData = (id) => JSON.parse(document.getElementById(id).textContent);
 
-new Chart(statusCtx, {
-    type: 'doughnut',
-    data: {
-        labels: [
-            {% for s in status_data %}
-                "{{ s.status }}",
-            {% endfor %}
-        ],
-        datasets: [{
-            data: [
-                {% for s in status_data %}
-                    {{ s.count }},
-                {% endfor %}
-            ],
-            backgroundColor: [
-                '#0d6efd',
-                '#198754',
-                '#ffc107',
-                '#dc3545',
-                '#6f42c1'
-            ],
-            borderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '65%',
-        plugins: {
-            legend: {
-                position: 'bottom'
+    const monthsData = getJsonData('months-data');
+    const totalsData = getJsonData('totals-data');
+    const statusData = getJsonData('status-data');
+
+    /* ================= DONUT CHART ================= */
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => item.status),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: [
+                    '#0d6efd',
+                    '#198754',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
             }
         }
-    }
-});
+    });
 
-/* ================= MONTHLY SALES ================= */
-const salesCtx = document.getElementById('salesChart').getContext('2d');
+    /* ================= MONTHLY SALES ================= */
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
 
-new Chart(salesCtx, {
-    type: 'line',
-    data: {
-        labels: {{ months|safe }},
-        datasets: [{
-            label: 'Monthly Sales',
-            data: {{ totals|safe }},
-            borderColor: '#0d6efd',
-            backgroundColor: 'rgba(13,110,253,0.2)',
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
-    }
-});
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: monthsData,
+            datasets: [{
+                label: 'Monthly Sales',
+                data: totalsData,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.2)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 </script>
 
 <hr class="my-4">
@@ -154,6 +157,10 @@ new Chart(salesCtx, {
 
     <a href="{% url 'sales_report_excel' %}" class="btn btn-success">
         📊 Download Excel Report
+    </a>
+
+    <a href="{% url 'trigger_pricing_update' %}" class="btn btn-primary">
+        🚀 Update AI Prices Now
     </a>
 </div>
 
