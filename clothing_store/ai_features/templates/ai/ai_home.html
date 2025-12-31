@@ -1,20 +1,127 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Skin Tone Recognition{% endblock %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <h2>🧠 AI Skin Tone Recognition</h2>
-    <p class="text-muted">Upload a clear face image</p>
+<link rel="stylesheet" href="{% static 'ai/ai_modern.css' %}?v=4.0">
 
-    <form method="POST" enctype="multipart/form-data"
-          action="{% url 'ai_result' %}">
-        {% csrf_token %}
+<div class="ai-simple-container">
+    
+    <!-- Header -->
+    <div class="ai-simple-header">
+        <h1>🧠 AI Skin Tone Recognition</h1>
+        <p>Upload a clear face image to analyze your skin tone</p>
+    </div>
 
-        <input type="file" name="image"
-               class="form-control mb-3" required>
+    <!-- Upload Card -->
+    <div class="ai-simple-card">
+        <form method="POST" enctype="multipart/form-data" action="{% url 'ai_result' %}" id="uploadForm">
+            {% csrf_token %}
+            
+            <!-- Upload Area -->
+            <label for="imageInput" class="simple-upload-area" id="uploadArea">
+                <div class="upload-icon">📸</div>
+                <div class="upload-title">Click to upload image</div>
+                <div class="upload-subtitle">PNG, JPG or JPEG (MAX. 5MB)</div>
+                <input type="file" 
+                       name="image" 
+                       id="imageInput" 
+                       class="file-input"
+                       accept="image/*" 
+                       required>
+            </label>
 
-        <button class="btn btn-primary">
-            🔍 Analyze Image
-        </button>
-    </form>
+            <!-- File Info -->
+            <div class="file-info" id="fileInfo">
+                <div class="file-info-icon">📁</div>
+                <div class="file-info-details">
+                    <div class="file-info-name" id="fileName"></div>
+                    <div class="file-info-size" id="fileSize"></div>
+                </div>
+                <button type="button" class="file-remove-btn" id="removeBtn">×</button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                Analyze Image
+            </button>
+        </form>
+    </div>
+
 </div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<script>
+    const imageInput = document.getElementById('imageInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const removeBtn = document.getElementById('removeBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Reset form state on page load
+    window.addEventListener('load', function() {
+        // Remove loading overlay if it exists
+        loadingOverlay.classList.remove('show');
+        
+        // Reset form
+        uploadForm.reset();
+        fileInfo.classList.remove('show');
+        submitBtn.disabled = true;
+        imageInput.value = '';
+    });
+
+    // Handle file selection
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            
+            fileName.textContent = file.name;
+            fileSize.textContent = sizeMB + ' MB';
+            fileInfo.classList.add('show');
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Remove file
+    removeBtn.addEventListener('click', function() {
+        imageInput.value = '';
+        fileInfo.classList.remove('show');
+        submitBtn.disabled = true;
+    });
+
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        // Validate file exists
+        if (!imageInput.files || !imageInput.files[0]) {
+            e.preventDefault();
+            alert('Please select an image first!');
+            return;
+        }
+        
+        // Show loading overlay
+        loadingOverlay.classList.add('show');
+    });
+
+    // Handle browser back button
+    window.addEventListener('pageshow', function(event) {
+        // If page is loaded from cache (back button)
+        if (event.persisted) {
+            loadingOverlay.classList.remove('show');
+            uploadForm.reset();
+            fileInfo.classList.remove('show');
+            submitBtn.disabled = true;
+            imageInput.value = '';
+        }
+    });
+</script>
+
 {% endblock %}

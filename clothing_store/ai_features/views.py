@@ -14,7 +14,7 @@ from .size_recommendation.model import predict_size
 from accounts.models import UserMeasurements
 
 def ai_home(request):
-    return render(request, "ai/upload.html")
+    return render(request, "ai/ai_home.html")
 
 
 def ai_result(request):
