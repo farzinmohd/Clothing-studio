@@ -4,78 +4,110 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'dashboard/css/modern_dashboard.css' %}">
 
-<h2 class="mb-4">📊 Admin Dashboard</h2>
+<div class="container-fluid">
+<div class="dashboard-header">
+    <h2>📊 Admin Dashboard</h2>
+    <span class="text-muted">Overview of store performance</span>
+</div>
 
 <!-- ================= STATS ================= -->
-<div class="row">
+<div class="row g-4 mb-5">
     <div class="col-md-4">
-        <div class="card stat-card">
+        <div class="stat-card">
             <h5>Total Users</h5>
             <h2>{{ total_users }}</h2>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card stat-card">
+        <div class="stat-card">
             <h5>Total Orders</h5>
             <h2>{{ total_orders }}</h2>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card stat-card">
+        <div class="stat-card">
             <h5>Total Revenue</h5>
-            <h2>₹{{ total_revenue }}</h2>
+            <h2>₹{{ total_revenue|floatformat:0 }}</h2>
         </div>
     </div>
 </div>
 
-<hr>
-
 <!-- ================= CHARTS ================= -->
-<div class="row mt-4">
+<div class="row g-4 mb-5">
 
     <!-- DONUT: Orders by Status -->
-    <div class="col-md-6">
-        <h5>Orders by Status</h5>
-        <div style="max-width:350px; height:350px;">
-            <canvas id="statusChart"></canvas>
+    <div class="col-lg-5">
+        <div class="content-card">
+            <h5>Orders by Status</h5>
+            <div style="height:260px; display:flex; align-items:center; justify-content:center;">
+                <canvas id="statusChart"></canvas>
+            </div>
         </div>
     </div>
 
     <!-- LINE: Monthly Sales -->
-    <div class="col-md-6">
-        <h5>Monthly Sales</h5>
-        <div style="height:350px;">
-            <canvas id="salesChart"></canvas>
+    <div class="col-lg-7">
+        <div class="content-card">
+            <h5>Monthly Sales Trend</h5>
+            <div style="height:260px;">
+                <canvas id="salesChart"></canvas>
+            </div>
         </div>
     </div>
 
 </div>
 
-<hr>
-
 <!-- ================= TOP PRODUCTS ================= -->
-<h5 class="mt-4">🏆 Top Selling Products</h5>
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="content-card">
+            <h5 class="d-flex justify-content-between align-items-center">
+                🏆 Top Selling Products
+                <small class="text-muted" style="font-size:0.8rem; font-weight:400;">Based on units sold</small>
+            </h5>
+            
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Product Name</th>
+                            <th class="text-end">Units Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in top_products %}
+                        <tr>
+                            <td width="50"><span class="rank-badge">#{{ forloop.counter }}</span></td>
+                            <td class="product-name">{{ p.product__name }}</td>
+                            <td class="text-end fw-bold">{{ p.total_qty }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Units Sold</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for p in top_products %}
-        <tr>
-            <td>{{ p.product__name }}</td>
-            <td>{{ p.total_qty }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!-- ================= ACTION BUTTONS ================= -->
+<div class="action-btn-group">
+    <a href="{% url 'trigger_pricing_update' %}" class="btn-modern btn-modern-primary">
+        🚀 Update AI Prices Now
+    </a>
+
+    <a href="{% url 'sales_report_excel' %}" class="btn-modern btn-modern-success">
+        📊 Download Excel
+    </a>
+
+    <a href="{% url 'sales_report_pdf' %}" class="btn-modern btn-modern-danger">
+        📄 Download PDF
+    </a>
+</div>
 
 <!-- ================= DATA VALIDATION (JSON Scripts) ================= -->
 {{ months|json_script:"months-data" }}
@@ -92,8 +124,25 @@
     const totalsData = getJsonData('totals-data');
     const statusData = getJsonData('status-data');
 
-    /* ================= DONUT CHART ================= */
+    // Enhanced gradient colors
+    const gradientColors = {
+        purple: ['#667eea', '#764ba2'],
+        green: ['#11998e', '#38ef7d'],
+        pink: ['#f093fb', '#f5576c'],
+        blue: ['#4facfe', '#00f2fe'],
+        orange: ['#fa709a', '#fee140']
+    };
+
+    /* ================= ENHANCED DONUT CHART ================= */
     const statusCtx = document.getElementById('statusChart').getContext('2d');
+    
+    // Create gradients for donut
+    const createGradient = (ctx, color1, color2) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        return gradient;
+    };
 
     new Chart(statusCtx, {
         type: 'doughnut',
@@ -102,66 +151,164 @@
             datasets: [{
                 data: statusData.map(item => item.count),
                 backgroundColor: [
-                    '#0d6efd',
-                    '#198754',
-                    '#ffc107',
-                    '#dc3545',
-                    '#6f42c1'
+                    createGradient(statusCtx, '#667eea', '#764ba2'),
+                    createGradient(statusCtx, '#11998e', '#38ef7d'),
+                    createGradient(statusCtx, '#fa709a', '#fee140'),
+                    createGradient(statusCtx, '#f093fb', '#f5576c'),
+                    createGradient(statusCtx, '#4facfe', '#00f2fe')
                 ],
-                borderWidth: 2
+                borderWidth: 0,
+                hoverOffset: 15
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '65%',
+            cutout: '70%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 13,
+                            family: 'Inter',
+                            weight: '600'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    }
                 }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 2000,
+                easing: 'easeInOutQuart'
             }
         }
     });
 
-    /* ================= MONTHLY SALES ================= */
+    /* ================= ENHANCED AREA CHART ================= */
     const salesCtx = document.getElementById('salesChart').getContext('2d');
+    
+    // Create gradient for area fill
+    const areaGradient = salesCtx.createLinearGradient(0, 0, 0, 400);
+    areaGradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+    areaGradient.addColorStop(1, 'rgba(118, 75, 162, 0.05)');
 
     new Chart(salesCtx, {
         type: 'line',
         data: {
             labels: monthsData,
             datasets: [{
-                label: 'Monthly Sales',
+                label: 'Revenue (₹)',
                 data: totalsData,
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13,110,253,0.2)',
+                borderColor: '#667eea',
+                backgroundColor: areaGradient,
                 borderWidth: 3,
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointBackgroundColor: '#667eea',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 3,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#764ba2',
+                pointHoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        font: {
+                            size: 13,
+                            family: 'Inter',
+                            weight: '600'
+                        },
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    cornerRadius: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return ' ₹' + context.parsed.y.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12,
+                            family: 'Inter'
+                        },
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString('en-IN');
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12,
+                            family: 'Inter',
+                            weight: '500'
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
         }
     });
 </script>
 
-<hr class="my-4">
-
-<!-- ================= REPORT DOWNLOADS ================= -->
-<div class="d-flex justify-content-center gap-3 mb-4">
-    <a href="{% url 'sales_report_pdf' %}" class="btn btn-danger">
-        📄 Download PDF Report
-    </a>
-
-    <a href="{% url 'sales_report_excel' %}" class="btn btn-success">
-        📊 Download Excel Report
-    </a>
-
-    <a href="{% url 'trigger_pricing_update' %}" class="btn btn-primary">
-        🚀 Update AI Prices Now
-    </a>
-</div>
+</div><!-- Close container-fluid -->
 
 {% endblock %}
