@@ -10,29 +10,33 @@
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
     <div class="container">
 
         <!-- BRAND -->
-        <a class="navbar-brand navbar-brand-custom" href="{% url 'home' %}">
+        <a class="navbar-brand-custom" href="{% url 'home' %}">
              Tailored Elegance
+             <span class="brand-dot"></span>
         </a>
 
         <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
 
             <!-- 🔍 SEARCH BAR -->
             <form class="position-relative mx-auto w-50" method="get" action="{% url 'product_list' %}">
-                <input class="form-control search-input-custom"
-                       type="search"
-                       id="searchInput"
-                       name="q"
-                       placeholder="Search products..."
-                       autocomplete="off">
+                <div class="position-relative">
+                    <span class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">🔍</span>
+                    <input class="form-control search-input-custom ps-5"
+                           type="search"
+                           id="searchInput"
+                           name="q"
+                           placeholder="Search for clothes..."
+                           autocomplete="off">
+                </div>
 
                 <!-- 🔽 SUGGESTION BOX -->
                 <div id="suggestionBox"
@@ -41,29 +45,29 @@
                 </div>
             </form>
 
-            <ul class="navbar-nav ms-auto align-items-center gap-2">
+            <ul class="navbar-nav ms-auto align-items-center gap-3">
+                
+                <li class="nav-item">
+                     <a class="nav-link-custom" href="{% url 'product_list' %}">
+                        Shop
+                    </a>
+                </li>
 
                 {% if user.is_authenticated %}
                 <!-- AI BUTTON -->
                 <li class="nav-item">
-                    <a class="nav-link-custom" href="{% url 'ai_home' %}">
-                        <span class="text-info fs-5">✨</span> AI Stylist
+                    <a class="nav-link-custom ai-nav-btn text-white" href="{% url 'ai_home' %}">
+                        ✨ AI Stylist
                     </a>
                 </li>
                 {% endif %}
 
-                <li class="nav-item">
-                    <a class="nav-link-custom" href="{% url 'product_list' %}">
-                        Products
-                    </a>
-                </li>
-
                 <!-- CART -->
                 <li class="nav-item position-relative">
                     <a class="nav-link-custom" href="{% url 'cart_detail' %}">
-                        <span style="font-size: 1.25rem;">🛒</span>
+                        <span style="font-size: 1.2rem;">🛒</span>
                         {% if cart_count > 0 %}
-                            <span class="position-absolute rounded-pill cart-badge">
+                            <span class="position-absolute translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.65rem; top: 5px; left: 85%;">
                                 {{ cart_count }}
                             </span>
                         {% endif %}
@@ -73,42 +77,42 @@
                 {% if user.is_authenticated %}
                 <!-- USER DROPDOWN -->
                 <li class="nav-item dropdown ms-2">
-                    <a class="nav-link-custom dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <a class="nav-link-custom user-profile-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         {% if user.userprofile.profile_photo %}
                             <img src="{{ user.userprofile.profile_photo.url }}"
-                                 class="rounded-circle nav-avatar me-2"
-                                 width="36" height="36"
+                                 class="rounded-circle nav-avatar"
+                                 width="38" height="38"
                                  style="object-fit: cover;">
                         {% else %}
-                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 nav-avatar"
-                                 style="width:36px;height:36px;font-size:14px;">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center nav-avatar"
+                                 style="width:38px;height:38px;font-size:14px;">
                                 {{ user.username|first|upper }}
                             </div>
                         {% endif %}
-                        <span class="fw-medium">{{ user.username }}</span>
+                        <span class="fw-semibold text-dark small-text">{{ user.username }}</span>
                     </a>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2" style="background: rgba(30,41,59,0.98); border: 1px solid rgba(255,255,255,0.1);">
-                        <li><a class="dropdown-item text-light" href="{% url 'profile' %}">👤 Profile</a></li>
-                        <li><a class="dropdown-item text-light" href="{% url 'wishlist' %}">❤️ Wishlist</a></li>
-                        <li><a class="dropdown-item text-light" href="{% url 'my_orders' %}">📦 My Orders</a></li>
-                        <li><hr class="dropdown-divider bg-secondary opacity-25"></li>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg animate-slide mt-2">
+                        <li><a class="dropdown-item" href="{% url 'profile' %}">👤 My Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'wishlist' %}">❤️ Wishlist</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_orders' %}">📦 Orders</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item text-danger fw-bold" href="{% url 'logout' %}">
-                                🚪 Logout
+                            <a class="dropdown-item text-danger fw-semibold" href="{% url 'logout' %}">
+                                🚪 Sign Out
                             </a>
                         </li>
                     </ul>
                 </li>
 
                 {% else %}
-                <li class="nav-item ms-md-3">
-                    <a class="btn-nav-outline me-2 text-decoration-none" href="{% url 'login' %}">
+                <li class="nav-item ms-2">
+                    <a class="nav-link-custom fw-semibold" href="{% url 'login' %}">
                         Login
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="btn-nav-primary text-decoration-none" href="{% url 'register' %}">
+                    <a class="btn btn-dark rounded-pill px-4 btn-sm" href="{% url 'register' %}">
                         Sign Up
                     </a>
                 </li>
