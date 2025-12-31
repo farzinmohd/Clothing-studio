@@ -1,0 +1,4 @@
+DB_PRODUCTS_COUNT: 27
+EMBEDDINGS_COUNT: 26
+MISSING_FROM_AI_COUNT: 1
+ - Men Regular Fit Shirt with Patch Pocket Red (has_image: True)

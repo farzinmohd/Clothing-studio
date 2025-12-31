@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from pathlib import Path
 from .skin_tone.detector import detect_skin_tone
@@ -12,6 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .size_recommendation.model import predict_size
 from accounts.models import UserMeasurements
+
+# New Imports
+from .recommendations.similarity import find_similar_products
+from products.models import Product
 
 def ai_home(request):
     return render(request, "ai/ai_home.html")
@@ -35,7 +39,7 @@ def ai_result(request):
             f.write(chunk)
 
     # ⏳ Fake AI thinking time (3–6 sec)
-    time.sleep(random.randint(3, 6))
+    # time.sleep(random.randint(3, 6))
 
     # 🧠 AI detection
     skin_tone, boxed_image_path = detect_skin_tone(image_path)
@@ -125,3 +129,49 @@ def predict_size_api(request):
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
+
+
+# -------------------------
+# 📸 VISUAL SEARCH
+# -------------------------
+def visual_search(request):
+    if request.method == "POST" and request.FILES.get("image"):
+        image = request.FILES["image"]
+        
+        # Save temp image
+        upload_dir = os.path.join(settings.MEDIA_ROOT, "visual_search_tmp")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Use a fixed name or unique name; here standardizing for simplicity in demos
+        file_path = os.path.join(upload_dir, "query.jpg")
+        
+        with open(file_path, "wb+") as f:
+            for chunk in image.chunks():
+                f.write(chunk)
+                
+        # Run search
+        try:
+            # Get IDs of similar products
+            product_ids = find_similar_products(file_path)
+            
+            # Fetch objects preserving order
+            products = []
+            for pid in product_ids:
+                try:
+                    products.append(Product.objects.get(id=pid))
+                except Product.DoesNotExist:
+                    pass
+            
+            return render(request, "ai/visual_search.html", {
+                "products": products,
+                "query_image_url": f"{settings.MEDIA_URL}visual_search_tmp/query.jpg?t={time.time()}" 
+            })
+            
+        except Exception as e:
+            # In production log this
+            print(f"Visual Search Error: {e}")
+            return render(request, "ai/visual_search.html", {
+                "error": "Could not process image. Ensure AI models are built."
+            })
+
+    return render(request, "ai/visual_search.html")
