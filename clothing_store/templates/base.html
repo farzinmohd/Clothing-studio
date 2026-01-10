@@ -30,7 +30,7 @@
             <!-- 🔍 SEARCH BAR -->
             <form class="position-relative mx-auto w-50" method="get" action="{% url 'product_list' %}">
                 <div class="position-relative">
-                    <span class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted">🔍</span>
+                    <span class="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></span>
                     <input class="form-control search-input-custom ps-5"
                            type="search"
                            id="searchInput"
@@ -101,9 +101,9 @@
                     </a>
 
                     <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg animate-slide mt-2">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}">👤 My Profile</a></li>
-                        <li><a class="dropdown-item" href="{% url 'wishlist' %}">❤️ Wishlist</a></li>
-                        <li><a class="dropdown-item" href="{% url 'my_orders' %}">📦 Orders</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"> My Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'wishlist' %}"> Wishlist</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_orders' %}"> Orders</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger fw-semibold" href="{% url 'logout' %}">

@@ -1,0 +1,20 @@
+venv\Scripts\Activate   
+cd .\clothing_store\ 
+python manage.py runserver
+
+
+admin
+username: admin
+password: adm@1234
+
+iqbal
+username: iqbal
+password: iqbal@1234
+
+bfarz
+username: bfar
+password: Farzin@123
+
+test
+username: test
+password: test@123
