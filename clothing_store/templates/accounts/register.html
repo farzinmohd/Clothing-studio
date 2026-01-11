@@ -32,15 +32,64 @@
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                {{ form.password }}
+                <div class="password-wrapper">
+                    {{ form.password }}
+                    <button type="button" class="password-toggle-btn" id="togglePassword">
+                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg id="eyeSlashIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Password Requirements Checklist -->
+                <div class="password-requirements">
+                    <div class="requirements-title">Password must contain:</div>
+                    <div class="requirement-item invalid" id="req-length">
+                        <span class="requirement-icon">✓</span>
+                        <span>At least 8 characters</span>
+                    </div>
+                    <div class="requirement-item invalid" id="req-uppercase">
+                        <span class="requirement-icon">✓</span>
+                        <span>One uppercase letter (A-Z)</span>
+                    </div>
+                    <div class="requirement-item invalid" id="req-lowercase">
+                        <span class="requirement-icon">✓</span>
+                        <span>One lowercase letter (a-z)</span>
+                    </div>
+                    <div class="requirement-item invalid" id="req-digit">
+                        <span class="requirement-icon">✓</span>
+                        <span>One number (0-9)</span>
+                    </div>
+                    <div class="requirement-item invalid" id="req-special">
+                        <span class="requirement-icon">✓</span>
+                        <span>One special character (!@#$%^&*)</span>
+                    </div>
+                </div>
             </div>
 
             <div class="mb-4">
                 <label class="form-label">Confirm Password</label>
-                {{ form.confirm_password }}
+                <div class="password-wrapper">
+                    {{ form.confirm_password }}
+                    <button type="button" class="password-toggle-btn" id="toggleConfirmPassword">
+                        <svg id="eyeIconConfirm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg id="eyeSlashIconConfirm" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <button type="submit" class="btn-auth">
+            <button type="submit" class="btn-auth" id="submitBtn">
                 Create Account
             </button>
         </form>
@@ -57,6 +106,89 @@
     document.querySelectorAll('input').forEach(input => {
         if (!input.classList.contains('form-control')) {
             input.classList.add('form-control');
+        }
+    });
+
+    // ===== PASSWORD VISIBILITY TOGGLE =====
+    const passwordInput = document.getElementById('id_password');
+    const confirmPasswordInput = document.getElementById('id_confirm_password');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const toggleConfirmPasswordBtn = document.getElementById('toggleConfirmPassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const eyeSlashIcon = document.getElementById('eyeSlashIcon');
+    const eyeIconConfirm = document.getElementById('eyeIconConfirm');
+    const eyeSlashIconConfirm = document.getElementById('eyeSlashIconConfirm');
+
+    // Toggle password visibility
+    togglePasswordBtn.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Toggle icons
+        if (type === 'text') {
+            eyeIcon.style.display = 'none';
+            eyeSlashIcon.style.display = 'block';
+        } else {
+            eyeIcon.style.display = 'block';
+            eyeSlashIcon.style.display = 'none';
+        }
+    });
+
+    // Toggle confirm password visibility
+    toggleConfirmPasswordBtn.addEventListener('click', function() {
+        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPasswordInput.setAttribute('type', type);
+        
+        // Toggle icons
+        if (type === 'text') {
+            eyeIconConfirm.style.display = 'none';
+            eyeSlashIconConfirm.style.display = 'block';
+        } else {
+            eyeIconConfirm.style.display = 'block';
+            eyeSlashIconConfirm.style.display = 'none';
+        }
+    });
+
+    // ===== REAL-TIME PASSWORD VALIDATION =====
+    const requirements = {
+        length: { regex: /.{8,}/, element: document.getElementById('req-length') },
+        uppercase: { regex: /[A-Z]/, element: document.getElementById('req-uppercase') },
+        lowercase: { regex: /[a-z]/, element: document.getElementById('req-lowercase') },
+        digit: { regex: /\d/, element: document.getElementById('req-digit') },
+        special: { regex: /[!@#$%^&*(),.?":{}|<>]/, element: document.getElementById('req-special') }
+    };
+
+    let isPasswordValid = false;
+
+    function validatePassword() {
+        const password = passwordInput.value;
+        isPasswordValid = true;
+
+        // Check each requirement
+        for (const key in requirements) {
+            const req = requirements[key];
+            const isValid = req.regex.test(password);
+            
+            if (isValid) {
+                req.element.classList.remove('invalid');
+                req.element.classList.add('valid');
+            } else {
+                req.element.classList.remove('valid');
+                req.element.classList.add('invalid');
+                isPasswordValid = false;
+            }
+        }
+    }
+
+    // Validate on input
+    passwordInput.addEventListener('input', validatePassword);
+
+    // ===== FORM SUBMISSION VALIDATION =====
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        if (!isPasswordValid) {
+            e.preventDefault();
+            alert('Please ensure your password meets all requirements before submitting.');
         }
     });
 </script>

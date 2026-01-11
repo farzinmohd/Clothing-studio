@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from .models import UserProfile
 from .models import Address
+import re
 
 
 
@@ -12,13 +14,15 @@ class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter password'
+            'placeholder': 'Enter password',
+            'id': 'id_password'
         })
     )
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Confirm password'
+            'placeholder': 'Confirm password',
+            'id': 'id_confirm_password'
         })
     )
 
@@ -35,6 +39,31 @@ class UserRegistrationForm(forms.ModelForm):
                 'placeholder': 'Enter email'
             }),
         }
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        
+        # Minimum length check
+        if len(password) < 8:
+            raise ValidationError("Password must be at least 8 characters long.")
+        
+        # Uppercase letter check
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError("Password must contain at least one uppercase letter.")
+        
+        # Lowercase letter check
+        if not re.search(r'[a-z]', password):
+            raise ValidationError("Password must contain at least one lowercase letter.")
+        
+        # Digit check
+        if not re.search(r'\d', password):
+            raise ValidationError("Password must contain at least one digit.")
+        
+        # Special character check
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise ValidationError("Password must contain at least one special character (!@#$%^&*).")
+        
+        return password
 
     def clean(self):
         cleaned_data = super().clean()
