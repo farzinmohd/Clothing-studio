@@ -66,7 +66,7 @@
                 <!-- CART -->
                 <li class="nav-item position-relative">
                     <a class="nav-link-custom" href="{% url 'cart_detail' %}">
-                        <span style="font-size: 1.2rem;">🛒</span>
+                        <i class="fas fa-shopping-bag"></i>
                         {% if cart_count > 0 %}
                             <span class="position-absolute translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.65rem; top: 5px; left: 85%;">
                                 {{ cart_count }}
@@ -78,7 +78,7 @@
                 <!-- VISUAL SEARCH -->
                 <li class="nav-item ms-2">
                     <a class="nav-link-custom" href="{% url 'visual_search' %}" title="Visual Search">
-                        <span style="font-size: 1.2rem;">📷</span>
+                        <i class="fas fa-camera"></i>
                     </a>
                 </li>
 
@@ -107,7 +107,7 @@
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger fw-semibold" href="{% url 'logout' %}">
-                                🚪 Sign Out
+                                <i class="fas fa-sign-out-alt me-2"></i> Sign Out
                             </a>
                         </li>
                     </ul>

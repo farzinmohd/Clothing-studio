@@ -67,16 +67,33 @@ body {
     font-weight: 500;
     font-size: 0.95rem;
     padding: 0.5rem 1rem !important;
-    border-radius: 8px;
-    transition: all 0.2s;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none !important;
+    position: relative;
+}
+
+.nav-link-custom i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
 }
 
 .nav-link-custom:hover {
     color: #0f172a !important;
-    background-color: #f8fafc;
+    background-color: #f1f5f9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.nav-link-custom:hover i {
+    transform: scale(1.15);
+}
+
+.nav-link-custom:active {
+    transform: translateY(0);
 }
 
 /* AI Button */
@@ -130,14 +147,25 @@ body {
 
 .dropdown-item {
     border-radius: 8px;
-    padding: 0.5rem 1rem;
+    padding: 0.65rem 1rem;
     font-weight: 500;
     color: #475569;
+    transition: all 0.2s ease;
+    text-decoration: none !important;
 }
 
 .dropdown-item:hover {
-    background-color: #f8fafc;
+    background-color: #f1f5f9;
     color: #0f172a;
+    transform: translateX(4px);
+}
+
+.dropdown-item i {
+    transition: transform 0.2s ease;
+}
+
+.dropdown-item:hover i {
+    transform: scale(1.1);
 }
 
 /* Cart Badge */
