@@ -40,6 +40,24 @@ class UserRegistrationForm(forms.ModelForm):
             }),
         }
 
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("This username is already taken. Please choose a different username.")
+        
+        return username
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        
+        # Check if email already exists
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("This email is already registered. Please use a different email or login.")
+        
+        return email
+
     def clean_password(self):
         password = self.cleaned_data.get('password')
         

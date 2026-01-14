@@ -15,6 +15,15 @@
         <form method="post">
             {% csrf_token %}
 
+            <!-- Display non-field errors (like password mismatch) -->
+            {% if form.non_field_errors %}
+                <div class="error-message">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <!-- Custom styling for Django form fields rendered manually usually, but if relying on form view, we can style the widget or wrap it -->
             <!-- Since register.html used form.field approach, we'll keep that but wrap in our clean divs. 
                  To ensure the 'form-control' class is present, we might need JS or assume it's added in the form definition.
@@ -22,12 +31,38 @@
             
             <div class="mb-3">
                 <label class="form-label">Username</label>
-                {{ form.username }} 
+                <div class="input-with-indicator">
+                    {{ form.username }}
+                    <div class="availability-indicator" id="username-indicator" style="display: none;">
+                        <span class="icon"></span>
+                    </div>
+                </div>
+                <div class="availability-message" id="username-message" style="display: none;"></div>
+                {% if form.username.errors %}
+                    <div class="error-message">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Email Address</label>
-                {{ form.email }}
+                <div class="input-with-indicator">
+                    {{ form.email }}
+                    <div class="availability-indicator" id="email-indicator" style="display: none;">
+                        <span class="icon"></span>
+                    </div>
+                </div>
+                <div class="availability-message" id="email-message" style="display: none;"></div>
+                {% if form.email.errors %}
+                    <div class="error-message">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="mb-3">
@@ -191,5 +226,124 @@
             alert('Please ensure your password meets all requirements before submitting.');
         }
     });
+
+    // ===== LIVE USERNAME/EMAIL AVAILABILITY CHECK =====
+    const usernameInput = document.getElementById('id_username');
+    const emailInput = document.getElementById('id_email');
+    const usernameIndicator = document.getElementById('username-indicator');
+    const emailIndicator = document.getElementById('email-indicator');
+    const usernameMessage = document.getElementById('username-message');
+    const emailMessage = document.getElementById('email-message');
+
+    let usernameTimeout;
+    let emailTimeout;
+
+    // Debounce function - wait 500ms after user stops typing
+    function debounce(func, delay) {
+        return function(...args) {
+            clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // Check username availability
+    async function checkUsername(username) {
+        if (!username || username.length < 3) {
+            hideIndicator(usernameIndicator, usernameMessage);
+            return;
+        }
+
+        // Show loading state
+        showLoading(usernameIndicator, usernameMessage);
+
+        try {
+            const response = await fetch(`/accounts/api/check-username/?username=${encodeURIComponent(username)}`);
+            const data = await response.json();
+
+            if (data.available) {
+                showAvailable(usernameIndicator, usernameMessage, data.message);
+            } else {
+                showTaken(usernameIndicator, usernameMessage, data.message);
+            }
+        } catch (error) {
+            console.error('Error checking username:', error);
+            hideIndicator(usernameIndicator, usernameMessage);
+        }
+    }
+
+    // Check email availability
+    async function checkEmail(email) {
+        if (!email || !email.includes('@')) {
+            hideIndicator(emailIndicator, emailMessage);
+            return;
+        }
+
+        // Show loading state
+        showLoading(emailIndicator, emailMessage);
+
+        try {
+            const response = await fetch(`/accounts/api/check-email/?email=${encodeURIComponent(email)}`);
+            const data = await response.json();
+
+            if (data.available) {
+                showAvailable(emailIndicator, emailMessage, data.message);
+            } else {
+                showTaken(emailIndicator, emailMessage, data.message);
+            }
+        } catch (error) {
+            console.error('Error checking email:', error);
+            hideIndicator(emailIndicator, emailMessage);
+        }
+    }
+
+    // UI Helper Functions
+    function showLoading(indicator, message) {
+        indicator.style.display = 'flex';
+        indicator.className = 'availability-indicator checking';
+        indicator.querySelector('.icon').innerHTML = '<div class="spinner"></div>';
+        message.style.display = 'none';
+    }
+
+    function showAvailable(indicator, message, text) {
+        indicator.style.display = 'flex';
+        indicator.className = 'availability-indicator available';
+        indicator.querySelector('.icon').innerHTML = '✓';
+        message.style.display = 'block';
+        message.className = 'availability-message available';
+        message.textContent = text;
+    }
+
+    function showTaken(indicator, message, text) {
+        indicator.style.display = 'flex';
+        indicator.className = 'availability-indicator taken';
+        indicator.querySelector('.icon').innerHTML = '✗';
+        message.style.display = 'block';
+        message.className = 'availability-message taken';
+        message.textContent = text;
+    }
+
+    function hideIndicator(indicator, message) {
+        indicator.style.display = 'none';
+        message.style.display = 'none';
+    }
+
+    // Attach event listeners with debouncing
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            usernameTimeout = setTimeout(() => {
+                checkUsername(this.value.trim());
+            }, 500);
+        });
+    }
+
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            clearTimeout(emailTimeout);
+            emailTimeout = setTimeout(() => {
+                checkEmail(this.value.trim());
+            }, 500);
+        });
+    }
 </script>
 {% endblock %}

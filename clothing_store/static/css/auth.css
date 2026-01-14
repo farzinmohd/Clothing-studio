@@ -214,6 +214,19 @@ body {
     color: #c53030;
 }
 
+/* Error Messages */
+.error-message {
+    color: #e53e3e;
+    font-size: 0.8125rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #fff5f5;
+    border-left: 3px solid #e53e3e;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+
 /* Utilities */
 .mb-0 { margin-bottom: 0; }
 .mb-2 { margin-bottom: 0.5rem; }
@@ -222,6 +235,86 @@ body {
 .d-flex { display: flex; }
 .justify-content-between { justify-content: space-between; }
 .align-items-center { align-items: center; }
+
+/* Availability Indicator */
+.input-with-indicator {
+    position: relative;
+}
+
+.availability-indicator {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.availability-indicator.available {
+    color: #38a169;
+}
+
+.availability-indicator.taken {
+    color: #e53e3e;
+}
+
+.availability-indicator.checking {
+    color: #718096;
+}
+
+.availability-message {
+    font-size: 0.8125rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.availability-message.available {
+    color: #2f855a;
+    background-color: #f0fff4;
+    border: 1px solid #9ae6b4;
+}
+
+.availability-message.available::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.availability-message.taken {
+    color: #c53030;
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+}
+
+.availability-message.taken::before {
+    content: '✗';
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #4299e1;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
 
 /* Responsive */
 @media (max-width: 576px) {

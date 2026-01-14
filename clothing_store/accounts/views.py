@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError
+from django.http import JsonResponse
 
 from .forms import UserRegistrationForm, UserProfileForm, AddressForm
 from .models import UserProfile, Address
@@ -225,3 +226,48 @@ def delete_account(request):
         return redirect('home')
 
     return render(request, 'accounts/delete_account_confirm.html')
+
+
+# -------------------------
+# AJAX: CHECK USERNAME AVAILABILITY
+# -------------------------
+def check_username_availability(request):
+    """
+    AJAX endpoint to check if a username is available.
+    Returns JSON: {"available": true/false}
+    """
+    username = request.GET.get('username', '').strip()
+    
+    if not username:
+        return JsonResponse({'available': False, 'message': 'Username cannot be empty'})
+    
+    # Check if username exists
+    exists = User.objects.filter(username=username).exists()
+    
+    return JsonResponse({
+        'available': not exists,
+        'message': 'Username is available' if not exists else 'Username is already taken'
+    })
+
+
+# -------------------------
+# AJAX: CHECK EMAIL AVAILABILITY
+# -------------------------
+def check_email_availability(request):
+    """
+    AJAX endpoint to check if an email is available.
+    Returns JSON: {"available": true/false}
+    """
+    email = request.GET.get('email', '').strip()
+    
+    if not email:
+        return JsonResponse({'available': False, 'message': 'Email cannot be empty'})
+    
+    # Check if email exists
+    exists = User.objects.filter(email=email).exists()
+    
+    return JsonResponse({
+        'available': not exists,
+        'message': 'Email is available' if not exists else 'Email is already registered'
+    })
+
