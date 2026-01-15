@@ -1,0 +1,164 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}User: {{ user_obj.username }}{% endblock %}
+{% block page_title %}User Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_user_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i> Back to Users
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-4">
+        <!-- User Info -->
+        <div class="content-card mb-4">
+            <h5 class="mb-3">User Information</h5>
+            <p><strong>Username:</strong> {{ user_obj.username }}</p>
+            <p><strong>Email:</strong> {{ user_obj.email|default:"-" }}</p>
+            <p><strong>Joined:</strong> {{ user_obj.date_joined|date:"M d, Y" }}</p>
+            <p><strong>Last Login:</strong> {{ user_obj.last_login|date:"M d, Y H:i"|default:"Never" }}</p>
+            <p><strong>Total Spent:</strong> ₹{{ total_spent }}</p>
+            <hr>
+            <p>
+                <strong>Status:</strong>
+                {% if user_obj.is_active %}
+                    <span class="badge badge-success">Active</span>
+                {% else %}
+                    <span class="badge badge-danger">Blocked</span>
+                {% endif %}
+            </p>
+            <p>
+                <strong>Role:</strong>
+                {% if user_obj.is_staff %}
+                    <span class="badge badge-info">Staff</span>
+                {% else %}
+                    <span class="badge badge-secondary">Customer</span>
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- Actions -->
+        <div class="content-card">
+            <h5 class="mb-3">Actions</h5>
+            <div id="user-actions">
+                {% if user_obj.is_active %}
+                    <button type="button" class="btn btn-danger w-100 mb-2" onclick="toggleUserStatus({{ user_obj.id }}, true)">
+                        <i class="fas fa-ban me-2"></i> Block User
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-success w-100 mb-2" onclick="toggleUserStatus({{ user_obj.id }}, false)">
+                        <i class="fas fa-check me-2"></i> Activate User
+                    </button>
+                {% endif %}
+            </div>
+            
+            <a href="{% url 'admin_user_delete' user_obj.id %}" class="btn btn-outline-danger w-100">
+                <i class="fas fa-trash me-2"></i> Delete User
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <!-- Recent Orders -->
+        <div class="content-card">
+            <h5 class="mb-3">Recent Orders</h5>
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><a href="{% url 'admin_order_detail' order.id %}">#{{ order.id }}</a></td>
+                            <td>₹{{ order.total_amount }}</td>
+                            <td>
+                                {% if order.status == 'delivered' %}
+                                    <span class="badge badge-success">{{ order.get_status_display }}</span>
+                                {% elif order.status == 'cancelled' %}
+                                    <span class="badge badge-danger">{{ order.get_status_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-warning">{{ order.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No orders yet</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleUserStatus(userId, isCurrentlyActive) {
+    const actionBtn = document.querySelector('#user-actions button');
+    const statusBadge = document.querySelector('.badge-success, .badge-danger');
+    
+    // Disable button during request
+    actionBtn.disabled = true;
+    actionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                      document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    
+    fetch(`/admin-panel/users/${userId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update status badge
+            if (data.is_active) {
+                statusBadge.className = 'badge badge-success';
+                statusBadge.textContent = 'Active';
+                
+                // Update button to Block
+                actionBtn.className = 'btn btn-danger w-100 mb-2';
+                actionBtn.onclick = () => toggleUserStatus(userId, true);
+                actionBtn.innerHTML = '<i class="fas fa-ban me-2"></i> Block User';
+            } else {
+                statusBadge.className = 'badge badge-danger';
+                statusBadge.textContent = 'Blocked';
+                
+                // Update button to Activate
+                actionBtn.className = 'btn btn-success w-100 mb-2';
+                actionBtn.onclick = () => toggleUserStatus(userId, false);
+                actionBtn.innerHTML = '<i class="fas fa-check me-2"></i> Activate User';
+            }
+            
+            // Show success message (if you have a message container)
+            console.log(data.message);
+        } else {
+            alert('Error: ' + data.error);
+        }
+        actionBtn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        actionBtn.disabled = false;
+        // Restore original button
+        location.reload();
+    });
+}
+</script>
+{% endblock %}

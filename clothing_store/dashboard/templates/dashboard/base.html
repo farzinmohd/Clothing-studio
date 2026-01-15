@@ -1,0 +1,134 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} | Tailored Elegance</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="{% static 'dashboard/css/admin.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-store"></i> Tailored Elegance</h4>
+            <p class="text-muted small mb-0">Admin Panel</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{% url 'admin_dashboard' %}" class="sidebar-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="{% url 'admin_product_list' %}" class="sidebar-item {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-box"></i>
+                <span>Products</span>
+            </a>
+            
+            <a href="{% url 'admin_category_list' %}" class="sidebar-item {% if 'category' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-tags"></i>
+                <span>Categories</span>
+            </a>
+            
+            <a href="{% url 'admin_order_list' %}" class="sidebar-item {% if 'order' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Orders</span>
+            </a>
+            
+            <a href="{% url 'admin_user_list' %}" class="sidebar-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+            </a>
+            
+            <a href="{% url 'admin_review_list' %}" class="sidebar-item {% if 'review' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-star"></i>
+                <span>Reviews</span>
+            </a>
+            
+            <a href="{% url 'admin_coupon_list' %}" class="sidebar-item {% if 'coupon' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-ticket-alt"></i>
+                <span>Coupons</span>
+            </a>
+            
+            <div class="sidebar-divider"></div>
+            
+            <a href="{% url 'sales_report_pdf' %}" class="sidebar-item">
+                <i class="fas fa-file-pdf"></i>
+                <span>PDF Report</span>
+            </a>
+            
+            <a href="{% url 'sales_report_excel' %}" class="sidebar-item">
+                <i class="fas fa-file-excel"></i>
+                <span>Excel Report</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <div class="navbar-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h5 class="page-title mb-0">{% block page_title %}Dashboard{% endblock %}</h5>
+            </div>
+            
+            <div class="navbar-right">
+                <a href="/" class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                    <i class="fas fa-globe"></i> View Site
+                </a>
+                
+                <div class="dropdown">
+                    <button class="admin-profile dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ user.username }}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/admin/" target="_blank"><i class="fas fa-cog"></i> Django Admin</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'admin_logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Page Content -->
+        <div class="page-content">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Admin JS -->
+    <script src="{% static 'dashboard/js/admin.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

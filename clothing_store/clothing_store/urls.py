@@ -18,7 +18,7 @@ urlpatterns = [
     path('products/', include('products.urls')),
     path('cart/', include('carts.urls')),
     path('orders/', include('orders.urls')),
-    path('dashboard/', include('dashboard.urls')),
+    path('admin-panel/', include('dashboard.urls')),
     path('ai/', include('ai_features.urls')),
     path('virtual-tryon/', virtual_tryon_demo, name='virtual_tryon_demo'),
 

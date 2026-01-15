@@ -1,0 +1,91 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+{% block page_title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'admin_order_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i> Back to Orders
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Order Items -->
+        <div class="content-card mb-4">
+            <h5 class="mb-3">Order Items</h5>
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.size }}</td>
+                            <td>{{ item.color|default:"-" }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>₹{{ item.price }}</td>
+                            <td><strong>₹{{ item.price|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Order Summary -->
+        <div class="content-card mb-4">
+            <h5 class="mb-3">Order Summary</h5>
+            <p><strong>Order ID:</strong> #{{ order.id }}</p>
+            <p><strong>Customer:</strong> {{ order.user.username }}</p>
+            <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
+            <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
+            <hr>
+            <p><strong>Subtotal:</strong> ₹{{ order.total_amount }}</p>
+            {% if order.discount_amount %}
+                <p><strong>Discount:</strong> -₹{{ order.discount_amount }}</p>
+                <p><strong>Final Amount:</strong> ₹{{ order.final_amount }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Update Status -->
+        <div class="content-card mb-4">
+            <h5 class="mb-3">Update Status</h5>
+            <form method="post" action="{% url 'admin_order_status' order.id %}">
+                {% csrf_token %}
+                <select name="status" class="form-select mb-3">
+                    {% for value, label in order.STATUS_CHOICES %}
+                        <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-save me-2"></i> Update Status
+                </button>
+            </form>
+        </div>
+        
+        <!-- Shipping Address -->
+        {% if order.address %}
+        <div class="content-card">
+            <h5 class="mb-3">Shipping Address</h5>
+            <p><strong>{{ order.address.full_name }}</strong></p>
+            <p>{{ order.address.phone }}</p>
+            <p>{{ order.address.address_line }}</p>
+            <p>{{ order.address.city }}, {{ order.address.state }} - {{ order.address.postal_code }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

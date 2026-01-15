@@ -1,0 +1,32 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Delete Category{% endblock %}
+{% block page_title %}Delete Category{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="content-card">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-triangle text-danger" style="font-size: 60px;"></i>
+                <h4 class="mt-3">Confirm Deletion</h4>
+            </div>
+            
+            <p class="text-center">Are you sure you want to delete the category:</p>
+            <h5 class="text-center mb-4"><strong>{{ category.name }}</strong></h5>
+            
+            <p class="text-muted text-center">This action cannot be undone.</p>
+            
+            <form method="post" class="text-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger me-2">
+                    <i class="fas fa-trash me-2"></i> Yes, Delete
+                </button>
+                <a href="{% url 'admin_category_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i> Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
