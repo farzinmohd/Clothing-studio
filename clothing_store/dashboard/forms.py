@@ -36,7 +36,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             'category', 'name', 'description', 'price', 'stock', 'color', 'tags',
-            'is_dynamic_pricing', 'base_price', 'view_count', 'cart_add_count', 
+            'is_dynamic_pricing', 'base_price', 'max_price', 'view_count', 'cart_add_count', 
             'units_sold', 'current_demand_score', 'is_active'
         ]
         widgets = {
@@ -48,6 +48,7 @@ class ProductForm(forms.ModelForm):
             'tags': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Shirt, Casual, Red'}),
             'is_dynamic_pricing': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'base_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'max_price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'view_count': forms.NumberInput(attrs={'class': 'form-control'}),
             'cart_add_count': forms.NumberInput(attrs={'class': 'form-control'}),
             'units_sold': forms.NumberInput(attrs={'class': 'form-control'}),
@@ -56,6 +57,7 @@ class ProductForm(forms.ModelForm):
         }
         help_texts = {
             'base_price': 'Original price before AI adjustment',
+            'max_price': 'Maximum price ceiling (optional). Price will never exceed this amount.',
             'current_demand_score': '0-100 score. 50 is neutral.',
             'tags': 'Manually enter tags (e.g., Shirt, Casual, Red) or use AI generation when editing.',
         }

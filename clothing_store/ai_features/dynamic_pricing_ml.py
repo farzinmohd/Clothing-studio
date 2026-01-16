@@ -83,25 +83,46 @@ def predict_demand_score(product):
 def calculate_new_price(product, demand_score):
     """
     Adjusts price based on Demand Score.
-    - Score > 80: +10%
-    - Score > 60: +5%
-    - Score < 20: -10% (Discount)
-    - Score < 40: -5%
+    - Score > 80: +6% (reduced from +10%)
+    - Score > 60: +3% (reduced from +5%)
+    - Score < 20: -6% (reduced from -10%)
+    - Score < 40: -3% (reduced from -5%)
+    
+    IMPORTANT: Calculates from CURRENT price for cumulative increases,
+    but uses base_price as the floor for decreases.
     """
-    base = float(product.base_price) if product.base_price else float(product.price)
+    # Use current price for increases (cumulative effect)
+    # Use base_price as minimum floor for decreases
+    current = float(product.price)
+    base = float(product.base_price) if product.base_price else current
     
     if demand_score > 80:
-        factor = 1.10
+        factor = 1.06  # +6%
+        new_price = round(current * factor, 2)
     elif demand_score > 60:
-        factor = 1.05
+        factor = 1.03  # +3%
+        new_price = round(current * factor, 2)
     elif demand_score < 20:
-        factor = 0.90
+        factor = 0.94  # -6%
+        # Don't go below base price
+        new_price = max(round(current * factor, 2), base)
     elif demand_score < 40:
-        factor = 0.95
+        factor = 0.97  # -3%
+        # Don't go below base price
+        new_price = max(round(current * factor, 2), base)
     else:
-        factor = 1.0  # Neutral
-
-    new_price = round(base * factor, 2)
+        # Neutral - gradually return to base price
+        if current > base:
+            new_price = max(round(current * 0.98, 2), base)
+        elif current < base:
+            new_price = min(round(current * 1.02, 2), base)
+        else:
+            new_price = base
+    
+    # Apply max_price cap if set
+    if product.max_price and new_price > float(product.max_price):
+        new_price = float(product.max_price)
+    
     return new_price
 
 # Helper for Django Aggregation hook
