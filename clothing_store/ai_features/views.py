@@ -6,7 +6,7 @@ from .skin_tone.recommender import get_recommended_products
 import os
 import time
 import random
-from ai_features.virtual_tryon.pose_detect import detect_shoulders
+# Virtual try-on imports moved to function level to avoid TensorFlow loading at startup
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -64,24 +64,70 @@ def ai_result(request):
     })
 
 
+
+
 def virtual_tryon_demo(request):
-    pose_data = None
-
-    if request.method == "POST" and request.FILES.get("image"):
-        img = request.FILES["image"]
-        path = f"media/tmp/{img.name}"
+    """
+    Enhanced Virtual Try-On with Simple Overlay
+    """
+    result_image_url = None
+    error_message = None
+    products = Product.objects.filter(is_active=True)[:20]  # Get some products
+    
+    if request.method == "POST":
+        person_image = request.FILES.get("person_image")
+        product_id = request.POST.get("product_id")
         
-        # Ensure dir exists
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-
-        with open(path, "wb+") as f:
-            for chunk in img.chunks():
-                f.write(chunk)
-
-        pose_data = detect_shoulders(path)
-
+        if not person_image:
+            error_message = "Please upload your photo"
+        elif not product_id:
+            error_message = "Please select a product"
+        else:
+            try:
+                # Lazy import to avoid loading TensorFlow at Django startup
+                from ai_features.virtual_tryon.simple_overlay import virtual_tryon_simple
+                
+                # Save person image
+                upload_dir = os.path.join(settings.MEDIA_ROOT, "virtual_tryon_uploads")
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                person_path = os.path.join(upload_dir, f"person_{time.time()}.jpg")
+                with open(person_path, "wb+") as f:
+                    for chunk in person_image.chunks():
+                        f.write(chunk)
+                
+                # Get product garment image
+                product = Product.objects.get(id=product_id)
+                garment_path = product.images.first().image.path if product.images.exists() else None
+                
+                if not garment_path:
+                    error_message = "Product image not found"
+                else:
+                    # Perform virtual try-on
+                    result_dir = os.path.join(settings.MEDIA_ROOT, "virtual_tryon_results")
+                    os.makedirs(result_dir, exist_ok=True)
+                    
+                    result_path = os.path.join(result_dir, f"result_{time.time()}.jpg")
+                    
+                    result_img, message = virtual_tryon_simple(
+                        person_path, 
+                        garment_path, 
+                        output_path=result_path
+                    )
+                    
+                    if result_img is not None:
+                        # Convert path to URL
+                        result_image_url = result_path.replace(settings.MEDIA_ROOT, settings.MEDIA_URL).replace("\\", "/")
+                    else:
+                        error_message = message
+                        
+            except Exception as e:
+                error_message = f"Error: {str(e)}"
+    
     return render(request, "ai/virtual_tryon_demo.html", {
-        "pose_data": pose_data
+        "products": products,
+        "result_image_url": result_image_url,
+        "error_message": error_message
     })
 
 # -------------------------

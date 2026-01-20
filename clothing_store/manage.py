@@ -3,6 +3,9 @@
 import os
 import sys
 
+# 🔧 FIX: Set environment variable to resolve TensorFlow/Protobuf conflict
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 
 def main():
     """Run administrative tasks."""
