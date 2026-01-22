@@ -117,4 +117,658 @@
     {% endif %}
 </div>
 
+<script>
+// ===== GSAP SETUP =====
+gsap.registerPlugin(ScrollTrigger);
+
+// ===== 1. PAGE LOAD ANIMATIONS =====
+window.addEventListener('DOMContentLoaded', function() {
+    // Page header
+    gsap.from('.page-header', {
+        duration: 0.6,
+        y: 20,
+        opacity: 0,
+        ease: "power2.out"
+    });
+
+    // Cart items stagger entrance
+    gsap.from('.cart-item-card', {
+        duration: 0.6,
+        y: 30,
+        opacity: 0,
+        stagger: 0.15,
+        ease: "power2.out",
+        delay: 0.2
+    });
+
+    // Order summary slide in from right
+    gsap.from('.cart-summary', {
+        duration: 0.8,
+        x: 50,
+        opacity: 0,
+        ease: "power3.out",
+        delay: 0.3
+    });
+
+    // Summary rows stagger
+    gsap.from('.summary-row', {
+        duration: 0.5,
+        x: 20,
+        opacity: 0,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.5
+    });
+
+    // Total price highlight
+    gsap.from('.summary-total', {
+        duration: 0.8,
+        scale: 0.9,
+        opacity: 0,
+        ease: "back.out(1.7)",
+        delay: 0.8
+    });
+
+    // Subtle pulse for total
+    setTimeout(() => {
+        gsap.to('.summary-total', {
+            duration: 1.5,
+            scale: 1.05,
+            repeat: 2,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+    }, 1500);
+
+    // Continue shopping link
+    gsap.from('.mt-4 a', {
+        duration: 0.6,
+        x: -20,
+        opacity: 0,
+        ease: "power2.out",
+        delay: 1
+    });
+
+    // Secure checkout badge
+    const secureBadge = document.querySelector('.text-center.mt-3');
+    if (secureBadge) {
+        gsap.from(secureBadge, {
+            duration: 0.6,
+            scale: 0,
+            opacity: 0,
+            ease: "back.out(1.7)",
+            delay: 1.2
+        });
+    }
+
+    // Empty cart state
+    const emptyCart = document.querySelector('.text-center.py-5');
+    if (emptyCart) {
+        gsap.from(emptyCart.children, {
+            duration: 0.6,
+            y: 30,
+            opacity: 0,
+            stagger: 0.15,
+            ease: "power2.out"
+        });
+    }
+});
+
+// ===== 2. REMOVE BUTTON SLIDE-OUT ANIMATION =====
+document.querySelectorAll('.btn-remove-cart').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const cartItem = this.closest('.cart-item-card');
+        const href = this.getAttribute('href');
+        
+        // Slide out animation
+        gsap.to(cartItem, {
+            duration: 0.5,
+            x: 100,
+            opacity: 0,
+            height: 0,
+            marginBottom: 0,
+            ease: "power2.in",
+            onComplete: () => {
+                window.location.href = href;
+            }
+        });
+    });
+    
+    // Hover effect on remove button
+    btn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1.1,
+            rotation: 10,
+            ease: "back.out(1.5)"
+        });
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1,
+            rotation: 0,
+            ease: "power2.out"
+        });
+    });
+});
+
+// ===== 3. QUANTITY BUTTON ANIMATIONS =====
+document.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        // Button pulse
+        gsap.to(this, {
+            duration: 0.1,
+            scale: 0.9,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.inOut"
+        });
+        
+        // Number change animation
+        const qtyInput = this.closest('.quantity-control').querySelector('.qty-input');
+        if (qtyInput) {
+            gsap.from(qtyInput, {
+                duration: 0.3,
+                scale: 1.2,
+                ease: "back.out(2)"
+            });
+        }
+        
+        // Price update animation
+        const priceElement = this.closest('.cart-item-card').querySelector('.cart-price');
+        if (priceElement) {
+            gsap.to(priceElement, {
+                duration: 0.3,
+                scale: 1.1,
+                color: "#4f46e5",
+                ease: "power2.out",
+                onComplete: () => {
+                    gsap.to(priceElement, {
+                        duration: 0.3,
+                        scale: 1,
+                        color: "#0f172a",
+                        ease: "power2.out"
+                    });
+                }
+            });
+        }
+    });
+});
+
+// ===== 4. CHECKOUT BUTTON ANIMATION =====
+const checkoutBtn = document.querySelector('.btn-checkout');
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1.02,
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+            ease: "power2.out"
+        });
+    });
+    
+    checkoutBtn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1,
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            ease: "power2.out"
+        });
+    });
+    
+    checkoutBtn.addEventListener('click', function(e) {
+        gsap.to(this, {
+            duration: 0.1,
+            scale: 0.98,
+            yoyo: true,
+            repeat: 1
+        });
+    });
+}
+
+// ===== 5. CART ITEM IMAGE HOVER =====
+document.querySelectorAll('.cart-img-wrapper img').forEach(img => {
+    img.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.4,
+            scale: 1.1,
+            ease: "power2.out"
+        });
+    });
+    
+    img.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.4,
+            scale: 1,
+            ease: "power2.out"
+        });
+    });
+});
+
+// ===== 6. PRODUCT TITLE HOVER =====
+document.querySelectorAll('.cart-product-title').forEach(title => {
+    title.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            color: "#4f46e5",
+            x: 5,
+            ease: "power2.out"
+        });
+    });
+    
+    title.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            color: "#0f172a",
+            x: 0,
+            ease: "power2.out"
+        });
+    });
+});
+
+// ===== 7. CART ITEM CARD HOVER =====
+document.querySelectorAll('.cart-item-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            ease: "power2.out"
+        });
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            ease: "power2.out"
+        });
+    });
+});
+
+// ===== 8. CONTINUE SHOPPING LINK HOVER =====
+const continueLink = document.querySelector('.mt-4 a');
+if (continueLink) {
+    continueLink.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            x: -5,
+            ease: "power2.out"
+        });
+    });
+    
+    continueLink.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            x: 0,
+            ease: "power2.out"
+        });
+    });
+}
+
+// ===== 9. SUMMARY SECTION SCROLL REVEAL =====
+gsap.from('.cart-summary h5', {
+    scrollTrigger: {
+        trigger: '.cart-summary',
+        start: "top 80%",
+        toggleActions: "play none none reverse"
+    },
+    duration: 0.6,
+    y: 20,
+    opacity: 0,
+    ease: "power2.out"
+});
+
+// ===== 10. EMPTY CART BUTTON ANIMATION =====
+const startShoppingBtn = document.querySelector('.text-center.py-5 .btn');
+if (startShoppingBtn) {
+    startShoppingBtn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1.05,
+            ease: "back.out(1.5)"
+        });
+    });
+    
+    startShoppingBtn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1,
+            ease: "power2.out"
+        });
+    });
+}
+
+// ===== 11. ANIMATED NUMBER COUNTER FOR TOTAL =====
+function animateCounter(element, start, end, duration = 0.8) {
+    const obj = { value: start };
+    
+    gsap.to(obj, {
+        duration: duration,
+        value: end,
+        ease: "power2.out",
+        onUpdate: () => {
+            element.textContent = '₹' + Math.round(obj.value).toLocaleString();
+        }
+    });
+}
+
+// Trigger counter animation on page load
+window.addEventListener('DOMContentLoaded', () => {
+    // Fix: Target the correct element - second span in summary-total
+    const totalElement = document.querySelector('.summary-total span:nth-child(2)');
+    if (totalElement) {
+        const textContent = totalElement.textContent.trim();
+        const finalValue = parseFloat(textContent.replace('₹', '').replace(',', ''));
+        
+        if (!isNaN(finalValue) && finalValue > 0) {
+            // Set initial value to 0
+            totalElement.textContent = '₹0';
+            
+            setTimeout(() => {
+                animateCounter(totalElement, 0, finalValue, 1.2);
+            }, 1000);
+        }
+    }
+});
+
+// ===== 12. SHIPPING ESTIMATE REVEAL =====
+const shippingRow = document.querySelectorAll('.summary-row')[1];
+if (shippingRow) {
+    shippingRow.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            backgroundColor: "#f8fafc",
+            paddingLeft: "20px",
+            ease: "power2.out"
+        });
+    });
+    
+    shippingRow.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            backgroundColor: "transparent",
+            paddingLeft: "0px",
+            ease: "power2.out"
+        });
+    });
+}
+
+// ===== 13. CART BADGE PULSE IN NAVBAR =====
+const cartBadge = document.querySelector('.position-relative .badge');
+if (cartBadge) {
+    gsap.to(cartBadge, {
+        duration: 1,
+        scale: 1.1,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+    });
+}
+
+// ===== 14. QUANTITY INPUT VALIDATION ANIMATION =====
+document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('focus', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            borderColor: "#4f46e5",
+            boxShadow: "0 0 0 3px rgba(79, 70, 229, 0.1)",
+            ease: "power2.out"
+        });
+    });
+    
+    input.addEventListener('blur', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            borderColor: "#e2e8f0",
+            boxShadow: "none",
+            ease: "power2.out"
+        });
+    });
+});
+
+// ===== 15. CART ITEM META INFO ANIMATION =====
+document.querySelectorAll('.cart-product-meta').forEach(meta => {
+    gsap.from(meta, {
+        scrollTrigger: {
+            trigger: meta,
+            start: "top 90%",
+            toggleActions: "play none none reverse"
+        },
+        duration: 0.4,
+        opacity: 0,
+        y: 10,
+        ease: "power2.out"
+    });
+});
+
+// ===== 16. SUMMARY DIVIDER ANIMATION =====
+const summaryDividers = document.querySelectorAll('.cart-summary hr');
+summaryDividers.forEach((divider, index) => {
+    gsap.from(divider, {
+        duration: 0.6,
+        scaleX: 0,
+        transformOrigin: "left",
+        ease: "power2.out",
+        delay: 0.6 + (index * 0.1)
+    });
+});
+
+// ===== 17. ITEM COUNT BADGE ANIMATION =====
+const itemCount = document.querySelector('.text-muted.small');
+if (itemCount) {
+    gsap.from(itemCount, {
+        duration: 0.6,
+        scale: 0,
+        opacity: 0,
+        ease: "back.out(1.7)",
+        delay: 0.3
+    });
+}
+
+// ===== 18. LOADING STATE FOR QUANTITY UPDATE =====
+function showLoadingSpinner(button) {
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-border spinner-border-sm';
+    spinner.style.width = '12px';
+    spinner.style.height = '12px';
+    
+    const originalContent = button.innerHTML;
+    button.innerHTML = '';
+    button.appendChild(spinner);
+    
+    gsap.from(spinner, {
+        duration: 0.3,
+        scale: 0,
+        opacity: 0,
+        ease: "back.out(1.5)"
+    });
+    
+    // Rotate animation
+    gsap.to(spinner, {
+        duration: 1,
+        rotation: 360,
+        repeat: -1,
+        ease: "linear"
+    });
+    
+    // Restore after 500ms
+    setTimeout(() => {
+        button.innerHTML = originalContent;
+    }, 500);
+}
+
+// ===== 19. SUCCESS TOAST NOTIFICATION =====
+function showSuccessToast(message) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        font-weight: 500;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    gsap.from(toast, {
+        duration: 0.4,
+        x: 100,
+        opacity: 0,
+        ease: "back.out(1.5)"
+    });
+    
+    setTimeout(() => {
+        gsap.to(toast, {
+            duration: 0.3,
+            x: 100,
+            opacity: 0,
+            ease: "power2.in",
+            onComplete: () => toast.remove()
+        });
+    }, 3000);
+}
+
+// ===== 20. PARALLAX SCROLL EFFECT FOR SUMMARY =====
+gsap.to('.cart-summary', {
+    scrollTrigger: {
+        trigger: '.cart-items',
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1
+    },
+    y: 50,
+    ease: "none"
+});
+
+// ===== 21. CART ITEM SIZE/COLOR BADGE ANIMATION =====
+document.querySelectorAll('.cart-product-meta span').forEach(badge => {
+    gsap.from(badge, {
+        duration: 0.4,
+        scale: 0.8,
+        opacity: 0,
+        ease: "back.out(1.5)",
+        delay: 0.5
+    });
+});
+
+// ===== 22. CHECKOUT BUTTON RIPPLE EFFECT =====
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            left: ${x}px;
+            top: ${y}px;
+            pointer-events: none;
+        `;
+        
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+        
+        gsap.to(ripple, {
+            duration: 0.6,
+            scale: 2,
+            opacity: 0,
+            ease: "power2.out",
+            onComplete: () => ripple.remove()
+        });
+    });
+}
+
+// ===== 23. SMOOTH SCROLL TO CHECKOUT =====
+const smoothScrollToCheckout = () => {
+    gsap.to(window, {
+        duration: 0.8,
+        scrollTo: { y: 0 },
+        ease: "power3.inOut"
+    });
+};
+
+// ===== 24. CART SUMMARY STICKY ANIMATION =====
+ScrollTrigger.create({
+    trigger: '.cart-summary',
+    start: "top 100",
+    end: "bottom bottom",
+    onEnter: () => {
+        gsap.to('.cart-summary', {
+            duration: 0.3,
+            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
+            ease: "power2.out"
+        });
+    },
+    onLeaveBack: () => {
+        gsap.to('.cart-summary', {
+            duration: 0.3,
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+            ease: "power2.out"
+        });
+    }
+});
+
+// ===== 25. ENHANCED REMOVE BUTTON WITH CONFIRMATION =====
+document.querySelectorAll('.btn-remove-cart').forEach(btn => {
+    btn.addEventListener('mouseenter', function() {
+        // Show tooltip
+        const tooltip = document.createElement('div');
+        tooltip.textContent = 'Remove item';
+        tooltip.style.cssText = `
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+        `;
+        
+        this.style.position = 'relative';
+        this.appendChild(tooltip);
+        
+        gsap.from(tooltip, {
+            duration: 0.3,
+            y: 5,
+            opacity: 0,
+            ease: "power2.out"
+        });
+        
+        this._tooltip = tooltip;
+    });
+    
+    btn.addEventListener('mouseleave', function() {
+        if (this._tooltip) {
+            gsap.to(this._tooltip, {
+                duration: 0.2,
+                opacity: 0,
+                onComplete: () => {
+                    if (this._tooltip) {
+                        this._tooltip.remove();
+                        this._tooltip = null;
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+
 {% endblock %}

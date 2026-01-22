@@ -299,66 +299,419 @@
 </div>
 
 <script>
-    function changeMainImage(src, el) {
-        // Fade out
-        const mainImg = document.getElementById('mainProductImage');
-        mainImg.style.opacity = '0.5';
-        
-        setTimeout(() => {
+// ===== GSAP SETUP =====
+gsap.registerPlugin(ScrollTrigger);
+
+// ===== 1. IMAGE GALLERY SMOOTH TRANSITIONS =====
+function changeMainImage(src, el) {
+    const mainImg = document.getElementById('mainProductImage');
+    
+    // Smooth fade out with scale
+    gsap.to(mainImg, {
+        duration: 0.3,
+        opacity: 0,
+        scale: 0.95,
+        ease: "power2.in",
+        onComplete: () => {
             mainImg.src = src;
-            mainImg.style.opacity = '1';
-        }, 200);
+            // Smooth fade in with scale
+            gsap.to(mainImg, {
+                duration: 0.4,
+                opacity: 1,
+                scale: 1,
+                ease: "power2.out"
+            });
+        }
+    });
 
-        document.querySelectorAll('.thumb-item').forEach(img => img.classList.remove('active'));
-        el.classList.add('active');
-    }
+    // Animate thumbnail selection
+    gsap.to('.thumb-item.active', {
+        duration: 0.3,
+        scale: 1,
+        borderColor: '#e2e8f0'
+    });
+    
+    gsap.to(el, {
+        duration: 0.3,
+        scale: 1.05,
+        borderColor: '#0f172a',
+        ease: "back.out(1.5)"
+    });
 
-    function selectSize(size, el) {
-        document.getElementById('selectedSize').value = size;
-        document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
-        el.classList.add('active');
-    }
+    document.querySelectorAll('.thumb-item').forEach(img => img.classList.remove('active'));
+    el.classList.add('active');
+}
 
-    // AI SIZE PREDICTION LOGIC (Preserved)
-    document.getElementById('sizeForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        let height = document.getElementById('height').value;
-        let weight = document.getElementById('weight').value;
-        let age = document.getElementById('age').value;
-        let gender = document.getElementById('gender').value;
-
-        document.getElementById('loader').classList.remove('d-none');
-        document.getElementById('sizeResult').classList.add('d-none');
-
-        fetch('/ai/predict-size/', {
-            method: 'POST',
-            body: JSON.stringify({ height, weight, age, gender }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('loader').classList.add('d-none');
-            if (data.status === 'success') {
-                document.getElementById('recSize').innerText = data.recommended_size;
-                document.getElementById('recConf').innerText = data.confidence + '%';
-                document.getElementById('sizeResult').classList.remove('d-none');
-
-                // Auto Select Logic
-                let boxes = document.querySelectorAll('.size-option');
-                boxes.forEach(b => {
-                    if (b.innerText.trim() === data.recommended_size) {
-                        b.click();
-                    }
-                });
-            } else {
-                alert('Error: ' + data.message);
+// ===== 2. SIZE SELECTION WITH ELASTIC BOUNCE =====
+function selectSize(size, el) {
+    document.getElementById('selectedSize').value = size;
+    
+    // Remove active state with animation
+    const previousActive = document.querySelector('.size-option.active');
+    if (previousActive) {
+        gsap.to(previousActive, {
+            duration: 0.2,
+            scale: 1,
+            onComplete: () => {
+                // Clear inline styles to let CSS take over
+                previousActive.style.backgroundColor = '';
+                previousActive.style.color = '';
             }
-        })
-        .catch(err => {
-            document.getElementById('loader').classList.add('d-none');
-            alert('Something went wrong');
+        });
+    }
+    
+    document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    
+    // Add active state with elastic bounce
+    gsap.fromTo(el, 
+        { scale: 0.9 },
+        { 
+            duration: 0.6,
+            scale: 1,
+            ease: "elastic.out(1, 0.5)"
+        }
+    );
+}
+
+// ===== 3. PAGE LOAD ANIMATIONS =====
+window.addEventListener('DOMContentLoaded', function() {
+    // Product info stagger
+    gsap.from([".product-brand", ".product-title", ".price-wrapper", ".description-text"], {
+        duration: 0.8,
+        y: 30,
+        opacity: 0,
+        stagger: 0.15,
+        ease: "power2.out"
+    });
+    
+    // AI tags
+    gsap.from(".badge.rounded-pill", {
+        duration: 0.6,
+        scale: 0,
+        opacity: 0,
+        stagger: 0.05,
+        ease: "back.out(1.7)",
+        delay: 0.6
+    });
+    
+    // Size selector
+    gsap.from(".size-grid", {
+        duration: 0.8,
+        y: 20,
+        opacity: 0,
+        ease: "power2.out",
+        delay: 0.4
+    });
+
+    // Action buttons
+    gsap.from(".action-buttons", {
+        duration: 0.8,
+        y: 20,
+        opacity: 0,
+        ease: "power2.out",
+        delay: 0.5
+    });
+    
+    // Thumbnails slide in
+    gsap.from(".thumb-item", {
+        duration: 0.6,
+        x: -20,
+        opacity: 0,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.3
+    });
+    
+    // Main image
+    gsap.from("#mainProductImage", {
+        duration: 1,
+        scale: 0.95,
+        opacity: 0,
+        ease: "power2.out"
+    });
+
+    // Feature cards
+    gsap.from(".feature-card", {
+        duration: 0.6,
+        scale: 0.8,
+        opacity: 0,
+        stagger: 0.15,
+        ease: "back.out(1.7)",
+        delay: 0.8
+    });
+});
+
+// ===== 4. ADD TO CART BUTTON ANIMATION =====
+const addToCartBtn = document.querySelector('.btn-add-cart');
+if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', function(e) {
+        // Button pulse animation
+        gsap.to(this, {
+            duration: 0.1,
+            scale: 0.95,
+            yoyo: true,
+            repeat: 1,
+            ease: "power2.inOut"
+        });
+        
+        // Cart badge bounce (if exists)
+        setTimeout(() => {
+            const cartBadge = document.querySelector('.badge.rounded-pill.bg-danger');
+            if (cartBadge) {
+                gsap.fromTo(cartBadge, 
+                    { scale: 1 },
+                    { 
+                        duration: 0.6,
+                        scale: [1.5, 1],
+                        ease: "elastic.out(1, 0.3)"
+                    }
+                );
+            }
+        }, 200);
+    });
+}
+
+// ===== 5. WISHLIST HEART ANIMATION =====
+document.querySelectorAll('.btn-wishlist').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        // Heart bounce animation
+        gsap.fromTo(this, 
+            { scale: 1 },
+            { 
+                duration: 0.6,
+                scale: [1.3, 0.9, 1.1, 1],
+                ease: "elastic.out(1, 0.3)"
+            }
+        );
+        
+        // Color change animation
+        const svg = this.querySelector('svg');
+        if (svg && !this.classList.contains('text-danger')) {
+            gsap.to(svg, {
+                duration: 0.3,
+                fill: "#ef4444",
+                stroke: "#ef4444",
+                ease: "power2.out"
+            });
+        }
+    });
+});
+
+// ===== 6. MAIN IMAGE ZOOM ON HOVER =====
+const mainImgWrapper = document.querySelector('.main-image-frame');
+if (mainImgWrapper) {
+    const mainImg = mainImgWrapper.querySelector('img');
+    
+    mainImgWrapper.addEventListener('mouseenter', () => {
+        gsap.to(mainImg, {
+            duration: 0.6,
+            scale: 1.05,
+            ease: "power2.out"
         });
     });
+    
+    mainImgWrapper.addEventListener('mouseleave', () => {
+        gsap.to(mainImg, {
+            duration: 0.6,
+            scale: 1,
+            ease: "power2.out"
+        });
+    });
+}
+
+// ===== 7. REVIEWS SECTION SCROLL REVEAL =====
+gsap.from(".review-card", {
+    scrollTrigger: {
+        trigger: ".reviews-section",
+        start: "top 80%",
+        toggleActions: "play none none reverse"
+    },
+    duration: 0.6,
+    y: 40,
+    opacity: 0,
+    stagger: 0.15,
+    ease: "power2.out"
+});
+
+// ===== 8. COLLABORATIVE PRODUCTS REVEAL =====
+const collabSection = document.querySelector('.collaborative_products');
+if (collabSection) {
+    gsap.from(".collaborative_products .card", {
+        scrollTrigger: {
+            trigger: ".collaborative_products",
+            start: "top 80%",
+            toggleActions: "play none none reverse"
+        },
+        duration: 0.6,
+        x: 50,
+        opacity: 0,
+        stagger: 0.1,
+        ease: "power2.out"
+    });
+}
+
+// ===== 9. AI SIZE PREDICTION MODAL =====
+document.getElementById('sizeForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    let height = document.getElementById('height').value;
+    let weight = document.getElementById('weight').value;
+    let age = document.getElementById('age').value;
+    let gender = document.getElementById('gender').value;
+
+    const loader = document.getElementById('loader');
+    const sizeResult = document.getElementById('sizeResult');
+
+    // Animate loader appearance
+    loader.classList.remove('d-none');
+    gsap.from(loader, {
+        duration: 0.3,
+        opacity: 0,
+        y: -10,
+        ease: "power2.out"
+    });
+
+    // Hide previous result
+    gsap.to(sizeResult, {
+        duration: 0.2,
+        opacity: 0,
+        onComplete: () => sizeResult.classList.add('d-none')
+    });
+
+    fetch('/ai/predict-size/', {
+        method: 'POST',
+        body: JSON.stringify({ height, weight, age, gender }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Hide loader
+        gsap.to(loader, {
+            duration: 0.3,
+            opacity: 0,
+            onComplete: () => loader.classList.add('d-none')
+        });
+
+        if (data.status === 'success') {
+            document.getElementById('recSize').innerText = data.recommended_size;
+            document.getElementById('recConf').innerText = data.confidence + '%';
+            
+            sizeResult.classList.remove('d-none');
+            
+            // Animate result with bounce
+            gsap.from(sizeResult, {
+                duration: 0.6,
+                scale: 0.9,
+                opacity: 0,
+                ease: "back.out(1.7)"
+            });
+
+            // Auto Select Logic with animation
+            let boxes = document.querySelectorAll('.size-option');
+            boxes.forEach(b => {
+                if (b.innerText.trim() === data.recommended_size) {
+                    setTimeout(() => {
+                        b.click();
+                        // Extra highlight
+                        gsap.fromTo(b, 
+                            { backgroundColor: '#4f46e5' },
+                            { 
+                                duration: 0.8,
+                                backgroundColor: '#0f172a',
+                                ease: "power2.out"
+                            }
+                        );
+                    }, 400);
+                }
+            });
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => {
+        gsap.to(loader, {
+            duration: 0.3,
+            opacity: 0,
+            onComplete: () => loader.classList.add('d-none')
+        });
+        alert('Something went wrong');
+    });
+});
+
+// ===== 10. SIZE MODAL ANIMATION =====
+const sizeModal = document.getElementById('sizeModal');
+if (sizeModal) {
+    sizeModal.addEventListener('shown.bs.modal', function () {
+        gsap.from('.modal-content', {
+            duration: 0.4,
+            y: 50,
+            opacity: 0,
+            ease: "back.out(1.5)"
+        });
+        
+        gsap.from('.modal-content > *', {
+            duration: 0.4,
+            y: 20,
+            opacity: 0,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.2
+        });
+    });
+}
+
+// ===== 11. PRICE HIGHLIGHT =====
+gsap.from('.current-price', {
+    duration: 0.8,
+    scale: 0.9,
+    opacity: 0,
+    ease: "back.out(1.7)",
+    delay: 0.3
+});
+
+// Subtle pulse for demand badges
+document.querySelectorAll('.badge.bg-danger, .badge.bg-success').forEach(badge => {
+    gsap.to(badge, {
+        duration: 1.5,
+        scale: 1.05,
+        repeat: 2,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: 1
+    });
+});
+
+// ===== 12. VIRTUAL TRY-ON BUTTON =====
+const tryOnBtn = document.querySelector('a[href*="virtual_tryon"]');
+if (tryOnBtn) {
+    tryOnBtn.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1.05,
+            ease: "back.out(1.5)"
+        });
+    });
+    
+    tryOnBtn.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            duration: 0.3,
+            scale: 1,
+            ease: "power2.out"
+        });
+    });
+}
+
+// ===== 13. RATING STARS ANIMATION =====
+const ratingBadge = document.querySelector('.rating-badge');
+if (ratingBadge) {
+    gsap.from(ratingBadge, {
+        duration: 0.6,
+        scale: 0,
+        opacity: 0,
+        ease: "back.out(1.7)",
+        delay: 0.5
+    });
+}
 </script>
 {% endblock %}
