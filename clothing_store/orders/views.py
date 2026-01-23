@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from carts.cart import Cart
 from accounts.models import Address
@@ -171,6 +171,60 @@ def checkout(request):
         'cart': cart,
         'addresses': addresses,
         'available_coupons': available_coupons
+    })
+
+
+# ----------------------------------
+# AJAX COUPON VALIDATION
+# ----------------------------------
+@login_required
+def validate_coupon_ajax(request):
+    """AJAX endpoint to validate coupon and return discount"""
+    if request.method == 'POST':
+        coupon_code = request.POST.get('coupon_code', '').strip()
+        cart = Cart(request)
+        cart_total = cart.get_total_price()
+        
+        if not coupon_code:
+            return JsonResponse({
+                'valid': False, 
+                'message': 'Please enter a coupon code'
+            })
+        
+        try:
+            coupon = Coupon.objects.get(code__iexact=coupon_code)
+            if coupon.is_valid(cart_total):
+                # Calculate discount
+                if coupon.discount_type == 'percent':
+                    discount = (cart_total * coupon.discount_value) / 100
+                else:
+                    discount = coupon.discount_value
+                
+                final_total = cart_total - discount
+                if final_total < 0:
+                    final_total = Decimal('0')
+                
+                return JsonResponse({
+                    'valid': True,
+                    'discount_amount': float(discount),
+                    'final_total': float(final_total),
+                    'cart_total': float(cart_total),
+                    'message': f'Coupon applied! You saved ₹{discount:.2f}'
+                })
+            else:
+                return JsonResponse({
+                    'valid': False, 
+                    'message': 'Coupon is not valid or has expired'
+                })
+        except Coupon.DoesNotExist:
+            return JsonResponse({
+                'valid': False, 
+                'message': 'Invalid coupon code'
+            })
+    
+    return JsonResponse({
+        'valid': False, 
+        'message': 'Invalid request method'
     })
 
 

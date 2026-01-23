@@ -109,19 +109,11 @@
                     </div>
                     {% endif %}
 
-                    <div class="coupon-input-group">
+                    <div class="coupon-input-group d-flex gap-2">
                         <input type="text" id="couponInput" name="coupon_code" placeholder="Enter code here" class="form-control">
-                        <!-- We rely on server logic to apply, this is just input. The user submits the main form to apply? 
-                             Or usually there is a separate Apply button. 
-                             The original code had just one main form.
-                             Let's keep it simple: User enters code, and it gets applied on Place Order OR we can add a little JS to submit?
-                             For now, let's stick to the original logic: "Enter coupon code (optional)". 
-                             Wait, if they assume entering checks it, they might be disappointed.
-                             Ideally we should have an apply button. But the original code handled it inside the main POST.
-                             Let's trust the user to fill it. 
-                        -->
+                        <button type="button" id="applyCouponBtn" class="btn btn-dark">Apply</button>
                     </div>
-                    <small class="text-muted">Code will be validated on order placement.</small>
+                    <div id="couponMessage" class="mt-2" style="display: none;"></div>
                 </div>
 
             </div>
@@ -164,9 +156,13 @@
                             <span>Shipping</span>
                             <span class="text-success">Free</span>
                         </div>
+                        <div class="total-row discount-row" id="discountRow" style="display: none;">
+                            <span>Discount</span>
+                            <span class="text-success" id="discountAmount">-₹0.00</span>
+                        </div>
                         <div class="total-row grand-total">
                             <span>Total</span>
-                            <span>₹{{ cart.get_total_price }}</span>
+                            <span id="finalTotal">₹{{ cart.get_total_price }}</span>
                         </div>
                     </div>
 
@@ -190,13 +186,374 @@
         document.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
         element.classList.add('selected');
         element.querySelector('input[type="radio"]').checked = true;
+        
+        // Add GSAP pulse animation on selection
+        if (typeof gsap !== 'undefined') {
+            gsap.fromTo(element, 
+                { scale: 1 },
+                { 
+                    scale: 1.02,
+                    duration: 0.3,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        }
     }
 
     function applyCoupon(code) {
         document.getElementById('couponInput').value = code;
-        // Optional visual feedback
-        document.getElementById('couponInput').focus();
+        // Trigger validation immediately
+        validateCoupon();
     }
+
+    // ===== REAL-TIME COUPON VALIDATION =====
+    const cartTotal = {{ cart.get_total_price }};
+    
+    // Apply button click
+    document.getElementById('applyCouponBtn').addEventListener('click', function() {
+        validateCoupon();
+    });
+
+    // Enter key in coupon input
+    document.getElementById('couponInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            validateCoupon();
+        }
+    });
+
+    function validateCoupon() {
+        const couponCode = document.getElementById('couponInput').value.trim();
+        
+        if (!couponCode) {
+            showCouponMessage('Please enter a coupon code', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const applyBtn = document.getElementById('applyCouponBtn');
+        const originalText = applyBtn.textContent;
+        applyBtn.disabled = true;
+        applyBtn.textContent = 'Applying...';
+        
+        // AJAX request
+        fetch('/orders/validate-coupon/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `coupon_code=${encodeURIComponent(couponCode)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.valid) {
+                // Update UI with discount
+                updateOrderSummary(data.discount_amount, data.final_total);
+                showCouponMessage(data.message, 'success');
+            } else {
+                // Show error and reset
+                resetOrderSummary();
+                showCouponMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showCouponMessage('Error validating coupon. Please try again.', 'error');
+        })
+        .finally(() => {
+            applyBtn.disabled = false;
+            applyBtn.textContent = originalText;
+        });
+    }
+
+    function updateOrderSummary(discount, finalTotal) {
+        // Show discount row with animation
+        const discountRow = document.getElementById('discountRow');
+        discountRow.style.display = 'flex';
+        document.getElementById('discountAmount').textContent = `-₹${discount.toFixed(2)}`;
+        
+        // Update total
+        document.getElementById('finalTotal').textContent = `₹${finalTotal.toFixed(2)}`;
+        
+        // Update button text
+        document.querySelector('.btn-place-order').textContent = `Place Order (₹${finalTotal.toFixed(2)})`;
+        
+        // Add GSAP animation if available
+        if (typeof gsap !== 'undefined') {
+            gsap.fromTo(discountRow, 
+                { opacity: 0, y: -10 },
+                { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }
+            );
+        }
+    }
+
+    function resetOrderSummary() {
+        // Hide discount row
+        const discountRow = document.getElementById('discountRow');
+        discountRow.style.display = 'none';
+        
+        // Reset to original total
+        document.getElementById('finalTotal').textContent = `₹${cartTotal.toFixed(2)}`;
+        document.querySelector('.btn-place-order').textContent = `Place Order (₹${cartTotal.toFixed(2)})`;
+    }
+
+    function showCouponMessage(message, type) {
+        const messageDiv = document.getElementById('couponMessage');
+        messageDiv.style.display = 'block';
+        messageDiv.className = `mt-2 small ${type === 'success' ? 'text-success' : 'text-danger'}`;
+        messageDiv.innerHTML = `<strong>${message}</strong>`;
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+<!-- GSAP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<script>
+// Wait for GSAP to load
+window.addEventListener('load', function() {
+    if (typeof gsap === 'undefined') {
+        console.error('GSAP library not loaded!');
+        return;
+    }
+
+    // Register ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ===== 1. PAGE TITLE ENTRANCE =====
+    gsap.fromTo(".checkout-main-col h2",
+        {
+            y: -30,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            delay: 0.2
+        }
+    );
+
+    // ===== 2. FORM CARDS STAGGER IN FROM LEFT =====
+    gsap.fromTo(".form-card",
+        {
+            x: -60,
+            opacity: 0
+        },
+        {
+            x: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power3.out",
+            delay: 0.4
+        }
+    );
+
+    // ===== 3. ORDER SUMMARY SLIDE IN FROM RIGHT =====
+    gsap.fromTo(".checkout-summary",
+        {
+            x: 60,
+            opacity: 0
+        },
+        {
+            x: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: "power3.out",
+            delay: 0.5
+        }
+    );
+
+    // ===== 4. SUMMARY ITEMS STAGGER =====
+    gsap.fromTo(".summary-item",
+        {
+            y: 20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.8
+        }
+    );
+
+    // ===== 5. TOTALS SECTION SLIDE UP =====
+    gsap.fromTo(".summary-totals",
+        {
+            y: 30,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: "power2.out",
+            delay: 1.2
+        }
+    );
+
+    // ===== 6. PLACE ORDER BUTTON ENTRANCE =====
+    gsap.fromTo(".btn-place-order",
+        {
+            scale: 0.9,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.6,
+            ease: "back.out(1.7)",
+            delay: 1.4
+        }
+    );
+
+    // ===== 7. ADDRESS CARDS HOVER ANIMATION =====
+    document.querySelectorAll('.address-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                y: -5,
+                boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        card.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // ===== 8. PAYMENT OPTIONS HOVER & CLICK =====
+    document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                y: -3,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        option.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                y: 0,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        option.addEventListener('click', function() {
+            gsap.fromTo(this,
+                { scale: 1 },
+                {
+                    scale: 1.03,
+                    duration: 0.2,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        });
+    });
+
+    // ===== 9. COUPON BUTTONS HOVER & CLICK =====
+    document.querySelectorAll('.btn-outline-success').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                scale: 1.05,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // ===== 10. PLACE ORDER BUTTON HOVER =====
+    const placeOrderBtn = document.querySelector('.btn-place-order');
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                y: -3,
+                boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        placeOrderBtn.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        placeOrderBtn.addEventListener('click', function(e) {
+            gsap.fromTo(this,
+                { scale: 1 },
+                {
+                    scale: 0.95,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        });
+    }
+
+    // ===== 11. SECTION TITLE ICONS PULSE =====
+    document.querySelectorAll('.section-title').forEach(title => {
+        gsap.to(title, {
+            scale: 1.05,
+            duration: 1.5,
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut"
+        });
+    });
+
+}); // Close window.load wrapper
 </script>
 
 {% endblock %}

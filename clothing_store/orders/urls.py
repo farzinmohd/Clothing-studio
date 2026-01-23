@@ -13,6 +13,6 @@ urlpatterns = [
     views.download_invoice,
     name='download_invoice'
 ),
-
+    path('validate-coupon/', views.validate_coupon_ajax, name='validate_coupon_ajax'),
 
 ]
