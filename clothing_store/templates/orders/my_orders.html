@@ -73,4 +73,165 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- GSAP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<script>
+// Wait for GSAP to load
+window.addEventListener('load', function() {
+    if (typeof gsap === 'undefined') {
+        console.error('GSAP library not loaded!');
+        return;
+    }
+
+    // ===== 1. PAGE HEADER ANIMATIONS =====
+    gsap.fromTo(".page-title-orders",
+        {
+            y: -30,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power3.out",
+            delay: 0.1
+        }
+    );
+
+    gsap.fromTo(".page-header-orders p",
+        {
+            opacity: 0
+        },
+        {
+            opacity: 1,
+            duration: 0.6,
+            ease: "power2.out",
+            delay: 0.4
+        }
+    );
+
+    // ===== 2. ORDER CARDS STAGGER ENTRANCE =====
+    gsap.fromTo(".order-card",
+        {
+            y: 40,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            stagger: 0.15,
+            ease: "power3.out",
+            delay: 0.6
+        }
+    );
+
+    // ===== 3. EMPTY STATE ANIMATION =====
+    const emptyState = document.querySelector('.empty-orders');
+    if (emptyState) {
+        gsap.fromTo(".empty-orders",
+            {
+                scale: 0.9,
+                opacity: 0
+            },
+            {
+                scale: 1,
+                opacity: 1,
+                duration: 0.8,
+                ease: "back.out(1.5)",
+                delay: 0.6
+            }
+        );
+
+        gsap.fromTo(".empty-icon",
+            {
+                scale: 0,
+                rotation: -180
+            },
+            {
+                scale: 1,
+                rotation: 0,
+                duration: 0.6,
+                ease: "back.out(2)",
+                delay: 0.9
+            }
+        );
+    }
+
+    // ===== 4. STATUS BADGE ANIMATIONS =====
+    gsap.fromTo(".status-badge",
+        {
+            scale: 0.8,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.15,
+            ease: "back.out(1.5)",
+            delay: 1.0
+        }
+    );
+
+    // ===== 5. VIEW DETAILS BUTTON HOVER =====
+    document.querySelectorAll('.btn-view-order').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                y: -3,
+                boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        btn.addEventListener('click', function() {
+            gsap.fromTo(this,
+                { scale: 1 },
+                {
+                    scale: 0.95,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        });
+    });
+
+    // ===== 6. ORDER CARD HOVER =====
+    document.querySelectorAll('.order-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            gsap.to(this, {
+                y: -5,
+                boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        card.addEventListener('mouseleave', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });
+
+}); // Close window.load wrapper
+</script>
+
 {% endblock %}

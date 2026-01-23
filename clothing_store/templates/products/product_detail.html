@@ -298,6 +298,10 @@
     </div>
 </div>
 
+<!-- GSAP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
 <script>
 // ===== GSAP SETUP =====
 gsap.registerPlugin(ScrollTrigger);
@@ -377,69 +381,111 @@ function selectSize(size, el) {
 // ===== 3. PAGE LOAD ANIMATIONS =====
 window.addEventListener('DOMContentLoaded', function() {
     // Product info stagger
-    gsap.from([".product-brand", ".product-title", ".price-wrapper", ".description-text"], {
-        duration: 0.8,
-        y: 30,
-        opacity: 0,
-        stagger: 0.15,
-        ease: "power2.out"
-    });
+    gsap.fromTo([".product-brand", ".product-title", ".price-wrapper", ".description-text"], 
+        {
+            y: 30,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power2.out"
+        }
+    );
     
     // AI tags
-    gsap.from(".badge.rounded-pill", {
-        duration: 0.6,
-        scale: 0,
-        opacity: 0,
-        stagger: 0.05,
-        ease: "back.out(1.7)",
-        delay: 0.6
-    });
+    gsap.fromTo(".badge.rounded-pill", 
+        {
+            scale: 0,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.6,
+            stagger: 0.05,
+            ease: "back.out(1.7)",
+            delay: 0.6
+        }
+    );
     
     // Size selector
-    gsap.from(".size-grid", {
-        duration: 0.8,
-        y: 20,
-        opacity: 0,
-        ease: "power2.out",
-        delay: 0.4
-    });
+    gsap.fromTo(".size-grid", 
+        {
+            y: 20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            delay: 0.4
+        }
+    );
 
     // Action buttons
-    gsap.from(".action-buttons", {
-        duration: 0.8,
-        y: 20,
-        opacity: 0,
-        ease: "power2.out",
-        delay: 0.5
-    });
+    gsap.fromTo(".action-buttons", 
+        {
+            y: 20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            delay: 0.5
+        }
+    );
     
     // Thumbnails slide in
-    gsap.from(".thumb-item", {
-        duration: 0.6,
-        x: -20,
-        opacity: 0,
-        stagger: 0.1,
-        ease: "power2.out",
-        delay: 0.3
-    });
+    gsap.fromTo(".thumb-item", 
+        {
+            x: -20,
+            opacity: 0
+        },
+        {
+            x: 0,
+            opacity: 1,
+            duration: 0.6,
+            stagger: 0.1,
+            ease: "power2.out",
+            delay: 0.3
+        }
+    );
     
     // Main image
-    gsap.from("#mainProductImage", {
-        duration: 1,
-        scale: 0.95,
-        opacity: 0,
-        ease: "power2.out"
-    });
+    gsap.fromTo("#mainProductImage", 
+        {
+            scale: 0.95,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 1,
+            ease: "power2.out"
+        }
+    );
 
     // Feature cards
-    gsap.from(".feature-card", {
-        duration: 0.6,
-        scale: 0.8,
-        opacity: 0,
-        stagger: 0.15,
-        ease: "back.out(1.7)",
-        delay: 0.8
-    });
+    gsap.fromTo(".feature-card", 
+        {
+            scale: 0.8,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: "back.out(1.7)",
+            delay: 0.8
+        }
+    );
 });
 
 // ===== 4. ADD TO CART BUTTON ANIMATION =====
@@ -521,17 +567,132 @@ if (mainImgWrapper) {
 }
 
 // ===== 7. REVIEWS SECTION SCROLL REVEAL =====
-gsap.from(".review-card", {
+// Reviews section title animation
+gsap.from(".reviews-section h3", {
+    scrollTrigger: {
+        trigger: ".reviews-section",
+        start: "top 80%",
+        toggleActions: "play none none reverse"
+    },
+    duration: 0.8,
+    y: -20,
+    opacity: 0,
+    ease: "power3.out"
+});
+
+// Write Review button animation
+gsap.from(".reviews-section .btn-primary", {
     scrollTrigger: {
         trigger: ".reviews-section",
         start: "top 80%",
         toggleActions: "play none none reverse"
     },
     duration: 0.6,
-    y: 40,
+    scale: 0,
     opacity: 0,
-    stagger: 0.15,
-    ease: "power2.out"
+    ease: "back.out(1.7)",
+    delay: 0.3
+});
+
+// Review cards with enhanced stagger
+gsap.from(".review-card", {
+    scrollTrigger: {
+        trigger: ".reviews-section",
+        start: "top 80%",
+        toggleActions: "play none none reverse"
+    },
+    duration: 0.7,
+    y: 50,
+    opacity: 0,
+    stagger: 0.2,
+    ease: "power3.out",
+    delay: 0.4
+});
+
+// Sentiment badges pop in
+gsap.from(".sentiment-badge", {
+    scrollTrigger: {
+        trigger: ".reviews-section",
+        start: "top 80%",
+        toggleActions: "play none none reverse"
+    },
+    duration: 0.5,
+    scale: 0,
+    opacity: 0,
+    stagger: 0.1,
+    ease: "back.out(1.7)",
+    delay: 0.8
+});
+
+// Review form entrance
+const reviewForm = document.getElementById('reviewForm');
+if (reviewForm) {
+    gsap.from("#reviewForm", {
+        scrollTrigger: {
+            trigger: "#reviewForm",
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+        },
+        duration: 0.8,
+        y: 40,
+        opacity: 0,
+        ease: "power3.out"
+    });
+    
+    // Form elements stagger
+    gsap.from("#reviewForm .form-label, #reviewForm .form-select, #reviewForm textarea, #reviewForm button", {
+        scrollTrigger: {
+            trigger: "#reviewForm",
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+        },
+        duration: 0.6,
+        y: 20,
+        opacity: 0,
+        stagger: 0.1,
+        ease: "power2.out",
+        delay: 0.3
+    });
+}
+
+// Review card hover effects
+document.querySelectorAll('.review-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            y: -5,
+            boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+            duration: 0.3,
+            ease: "power2.out"
+        });
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            y: 0,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            duration: 0.3,
+            ease: "power2.out"
+        });
+    });
+});
+
+// Star rating hover effect
+document.querySelectorAll('.review-card .text-warning').forEach(stars => {
+    stars.addEventListener('mouseenter', function() {
+        gsap.to(this, {
+            scale: 1.1,
+            duration: 0.3,
+            ease: "back.out(1.5)"
+        });
+    });
+    
+    stars.addEventListener('mouseleave', function() {
+        gsap.to(this, {
+            scale: 1,
+            duration: 0.3,
+            ease: "power2.out"
+        });
+    });
 });
 
 // ===== 8. COLLABORATIVE PRODUCTS REVEAL =====

@@ -225,38 +225,86 @@ window.addEventListener('load', function() {
         }
     );
 
-    // ===== 4. TIMELINE ANIMATION =====
+    // ===== 4. TIMELINE ANIMATION - SMOOTH PROGRESSIVE STYLE =====
     const timeline = document.querySelector('.timeline-container');
     if (timeline) {
+        // Container fade in
         gsap.fromTo(".timeline-container",
             {
-                y: 30,
                 opacity: 0
             },
             {
-                y: 0,
                 opacity: 1,
-                duration: 0.8,
+                duration: 0.6,
                 ease: "power2.out",
                 delay: 0.7
             }
         );
 
-        // Animate timeline steps
+        // Timeline steps - smooth progressive reveal from left to right
         gsap.fromTo(".timeline-step",
             {
-                scale: 0.8,
-                opacity: 0
+                opacity: 0,
+                scale: 0.95
             },
             {
-                scale: 1,
                 opacity: 1,
+                scale: 1,
                 duration: 0.5,
                 stagger: 0.15,
-                ease: "back.out(1.5)",
+                ease: "power2.out",
                 delay: 0.9
             }
         );
+
+        // Step icons - gentle fade and scale
+        gsap.fromTo(".timeline-step .step-icon",
+            {
+                opacity: 0,
+                scale: 0.8
+            },
+            {
+                opacity: 1,
+                scale: 1,
+                duration: 0.4,
+                stagger: 0.15,
+                ease: "power2.out",
+                delay: 1.1
+            }
+        );
+
+        // Active step - subtle continuous glow (no aggressive pulse)
+        const activeStep = document.querySelector('.timeline-step.active');
+        if (activeStep) {
+            // Gentle glow effect
+            gsap.to(activeStep, {
+                boxShadow: "0 0 15px rgba(59, 130, 246, 0.4)",
+                duration: 2,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                delay: 1.5
+            });
+        }
+
+        // Subtle hover effects
+        document.querySelectorAll('.timeline-step').forEach(step => {
+            step.addEventListener('mouseenter', function() {
+                gsap.to(this, {
+                    y: -2,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            });
+
+            step.addEventListener('mouseleave', function() {
+                gsap.to(this, {
+                    y: 0,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            });
+        });
     }
 
     // ===== 5. ITEMS SECTION TITLE =====
@@ -389,18 +437,6 @@ window.addEventListener('load', function() {
                     ease: "power2.inOut"
                 }
             );
-        });
-    }
-
-    // ===== 11. TIMELINE STEP ICONS PULSE =====
-    const activeStep = document.querySelector('.timeline-step.active .step-icon');
-    if (activeStep) {
-        gsap.to(activeStep, {
-            scale: 1.1,
-            duration: 1,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
         });
     }
 
