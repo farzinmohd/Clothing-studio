@@ -112,13 +112,42 @@ class Cart:
                 self.save_session()
 
     def update(self, key, quantity):
+        """
+        Update cart item quantity with stock validation
+        """
+        # Parse key to get product info
+        try:
+            parts = key.split('-')
+            p_id = parts[0]
+            size = parts[1]
+            color = parts[2] if len(parts) > 2 else None
+        except:
+            return False
+        
+        # Get product and check stock
+        try:
+            product = Product.objects.get(id=p_id)
+            variant = ProductVariant.objects.filter(
+                product=product, 
+                size=size
+            ).first()
+            
+            # Validate stock
+            if variant:
+                available_stock = variant.stock
+                if quantity > available_stock:
+                    # Don't allow quantity greater than stock
+                    return False
+            else:
+                # No variant found, don't allow update
+                return False
+                
+        except Product.DoesNotExist:
+            return False
+        
+        # Stock validation passed, proceed with update
         if self.request.user.is_authenticated:
             try:
-                parts = key.split('-')
-                p_id = parts[0]
-                size = parts[1]
-                color = parts[2] if len(parts) > 2 else None
-                
                 item = CartItem.objects.filter(
                     cart=self.db_cart,
                     product_id=p_id,
@@ -132,8 +161,9 @@ class Cart:
                         item.save()
                     else:
                         item.delete()
+                return True
             except:
-                pass
+                return False
         else:
             if key in self.session_cart:
                 if quantity > 0:
@@ -141,6 +171,9 @@ class Cart:
                 else:
                     del self.session_cart[key]
                 self.save_session()
+                return True
+        
+        return False
 
     def __iter__(self):
         """

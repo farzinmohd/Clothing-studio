@@ -41,5 +41,22 @@ def update_cart(request, key):
     cart = Cart(request)
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity', 1))
-        cart.update(key, quantity)
+        success = cart.update(key, quantity)
+        
+        if not success:
+            # Get existing messages
+            existing_messages = messages.get_messages(request)
+            error_msg = 'Cannot add more items than available in stock!'
+            
+            # Check if this message already exists
+            has_error = False
+            for msg in existing_messages:
+                if str(msg) == error_msg:
+                    has_error = True
+                    break
+            
+            # Only add if not already present
+            if not has_error:
+                messages.error(request, error_msg)
+    
     return redirect('cart_detail')
