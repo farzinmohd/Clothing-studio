@@ -75,27 +75,29 @@ class FeatureExtractor:
         dominant_colors_rgb = self._extract_dominant_colors(pil_img, n_colors=5)
         
         # 4. Dominant Colors in HSV space (captures hue/saturation better)
-        dominant_colors_hsv = self._extract_dominant_colors_hsv(pil_img, n_colors=3)
+        # Increase to 7 colors to capture more color variations
+        dominant_colors_hsv = self._extract_dominant_colors_hsv(pil_img, n_colors=7)
         
         
-        # --- 🔧 FEATURE COMBINATION WITH MAXIMUM COLOR PRIORITY ---
-        # COLOR IS NOW THE PRIMARY FACTOR (90% of matching)
-        # If user uploads yellow shirt → yellow products MUST rank highest
+        # --- 🔧 EXTREME COLOR PRIORITY MODE ---
+        # COLOR IS 95%+ OF MATCHING - Style is almost ignored
+        # This ensures green shirt ONLY matches green products
         combined_features = np.concatenate([
-            features * 0.2,              # Style/shape (MINIMAL - only for tie-breaking)
-            rgb_hist * 5.0,              # RGB distribution (VERY HIGH)
-            hsv_features * 8.0,          # HSV features (MAXIMUM - color is king!)
-            dominant_colors_rgb * 4.0,   # RGB dominant colors (VERY HIGH)
-            dominant_colors_hsv * 6.0    # HSV dominant colors (EXTREMELY HIGH)
+            features * 0.05,             # Style/shape (ALMOST ZERO - barely used)
+            rgb_hist * 6.0,              # RGB distribution (VERY HIGH)
+            hsv_features * 12.0,         # HSV features (EXTREME - absolute priority!)
+            dominant_colors_rgb * 5.0,   # RGB dominant colors (VERY HIGH)
+            dominant_colors_hsv * 10.0   # HSV dominant colors (EXTREME!)
         ])
         combined_features = combined_features / np.linalg.norm(combined_features)
         
         return combined_features
 
     
-    def _center_crop_product(self, pil_img, crop_ratio=0.8):
+    def _center_crop_product(self, pil_img, crop_ratio=0.9):
         """
         Center crop to focus on the product and reduce background noise.
+        Using 90% crop to preserve more product details.
         """
         width, height = pil_img.size
         new_width = int(width * crop_ratio)
@@ -158,9 +160,10 @@ class FeatureExtractor:
         # Flatten to 1D array (5 colors * 3 channels = 15 features)
         return dominant_colors.flatten()
     
-    def _extract_dominant_colors_hsv(self, pil_img, n_colors=3):
+    def _extract_dominant_colors_hsv(self, pil_img, n_colors=7):
         """
         Extract dominant colors in HSV space for better perceptual matching.
+        Using 7 colors to capture more color variations.
         """
         import cv2
         from sklearn.cluster import KMeans
@@ -180,7 +183,7 @@ class FeatureExtractor:
         dominant_hsv[:, 1] = dominant_hsv[:, 1] / 255.0  # Saturation
         dominant_hsv[:, 2] = dominant_hsv[:, 2] / 255.0  # Value
         
-        # Flatten (3 colors * 3 channels = 9 features)
+        # Flatten (7 colors * 3 channels = 21 features)
         return dominant_hsv.flatten()
 
 

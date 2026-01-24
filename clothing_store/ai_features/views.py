@@ -195,34 +195,79 @@ def visual_search(request):
             for chunk in image.chunks():
                 f.write(chunk)
                 
-        # Run search
+        # Run search with COLOR-FIRST approach
         try:
-            # Get IDs and confidence scores of similar products
-            results = find_similar_products(file_path, return_scores=True)
+            # STEP 1: Detect dominant color from uploaded image
+            from .recommendations.color_detector import detect_dominant_color
+            detected_color, rgb_values = detect_dominant_color(file_path)
             
-            # Fetch products with their confidence scores
+            print(f"🎨 Detected color: {detected_color} (RGB: {rgb_values})")
+            
+            # STEP 2: Filter products by detected color
+            from products.models import Product
+            
+            # Get products matching the detected color
+            color_filtered_products = Product.objects.filter(
+                is_active=True,
+                color__iexact=detected_color  # Case-insensitive exact match
+            )
+            
+            # If no exact matches, try products with None color (will use image features)
+            if not color_filtered_products.exists():
+                print(f"⚠️ No products with color='{detected_color}', using all products")
+                color_filtered_products = Product.objects.filter(is_active=True)
+            else:
+                print(f"✅ Found {color_filtered_products.count()} products with color='{detected_color}'")
+            
+            # STEP 3: Get IDs of color-filtered products
+            allowed_product_ids = set(color_filtered_products.values_list('id', flat=True))
+            
+            # STEP 4: Run similarity search
+            results = find_similar_products(file_path, return_scores=True, top_k=20)
+            
+            # STEP 5: Filter results to only include products with matching color
             products_with_scores = []
             for pid, confidence in results:
-                try:
-                    product = Product.objects.get(id=pid)
-                    products_with_scores.append({
-                        'product': product,
-                        'confidence': confidence
-                    })
-                except Product.DoesNotExist:
-                    pass
+                if pid in allowed_product_ids:
+                    try:
+                        product = Product.objects.get(id=pid)
+                        products_with_scores.append({
+                            'product': product,
+                            'confidence': confidence
+                        })
+                    except Product.DoesNotExist:
+                        pass
+            
+            # If we have too few results, add more from similarity search (without color filter)
+            if len(products_with_scores) < 6:
+                print(f"⚠️ Only {len(products_with_scores)} color-matched products, adding more from similarity")
+                for pid, confidence in results:
+                    if pid not in allowed_product_ids:
+                        try:
+                            product = Product.objects.get(id=pid)
+                            products_with_scores.append({
+                                'product': product,
+                                'confidence': confidence * 0.7  # Reduce confidence for non-color-matched
+                            })
+                            if len(products_with_scores) >= 6:
+                                break
+                        except Product.DoesNotExist:
+                            pass
             
             return render(request, "ai/visual_search.html", {
-                "products_with_scores": products_with_scores,
+                "products_with_scores": products_with_scores[:6],  # Top 6 results
                 "query_image_url": f"{settings.MEDIA_URL}visual_search_tmp/query.jpg?t={time.time()}",
-                "has_results": len(products_with_scores) > 0
+                "has_results": len(products_with_scores) > 0,
+                "detected_color": detected_color  # Pass to template for display
             })
             
         except Exception as e:
             # In production log this
             print(f"Visual Search Error: {e}")
+            import traceback
+            traceback.print_exc()
             return render(request, "ai/visual_search.html", {
-                "error": "Could not process image. Ensure AI models are built."
+                "error": f"Could not process image: {str(e)}"
             })
 
     return render(request, "ai/visual_search.html")
