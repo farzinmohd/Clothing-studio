@@ -8,7 +8,7 @@
 
 ### 🧠 AI & Machine Learning
 
-- **📷 Visual Search ("Shop the Look")**: Upload any photo (e.g., from Pinterest), and our **ResNet50 + Color Histogram** engine will find the most similar products in your catalog based on **Style & Color**.
+- **📷 Visual Search ("Shop the Look")**: Upload any photo (e.g., from Pinterest), and our **EfficientNetB0 + Enhanced Color Matching** engine will find the most similar products in your catalog based on **Style, Color Distribution & Dominant Colors**. Results include confidence scores showing match quality.
 
 * **🏷️ Smart Tagging**: Automatically tagging products using **MobileNetV2** (Object Detection) and **K-Means Clustering** (Color Analysis).
 * **📏 Smart Size Predictor**: Enter your height, weight, and age to get an instant size recommendation (S/M/L/XL) with confidence scoring.

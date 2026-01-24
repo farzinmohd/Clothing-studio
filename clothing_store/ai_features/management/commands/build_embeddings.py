@@ -5,10 +5,10 @@ import os
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = 'Builds/Updates image embeddings for all products for Visual Search'
+    help = 'Builds/Updates image embeddings for all products using EfficientNetB0 for Visual Search'
 
     def handle(self, *args, **options):
-        self.stdout.write("Initializing Feature Extractor (loading ResNet50)...")
+        self.stdout.write("Initializing Feature Extractor (loading EfficientNetB0)...")
         extractor = FeatureExtractor()
         extractor.initialize()
         

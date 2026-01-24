@@ -197,20 +197,25 @@ def visual_search(request):
                 
         # Run search
         try:
-            # Get IDs of similar products
-            product_ids = find_similar_products(file_path)
+            # Get IDs and confidence scores of similar products
+            results = find_similar_products(file_path, return_scores=True)
             
-            # Fetch objects preserving order
-            products = []
-            for pid in product_ids:
+            # Fetch products with their confidence scores
+            products_with_scores = []
+            for pid, confidence in results:
                 try:
-                    products.append(Product.objects.get(id=pid))
+                    product = Product.objects.get(id=pid)
+                    products_with_scores.append({
+                        'product': product,
+                        'confidence': confidence
+                    })
                 except Product.DoesNotExist:
                     pass
             
             return render(request, "ai/visual_search.html", {
-                "products": products,
-                "query_image_url": f"{settings.MEDIA_URL}visual_search_tmp/query.jpg?t={time.time()}" 
+                "products_with_scores": products_with_scores,
+                "query_image_url": f"{settings.MEDIA_URL}visual_search_tmp/query.jpg?t={time.time()}",
+                "has_results": len(products_with_scores) > 0
             })
             
         except Exception as e:

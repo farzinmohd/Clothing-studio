@@ -25,7 +25,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category', 'color', 'is_active')
     search_fields = ('name',)
     inlines = [ProductImageInline, ProductVariantInline]
-    actions = ['auto_tag_products']
+    actions = ['auto_tag_products', 'rebuild_embeddings']
 
     @admin.action(description='🏷️ Auto-Generate Tags (AI)')
     def auto_tag_products(self, request, queryset):
@@ -48,6 +48,36 @@ class ProductAdmin(admin.ModelAdmin):
                     self.message_user(request, f"Error tagging {product.name}: {e}", level='error')
         
         self.message_user(request, f"Successfully tagged {count} products!")
+    
+    @admin.action(description='🔄 Rebuild Visual Search Embeddings')
+    def rebuild_embeddings(self, request, queryset):
+        """Rebuild embeddings for selected products for visual search."""
+        from ai_features.recommendations.similarity import FeatureExtractor, load_catalog_features, save_catalog_features
+        from django.conf import settings
+        import os
+        
+        extractor = FeatureExtractor()
+        features_dict = load_catalog_features()
+        
+        count = 0
+        for product in queryset:
+            first_img = product.images.first()
+            if first_img:
+                try:
+                    img_path = os.path.join(settings.MEDIA_ROOT, str(first_img.image))
+                    if os.path.exists(img_path):
+                        new_features = extractor.extract(img_path)
+                        features_dict[product.id] = new_features
+                        count += 1
+                except Exception as e:
+                    self.message_user(request, f"Error processing {product.name}: {e}", level='error')
+        
+        # Save all at once
+        if count > 0:
+            save_catalog_features(features_dict)
+            self.message_user(request, f"Successfully rebuilt embeddings for {count} products!")
+        else:
+            self.message_user(request, "No products with images found.", level='warning')
 
 
 @admin.register(Category)
