@@ -6,62 +6,251 @@
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 
 <div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h1 class="h3 fw-bold">Welcome Back</h1>
-            <p class="auth-subtitle">Please enter your details to sign in.</p>
+    <div class="auth-split-wrapper">
+        <!-- Left Welcome Panel -->
+        <div class="auth-welcome-panel">
+            <div class="welcome-decorations">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="plus">+</div>
+                <div class="plus">+</div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="wavy-line"></div>
+                <div class="wavy-line"></div>
+                <div class="wavy-line"></div>
+                <div class="dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <h1 class="welcome-title">Welcome back!</h1>
+            <p class="welcome-subtitle">You can sign in to access with your existing account.</p>
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger" role="alert">
-                    {{ message }}
+        <!-- Right Form Panel -->
+        <div class="auth-form-panel">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="h3 fw-bold">Sign In</h1>
+                    <p class="auth-subtitle">Enter your credentials to access your account</p>
                 </div>
-            {% endfor %}
-        {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
 
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
-            </div>
+                <form method="post">
+                    {% csrf_token %}
 
-            <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <label class="form-label mb-0">Password</label>
-                    <a href="#" class="forgot-password">Forgot password?</a>
-                </div>
-                <div class="password-wrapper">
-                    <input type="password" name="password" id="id_login_password" class="form-control" placeholder="••••••••" required>
-                    <button type="button" class="password-toggle-btn" id="toggleLoginPassword">
-                        <svg id="eyeIconLogin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <svg id="eyeSlashIconLogin" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your username" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">Password</label>
+                            <a href="#" class="forgot-password">Forgot password?</a>
+                        </div>
+                        <div class="password-wrapper">
+                            <input type="password" name="password" id="id_login_password" class="form-control" placeholder="••••••••" required>
+                            <button type="button" class="password-toggle-btn" id="toggleLoginPassword">
+                                <svg id="eyeIconLogin" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIconLogin" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-auth">
+                        Sign In
                     </button>
+                </form>
+
+                <div class="auth-footer">
+                    Don't have an account? 
+                    <a href="{% url 'register' %}" class="auth-link">Create account</a>
                 </div>
             </div>
-
-            <button type="submit" class="btn-auth">
-                Sign In
-            </button>
-        </form>
-
-        <div class="auth-footer">
-            Don't have an account? 
-            <a href="{% url 'register' %}" class="auth-link">Create account</a>
         </div>
     </div>
 </div>
 
+<!-- GSAP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
 <script>
-    // Password visibility toggle for login page
+// Wait for GSAP to load
+window.addEventListener('load', function() {
+    if (typeof gsap === 'undefined') {
+        console.error('GSAP library not loaded!');
+        return;
+    }
+
+    // ===== ENTRANCE ANIMATIONS =====
+    
+    // Card entrance with scale and fade
+    gsap.fromTo(".auth-card",
+        {
+            scale: 0.9,
+            opacity: 0,
+            y: 30
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "back.out(1.3)",
+            delay: 0.2
+        }
+    );
+
+    // Title slides down
+    gsap.fromTo(".auth-header h1",
+        {
+            y: -20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.6,
+            ease: "power3.out",
+            delay: 0.5
+        }
+    );
+
+    // Subtitle fades in
+    gsap.fromTo(".auth-subtitle",
+        {
+            opacity: 0
+        },
+        {
+            opacity: 1,
+            duration: 0.5,
+            ease: "power2.out",
+            delay: 0.7
+        }
+    );
+
+    // Form fields stagger in
+    gsap.fromTo(".mb-3, .mb-4",
+        {
+            y: 20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.15,
+            ease: "power2.out",
+            delay: 0.9
+        }
+    );
+
+    // Button scales in
+    gsap.fromTo(".btn-auth",
+        {
+            scale: 0.8,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            ease: "back.out(1.5)",
+            delay: 1.4
+        }
+    );
+
+    // Footer fades in
+    gsap.fromTo(".auth-footer",
+        {
+            opacity: 0
+        },
+        {
+            opacity: 1,
+            duration: 0.5,
+            ease: "power2.out",
+            delay: 1.6
+        }
+    );
+
+    // ===== INTERACTIVE ANIMATIONS =====
+
+    // Input focus animations
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            gsap.to(this, {
+                y: -2,
+                boxShadow: "0 8px 16px rgba(102, 126, 234, 0.2)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        input.addEventListener('blur', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "none",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Button press animation
+    const submitBtn = document.querySelector('.btn-auth');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            gsap.fromTo(this,
+                { scale: 1 },
+                {
+                    scale: 0.95,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        });
+    }
+
+    // Error message animation
+    const errorMessages = document.querySelectorAll('.alert-danger');
+    if (errorMessages.length > 0) {
+        gsap.fromTo(errorMessages,
+            {
+                x: -10,
+                opacity: 0
+            },
+            {
+                x: 0,
+                opacity: 1,
+                duration: 0.4,
+                ease: "back.out(2)",
+                stagger: 0.1
+            }
+        );
+    }
+
+    // ===== PASSWORD VISIBILITY TOGGLE =====
     const loginPasswordInput = document.getElementById('id_login_password');
     const toggleLoginPasswordBtn = document.getElementById('toggleLoginPassword');
     const eyeIconLogin = document.getElementById('eyeIconLogin');
@@ -71,6 +260,16 @@
         toggleLoginPasswordBtn.addEventListener('click', function() {
             const type = loginPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             loginPasswordInput.setAttribute('type', type);
+            
+            // Animate icon rotation
+            gsap.to(this, {
+                rotation: 180,
+                duration: 0.3,
+                ease: "power2.out",
+                onComplete: function() {
+                    gsap.set(this.targets()[0], { rotation: 0 });
+                }
+            });
             
             // Toggle icons
             if (type === 'text') {
@@ -82,5 +281,6 @@
             }
         });
     }
+});
 </script>
 {% endblock %}

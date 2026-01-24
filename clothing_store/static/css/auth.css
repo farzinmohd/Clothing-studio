@@ -1,32 +1,314 @@
 /* --- SIMPLE MINIMAL ELEGANT DESIGN --- */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(to bottom, #f5f7fa 0%, #e8edf2 100%);
     min-height: 100vh;
 }
 
 .auth-container {
-    min-height: 90vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 0;
+    background: #f0f2f5;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Simple Clean Card */
-.auth-card {
-    background: #ffffff;
+/* Split Screen Wrapper */
+.auth-split-wrapper {
+    display: flex;
     width: 100%;
-    max-width: 420px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
-    padding: 2.5rem 2rem;
+    max-width: 1200px;
+    height: 600px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin: 2rem;
+}
+
+/* Left Welcome Panel */
+.auth-welcome-panel {
+    flex: 1;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative wavy lines and shapes */
+.auth-welcome-panel::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: 10%;
+    right: -100px;
+    background: transparent;
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50% 40% 60% 50%;
+    animation: float-wave 15s ease-in-out infinite;
+}
+
+.auth-welcome-panel::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    bottom: 10%;
+    left: -80px;
+    background: transparent;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 60% 50% 40% 60%;
+    animation: float-wave-reverse 20s ease-in-out infinite;
+}
+
+@keyframes float-wave {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        border-radius: 50% 40% 60% 50%;
+    }
+    50% { 
+        transform: translate3d(-20px, 20px, 0) rotate(10deg);
+        border-radius: 40% 60% 50% 40%;
+    }
+}
+
+@keyframes float-wave-reverse {
+    0%, 100% { 
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        border-radius: 60% 50% 40% 60%;
+    }
+    50% { 
+        transform: translate3d(20px, -20px, 0) rotate(-10deg);
+        border-radius: 50% 40% 60% 50%;
+    }
+}
+
+/* Additional decorative elements */
+.welcome-decorations {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.welcome-decorations .circle {
+    position: absolute;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    will-change: transform;
+}
+
+.welcome-decorations .circle:nth-child(1) {
+    width: 60px;
+    height: 60px;
+    top: 15%;
+    left: 10%;
+    animation: float-slow 4s ease-in-out infinite;
+}
+
+.welcome-decorations .circle:nth-child(2) {
+    width: 40px;
+    height: 40px;
+    top: 70%;
+    right: 15%;
+    animation: float-slow 5s ease-in-out infinite reverse;
+}
+
+.welcome-decorations .circle:nth-child(5) {
+    width: 80px;
+    height: 80px;
+    top: 50%;
+    left: 5%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    animation: float-slow 6s ease-in-out infinite;
+}
+
+.welcome-decorations .circle:nth-child(6) {
+    width: 50px;
+    height: 50px;
+    bottom: 15%;
+    right: 25%;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    animation: float-slow 4.5s ease-in-out infinite reverse;
+}
+
+.welcome-decorations .circle:nth-child(7) {
+    width: 35px;
+    height: 35px;
+    top: 35%;
+    right: 8%;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    animation: float-slow 5.5s ease-in-out infinite;
+}
+
+.welcome-decorations .plus {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 24px;
+    font-weight: 300;
+}
+
+.welcome-decorations .plus:nth-child(3) {
+    top: 20%;
+    right: 20%;
+}
+
+.welcome-decorations .plus:nth-child(4) {
+    bottom: 25%;
+    left: 15%;
+}
+
+.welcome-decorations .dots {
+    position: absolute;
+    top: 25%;
+    right: 10%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.welcome-decorations .dots span {
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+}
+
+/* Wavy decorative lines */
+.welcome-decorations .wavy-line {
+    position: absolute;
+    border: 3px solid rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    background: transparent;
+    will-change: transform, border-radius;
+}
+
+.welcome-decorations .wavy-line:nth-child(8) {
+    width: 200px;
+    height: 200px;
+    top: 5%;
+    left: -50px;
+    border-radius: 60% 40% 50% 60%;
+    animation: wave-morph 8s ease-in-out infinite;
+}
+
+.welcome-decorations .wavy-line:nth-child(9) {
+    width: 250px;
+    height: 220px;
+    bottom: 5%;
+    right: -70px;
+    border-radius: 40% 60% 50% 40%;
+    animation: wave-morph 10s ease-in-out infinite reverse;
+}
+
+.welcome-decorations .wavy-line:nth-child(10) {
+    width: 180px;
+    height: 180px;
+    top: 35%;
+    left: -40px;
+    border-radius: 50% 60% 40% 50%;
+    animation: wave-morph 9s ease-in-out infinite;
+}
+
+@keyframes wave-morph {
+    0%, 100% {
+        border-radius: 60% 40% 50% 60%;
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    }
+    25% {
+        border-radius: 40% 60% 40% 60%;
+        transform: translate3d(0, 0, 0) rotate(5deg) scale(1.05);
+    }
+    50% {
+        border-radius: 50% 50% 60% 40%;
+        transform: translate3d(0, 0, 0) rotate(-5deg) scale(0.95);
+    }
+    75% {
+        border-radius: 60% 40% 60% 40%;
+        transform: translate3d(0, 0, 0) rotate(3deg) scale(1.02);
+    }
+}
+
+@keyframes float-slow {
+    0%, 100% { transform: translate3d(0, 0, 0); }
+    50% { transform: translate3d(0, -20px, 0); }
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    z-index: 1;
+    position: relative;
+}
+
+.welcome-subtitle {
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.95;
+    z-index: 1;
+    max-width: 400px;
+    position: relative;
+}
+
+/* Right Form Panel */
+.auth-form-panel {
+    flex: 1;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    background: white;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.auth-form-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-form-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.auth-form-panel::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.auth-form-panel::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Form Card - No extra styling needed, using panel */
+.auth-card {
+    background: transparent;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+    border: none;
 }
 
 .auth-header {
-    text-align: center;
+    text-align: left;
     margin-bottom: 2rem;
 }
 
@@ -39,10 +321,32 @@ body {
 
 .auth-subtitle {
     color: #718096;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
 }
 
-/* Form Styles */
+/* Responsive */
+@media (max-width: 968px) {
+    .auth-split-wrapper {
+        flex-direction: column;
+        height: auto;
+        max-width: 500px;
+    }
+    
+    .auth-welcome-panel {
+        padding: 2rem;
+        min-height: 200px;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .auth-form-panel {
+        padding: 2rem;
+    }
+}
+
+/* Form Styles - Light Theme */
 .form-label {
     font-size: 0.875rem;
     font-weight: 600;
@@ -52,19 +356,19 @@ body {
 }
 
 .form-control {
-    border: 1px solid #cbd5e0;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 0.75rem 1rem;
     font-size: 0.9375rem;
-    transition: all 0.2s;
+    transition: all 0.3s;
     background-color: #ffffff;
     width: 100%;
     color: #2d3748;
 }
 
 .form-control:focus {
-    border-color: #4299e1;
-    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
     outline: none;
 }
 
@@ -72,23 +376,29 @@ body {
     color: #a0aec0;
 }
 
-/* Button */
+/* Button - Minimalist Theme */
 .btn-auth {
-    background: #4299e1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     width: 100%;
     padding: 0.875rem;
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: 600;
     font-size: 0.9375rem;
     border: none;
     margin-top: 1.5rem;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
     cursor: pointer;
+    box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.3);
 }
 
 .btn-auth:hover {
-    background: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.4);
+}
+
+.btn-auth:active {
+    transform: translateY(0);
 }
 
 .auth-footer {
@@ -99,12 +409,13 @@ body {
 }
 
 .auth-link {
-    color: #4299e1;
+    color: #667eea;
     font-weight: 600;
     text-decoration: none;
 }
 
 .auth-link:hover {
+    color: #5568d3;
     text-decoration: underline;
 }
 

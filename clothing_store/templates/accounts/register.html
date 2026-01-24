@@ -6,137 +6,322 @@
 <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 
 <div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h1 class="h3 fw-bold">Create Account</h1>
-            <p class="auth-subtitle">Join us for a personalized shopping experience.</p>
+    <div class="auth-split-wrapper">
+        <!-- Left Welcome Panel -->
+        <div class="auth-welcome-panel">
+            <div class="welcome-decorations">
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="plus">+</div>
+                <div class="plus">+</div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="circle"></div>
+                <div class="wavy-line"></div>
+                <div class="wavy-line"></div>
+                <div class="wavy-line"></div>
+                <div class="dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <h1 class="welcome-title">Join us today!</h1>
+            <p class="welcome-subtitle">Create your account and unlock exclusive features, personalized recommendations, and amazing deals.</p>
         </div>
 
-        <form method="post">
-            {% csrf_token %}
-
-            <!-- Display non-field errors (like password mismatch) -->
-            {% if form.non_field_errors %}
-                <div class="error-message">
-                    {% for error in form.non_field_errors %}
-                        {{ error }}
-                    {% endfor %}
+        <!-- Right Form Panel -->
+        <div class="auth-form-panel">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="h3 fw-bold">Create Account</h1>
+                    <p class="auth-subtitle">Fill in your details to get started</p>
                 </div>
-            {% endif %}
 
-            <!-- Custom styling for Django form fields rendered manually usually, but if relying on form view, we can style the widget or wrap it -->
-            <!-- Since register.html used form.field approach, we'll keep that but wrap in our clean divs. 
-                 To ensure the 'form-control' class is present, we might need JS or assume it's added in the form definition.
-                 Given previous files, it seems form widgets might not have classes. We will use a script to ensure they look right. -->
-            
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <div class="input-with-indicator">
-                    {{ form.username }}
-                    <div class="availability-indicator" id="username-indicator" style="display: none;">
-                        <span class="icon"></span>
-                    </div>
-                </div>
-                <div class="availability-message" id="username-message" style="display: none;"></div>
-                {% if form.username.errors %}
-                    <div class="error-message">
-                        {% for error in form.username.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+                <form method="post">
+                    {% csrf_token %}
 
-            <div class="mb-3">
-                <label class="form-label">Email Address</label>
-                <div class="input-with-indicator">
-                    {{ form.email }}
-                    <div class="availability-indicator" id="email-indicator" style="display: none;">
-                        <span class="icon"></span>
+                    <!-- Display non-field errors (like password mismatch) -->
+                    {% if form.non_field_errors %}
+                        <div class="error-message">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <div class="input-with-indicator">
+                            {{ form.username }}
+                            <div class="availability-indicator" id="username-indicator" style="display: none;">
+                                <span class="icon"></span>
+                            </div>
+                        </div>
+                        <div class="availability-message" id="username-message" style="display: none;"></div>
+                        {% if form.username.errors %}
+                            <div class="error-message">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     </div>
-                </div>
-                <div class="availability-message" id="email-message" style="display: none;"></div>
-                {% if form.email.errors %}
-                    <div class="error-message">
-                        {% for error in form.email.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
 
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <div class="password-wrapper">
-                    {{ form.password }}
-                    <button type="button" class="password-toggle-btn" id="togglePassword">
-                        <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <svg id="eyeSlashIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <div class="input-with-indicator">
+                            {{ form.email }}
+                            <div class="availability-indicator" id="email-indicator" style="display: none;">
+                                <span class="icon"></span>
+                            </div>
+                        </div>
+                        <div class="availability-message" id="email-message" style="display: none;"></div>
+                        {% if form.email.errors %}
+                            <div class="error-message">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="password-wrapper">
+                            {{ form.password }}
+                            <button type="button" class="password-toggle-btn" id="togglePassword">
+                                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIcon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Requirements Checklist -->
+                        <div class="password-requirements">
+                            <div class="requirements-title">Password must contain:</div>
+                            <div class="requirement-item invalid" id="req-length">
+                                <span class="requirement-icon">✓</span>
+                                <span>At least 8 characters</span>
+                            </div>
+                            <div class="requirement-item invalid" id="req-uppercase">
+                                <span class="requirement-icon">✓</span>
+                                <span>One uppercase letter (A-Z)</span>
+                            </div>
+                            <div class="requirement-item invalid" id="req-lowercase">
+                                <span class="requirement-icon">✓</span>
+                                <span>One lowercase letter (a-z)</span>
+                            </div>
+                            <div class="requirement-item invalid" id="req-digit">
+                                <span class="requirement-icon">✓</span>
+                                <span>One number (0-9)</span>
+                            </div>
+                            <div class="requirement-item invalid" id="req-special">
+                                <span class="requirement-icon">✓</span>
+                                <span>One special character (!@#$%^&*)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Confirm Password</label>
+                        <div class="password-wrapper">
+                            {{ form.confirm_password }}
+                            <button type="button" class="password-toggle-btn" id="toggleConfirmPassword">
+                                <svg id="eyeIconConfirm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg id="eyeSlashIconConfirm" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-auth" id="submitBtn">
+                        Create Account
                     </button>
-                </div>
-                
-                <!-- Password Requirements Checklist -->
-                <div class="password-requirements">
-                    <div class="requirements-title">Password must contain:</div>
-                    <div class="requirement-item invalid" id="req-length">
-                        <span class="requirement-icon">✓</span>
-                        <span>At least 8 characters</span>
-                    </div>
-                    <div class="requirement-item invalid" id="req-uppercase">
-                        <span class="requirement-icon">✓</span>
-                        <span>One uppercase letter (A-Z)</span>
-                    </div>
-                    <div class="requirement-item invalid" id="req-lowercase">
-                        <span class="requirement-icon">✓</span>
-                        <span>One lowercase letter (a-z)</span>
-                    </div>
-                    <div class="requirement-item invalid" id="req-digit">
-                        <span class="requirement-icon">✓</span>
-                        <span>One number (0-9)</span>
-                    </div>
-                    <div class="requirement-item invalid" id="req-special">
-                        <span class="requirement-icon">✓</span>
-                        <span>One special character (!@#$%^&*)</span>
-                    </div>
+                </form>
+
+                <div class="auth-footer">
+                    Already have an account? 
+                    <a href="{% url 'login' %}" class="auth-link">Log in</a>
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label class="form-label">Confirm Password</label>
-                <div class="password-wrapper">
-                    {{ form.confirm_password }}
-                    <button type="button" class="password-toggle-btn" id="toggleConfirmPassword">
-                        <svg id="eyeIconConfirm" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                        <svg id="eyeSlashIconConfirm" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-auth" id="submitBtn">
-                Create Account
-            </button>
-        </form>
-
-        <div class="auth-footer">
-            Already have an account? 
-            <a href="{% url 'login' %}" class="auth-link">Log in</a>
         </div>
     </div>
 </div>
 
+<!-- GSAP Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
 <script>
+// Wait for GSAP to load
+window.addEventListener('load', function() {
+    if (typeof gsap === 'undefined') {
+        console.error('GSAP library not loaded!');
+        return;
+    }
+
+    // ===== ENTRANCE ANIMATIONS =====
+    
+    // Card entrance with scale and fade
+    gsap.fromTo(".auth-card",
+        {
+            scale: 0.9,
+            opacity: 0,
+            y: 30
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "back.out(1.3)",
+            delay: 0.2
+        }
+    );
+
+    // Title slides down
+    gsap.fromTo(".auth-header h1",
+        {
+            y: -20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.6,
+            ease: "power3.out",
+            delay: 0.5
+        }
+    );
+
+    // Subtitle fades in
+    gsap.fromTo(".auth-subtitle",
+        {
+            opacity: 0
+        },
+        {
+            opacity: 1,
+            duration: 0.5,
+            ease: "power2.out",
+            delay: 0.7
+        }
+    );
+
+    // Form fields stagger in
+    gsap.fromTo(".mb-3, .mb-4",
+        {
+            y: 20,
+            opacity: 0
+        },
+        {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            stagger: 0.12,
+            ease: "power2.out",
+            delay: 0.9
+        }
+    );
+
+    // Password requirements stagger in
+    gsap.fromTo(".requirement-item",
+        {
+            x: -10,
+            opacity: 0
+        },
+        {
+            x: 0,
+            opacity: 1,
+            duration: 0.4,
+            stagger: 0.08,
+            ease: "power2.out",
+            delay: 1.5
+        }
+    );
+
+    // Button scales in
+    gsap.fromTo(".btn-auth",
+        {
+            scale: 0.8,
+            opacity: 0
+        },
+        {
+            scale: 1,
+            opacity: 1,
+            duration: 0.5,
+            ease: "back.out(1.5)",
+            delay: 1.8
+        }
+    );
+
+    // Footer fades in
+    gsap.fromTo(".auth-footer",
+        {
+            opacity: 0
+        },
+        {
+            opacity: 1,
+            duration: 0.5,
+            ease: "power2.out",
+            delay: 2.0
+        }
+    );
+
+    // ===== INTERACTIVE ANIMATIONS =====
+
+    // Input focus animations
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('focus', function() {
+            gsap.to(this, {
+                y: -2,
+                boxShadow: "0 8px 16px rgba(102, 126, 234, 0.2)",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        input.addEventListener('blur', function() {
+            gsap.to(this, {
+                y: 0,
+                boxShadow: "none",
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Button press animation
+    const submitBtn = document.querySelector('.btn-auth');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function(e) {
+            gsap.fromTo(this,
+                { scale: 1 },
+                {
+                    scale: 0.95,
+                    duration: 0.1,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                }
+            );
+        });
+    }
+
+}); // Close GSAP load wrapper
+
+// ===== EXISTING FUNCTIONALITY =====
     // Helper to ensure Django form inputs get the new styling classes
     document.querySelectorAll('input').forEach(input => {
         if (!input.classList.contains('form-control')) {
