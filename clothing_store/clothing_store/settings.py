@@ -156,6 +156,11 @@ LOGIN_REDIRECT_URL = 'profile'
 LOGOUT_REDIRECT_URL = 'login'
 
 
+# Email Configuration for Development
+# This prints emails to the console since we are using fake emails like abc@gmail.com
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
 STRIPE_PUBLIC_KEY = config("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
 
