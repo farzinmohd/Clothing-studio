@@ -271,3 +271,129 @@ def visual_search(request):
             })
 
     return render(request, "ai/visual_search.html")
+
+
+from .models import FAQ
+import re
+
+@csrf_exempt
+def chatbot_response(request):
+    """
+    Simple chatbot logic: keyword matching from FAQ database.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_msg = data.get("message", "").lower().strip()
+            
+            if not user_msg:
+                return JsonResponse({"response": "I didn't catch that. Could you please rephrase?"})
+
+            user_msg_clean = re.sub(r'[^\w\s]', '', user_msg)
+            user_words = set(user_msg_clean.split())
+            
+            if not user_words:
+                return JsonResponse({"response": "I didn't catch that. Could you please rephrase?"})
+
+            # 1. Synonym Mapping
+            synonyms = {
+                'ai': 'stylist',
+                'bot': 'stylist',
+                'delivery': 'shipping',
+                'cost': 'shipping',
+                'price': 'shipping',
+                'pay': 'payment',
+                'money': 'payment',
+                'card': 'payment',
+                'return': 'returns',
+                'policy': 'returns',
+                'cancel': 'cancellation',
+                'stop': 'cancellation',
+                'discount': 'coupon',
+                'promo': 'coupon',
+                'code': 'coupon',
+                'size': 'sizing',
+                'fit': 'sizing',
+                'large': 'sizing',
+                'small': 'sizing',
+            }
+            
+            # Simple stemming simulation (stripping common suffixes)
+            def stem_word(w):
+                if len(w) <= 3: return w
+                if w.endswith('ing'): return w[:-3]
+                if w.endswith('ed'): return w[:-2]
+                if w.endswith('es') and not w.endswith('ss'): return w[:-2]
+                if w.endswith('s') and not w.endswith('ss'): return w[:-1]
+                return w
+
+            stemmed_user_words = {stem_word(w) for w in user_words}
+            
+            # Add synonyms to user search intent
+            expanded_user_intent = set(stemmed_user_words)
+            for w in user_words:
+                if w in synonyms:
+                    expanded_user_intent.add(stem_word(synonyms[w]))
+
+            # 2. Check for common greetings first (High Priority)
+            greetings = {'hi', 'hello', 'hey', 'greetings', 'namaste', 'morning', 'evening'}
+            if any(greet in user_words for greet in greetings):
+                return JsonResponse({"response": "Hello! I'm Elegance Bot. How can I help you today?"})
+
+            # 3. Improved matching logic: Keyword overlap scoring
+            faqs = FAQ.objects.all()
+            
+            matches = [] # To store all matches for "Did you mean?"
+            stop_words = {'a', 'an', 'the', 'is', 'are', 'do', 'does', 'how', 'can', 'i', 'to', 'for', 'of', 'in', 'on', 'at', 'with', 'about', 'some', 'any', 'my', 'your'}
+            
+            for faq in faqs:
+                faq_question_clean = re.sub(r'[^\w\s]', '', faq.question.lower())
+                faq_words = set(faq_question_clean.split())
+                stemmed_faq_words = {stem_word(w) for w in faq_words if w not in stop_words}
+                
+                score = 0
+                # Check for stemmed meaningful word overlap
+                meaningful_user_words = {w for w in expanded_user_intent if w not in stop_words}
+                common_meaningful_stemmed = meaningful_user_words.intersection(stemmed_faq_words)
+                
+                score += len(common_meaningful_stemmed) * 4
+                
+                # Bonus for exact whole word match in clean user msg
+                for f_word in faq_words:
+                    if f_word in user_words and f_word not in stop_words:
+                        score += 2
+                
+                # Bonus for phrase match
+                if faq_question_clean in user_msg_clean or user_msg_clean in faq_question_clean:
+                    score += 5
+
+                if score > 0:
+                    matches.append({
+                        'answer': faq.answer,
+                        'question': faq.question,
+                        'score': score
+                    })
+
+            # Sort matches by highest score
+            matches = sorted(matches, key=lambda x: x['score'], reverse=True)
+
+            # High confidence threshold
+            if matches and matches[0]['score'] >= 8:
+                return JsonResponse({"response": matches[0]['answer']})
+            
+            # Low confidence threshold - "Did you mean?"
+            if matches and matches[0]['score'] >= 3:
+                return JsonResponse({
+                    "response": f"I'm not 100% sure, but are you asking about: **{matches[0]['question']}**?",
+                    "suggestion": matches[0]['question']
+                })
+
+            return JsonResponse({
+                "response": "I'm sorry, I still can't quite understand that. Perhaps you could try asking about 'returns', 'shipping', or 'size guide'?",
+                "is_fallback": True
+            })
+
+        except Exception as e:
+            return JsonResponse({"response": f"Oops! I hit a snag: {str(e)}"})
+
+    return JsonResponse({"response": "Invalid request method."}, status=405)

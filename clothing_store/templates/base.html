@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{% static 'css/navbar.css' %}" rel="stylesheet">
+    <link href="{% static 'css/chatbot.css' %}" rel="stylesheet">
 </head>
 <body>
 
@@ -277,5 +278,202 @@ document.addEventListener('click', function (e) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Chatbot Widget -->
+<div class="chatbot-widget">
+    <!-- Chat Toggle -->
+    <div class="chatbot-toggle" id="chatToggle">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chatbot-window" id="chatWindow">
+        <div class="chatbot-header">
+            <div class="bot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="bot-info">
+                <h4>Elegance Bot</h4>
+                <span>Always active</span>
+            </div>
+            <div class="close-chat" id="closeChat">
+                <i class="fas fa-times"></i>
+            </div>
+        </div>
+
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message bot">
+                Hello! I'm Elegance Bot. How can I help you today?
+            </div>
+        </div>
+
+        <div class="chatbot-suggestions" id="chatSuggestions">
+            <button class="suggestion-btn">Return policy</button>
+            <button class="suggestion-btn">Shipping time</button>
+            <button class="suggestion-btn">Track my order</button>
+            <button class="suggestion-btn">Apply coupon</button>
+        </div>
+
+        <div class="chatbot-input-area">
+            <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off">
+            <button id="sendMessage" disabled>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatToggle = document.getElementById('chatToggle');
+    const chatWindow = document.getElementById('chatWindow');
+    const closeChat = document.getElementById('closeChat');
+    const chatInput = document.getElementById('chatInput');
+    const sendMessage = document.getElementById('sendMessage');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatSuggestions = document.getElementById('chatSuggestions');
+
+    // Toggle Chat Window
+    chatToggle.addEventListener('click', () => {
+        const isOpen = chatWindow.classList.toggle('open');
+        if (isOpen) {
+            gsap.fromTo(chatWindow, 
+                { scale: 0, opacity: 0, transformOrigin: 'bottom right' },
+                { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.4)' }
+            );
+            
+            // Stagger buttons entrance
+            gsap.from('.suggestion-btn', {
+                y: 10,
+                opacity: 0,
+                duration: 0.4,
+                stagger: 0.05,
+                delay: 0.3
+            });
+            
+            chatInput.focus();
+        } else {
+            gsap.to(chatWindow, { scale: 0, opacity: 0, duration: 0.3, ease: 'power2.in' });
+        }
+    });
+
+    closeChat.addEventListener('click', () => {
+        chatWindow.classList.remove('open');
+        gsap.to(chatWindow, { scale: 0, opacity: 0, duration: 0.3, ease: 'power2.in' });
+    });
+
+    // Suggestion Buttons Logic
+    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = btn.innerText;
+            handleSend(text);
+        });
+    });
+
+    // Input handling
+    chatInput.addEventListener('input', () => {
+        sendMessage.disabled = chatInput.value.trim() === '';
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+            handleSend();
+        }
+    });
+
+    sendMessage.addEventListener('click', () => handleSend());
+
+    function handleSend(manualText = null) {
+        const text = manualText || chatInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, 'user');
+        chatInput.value = '';
+        sendMessage.disabled = true;
+
+        // Show typing indicator
+        const typingId = showTypingIndicator();
+
+        // Send to backend
+        fetch('{% url "chatbot_response" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: text })
+        })
+        .then(response => response.json())
+        .then(data => {
+            removeTypingIndicator(typingId);
+            appendMessage(data.response, 'bot');
+            
+            // Handle "Did you mean?" suggestions
+            if (data.suggestion) {
+                const suggestionBtn = document.createElement('button');
+                suggestionBtn.className = 'suggestion-btn mt-2';
+                suggestionBtn.style.display = 'block';
+                suggestionBtn.innerText = data.suggestion;
+                suggestionBtn.onclick = () => handleSend(data.suggestion);
+                
+                const lastMsg = chatMessages.lastElementChild;
+                lastMsg.appendChild(suggestionBtn);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        })
+        .catch(err => {
+            removeTypingIndicator(typingId);
+            appendMessage("Sorry, I'm having trouble connecting right now.", 'bot');
+        });
+    }
+
+    function appendMessage(text, side) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${side}`;
+        
+        // Convert **bold** to <strong> tags
+        let processedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        msgDiv.innerHTML = processedText;
+        
+        chatMessages.appendChild(msgDiv);
+        
+        // GSAP entrance for message
+        gsap.from(msgDiv, {
+            y: 10,
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power2.out'
+        });
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const id = 'typing-' + Date.now();
+        const indicator = document.createElement('div');
+        indicator.className = 'typing-indicator';
+        indicator.id = id;
+        indicator.innerHTML = '<span></span><span></span><span></span>';
+        chatMessages.appendChild(indicator);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return id;
+    }
+
+    function removeTypingIndicator(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    // Floating animation for chat button
+    gsap.to(chatToggle, {
+        y: -5,
+        duration: 1.5,
+        repeat: -1,
+        yoyo: true,
+        ease: 'power1.inOut'
+    });
+});
+</script>
 </body>
 </html>

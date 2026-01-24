@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import ai_home, ai_result, predict_size_api, visual_search
+from . import views
 
 urlpatterns = [
-    path("", ai_home, name="ai_home"),
-    path("result/", ai_result, name="ai_result"),
-    path("predict-size/", predict_size_api, name="predict_size_api"),
-    path("visual-search/", visual_search, name="visual_search"),
+    path("", views.ai_home, name="ai_home"),
+    path("result/", views.ai_result, name="ai_result"),
+    path("predict-size/", views.predict_size_api, name="predict_size_api"),
+    path('visual-search/', views.visual_search, name='visual_search'),
+    path('chatbot-response/', views.chatbot_response, name='chatbot_response'),
 ]
