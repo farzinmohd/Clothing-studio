@@ -14,8 +14,9 @@ from .size_recommendation.model import predict_size
 from accounts.models import UserMeasurements
 
 # New Imports
+from django.db.models import Q
 from .recommendations.similarity import find_similar_products
-from products.models import Product
+from products.models import Product, Category
 
 def ai_home(request):
     return render(request, "ai/ai_home.html")
@@ -295,7 +296,7 @@ def chatbot_response(request):
             if not user_words:
                 return JsonResponse({"response": "I didn't catch that. Could you please rephrase?"})
 
-            # 1. Synonym Mapping
+            # 1. Stemming & Synonym Preparation
             synonyms = {
                 'ai': 'stylist',
                 'bot': 'stylist',
@@ -318,7 +319,6 @@ def chatbot_response(request):
                 'small': 'sizing',
             }
             
-            # Simple stemming simulation (stripping common suffixes)
             def stem_word(w):
                 if len(w) <= 3: return w
                 if w.endswith('ing'): return w[:-3]
@@ -328,19 +328,92 @@ def chatbot_response(request):
                 return w
 
             stemmed_user_words = {stem_word(w) for w in user_words}
-            
-            # Add synonyms to user search intent
             expanded_user_intent = set(stemmed_user_words)
             for w in user_words:
                 if w in synonyms:
                     expanded_user_intent.add(stem_word(synonyms[w]))
 
-            # 2. Check for common greetings first (High Priority)
+            # 2. Check for Product Discovery Intent (High Priority)
+            discovery_keywords = {'show', 'find', 'search', 'buy', 'look', 'want', 'need', 'browse'}
+            if any(w in expanded_user_intent for w in discovery_keywords):
+                # Extract search terms using stemmed words for plural handling
+                search_keywords = [stem_word(w) for w in user_words if w not in discovery_keywords and w not in {'me', 'for', 'the', 'a', 'an', 'some', 'any', 'i'}]
+                
+                if search_keywords:
+                    query = Q()
+                    for word in search_keywords:
+                        word_query = (
+                            Q(name__icontains=word) |
+                            Q(description__icontains=word) |
+                            Q(category__name__icontains=word) |
+                            Q(tags__icontains=word) |
+                            Q(color__icontains=word)
+                        )
+                        if query:
+                            query &= word_query
+                        else:
+                            query = word_query
+                    
+                    products = Product.objects.filter(query, is_active=True).distinct()[:10]
+                    
+                    if products.exists():
+                        product_list = []
+                        for p in products:
+                            image_url = ""
+                            if p.images.exists():
+                                image_url = p.images.first().image.url
+                            
+                            product_list.append({
+                                "id": p.id,
+                                "name": p.name,
+                                "price": str(p.price),
+                                "image": image_url,
+                                "url": f"/products/{p.id}/" # Standard URL pattern
+                            })
+                        
+                        return JsonResponse({
+                            "response": f"I found some items you might like! Have a look at these:",
+                            "products": product_list
+                        })
+                    else:
+                        return JsonResponse({
+                            "response": f"I couldn't find any products matching those keywords. Try searching for something else, like 'blue shirts' or 'linen'!"
+                        })
+
+            # 2. Check for Order Status Intent (High Priority)
+            order_keywords = {'status', 'track', 'where', 'order'}
+            if any(w in expanded_user_intent for w in order_keywords):
+                if not request.user.is_authenticated:
+                    return JsonResponse({"response": "I can certainly help with that! Please **Log In** to your account so I can look up your order status for you."})
+                
+                try:
+                    from orders.models import Order
+                    latest_order = Order.objects.filter(user=request.user).latest('created_at')
+                    
+                    status_colors = {
+                        'pending': '⏳ Pending',
+                        'paid': '💳 Paid',
+                        'shipped': '🚚 Shipped',
+                        'delivered': '✅ Delivered',
+                        'cancelled': '❌ Cancelled'
+                    }
+                    display_status = status_colors.get(latest_order.status, latest_order.status.title())
+                    
+                    order_date = latest_order.created_at.strftime("%b %d, %Y")
+                    
+                    return JsonResponse({
+                        "response": f"I found your latest order! \n\n**Order #{latest_order.id}**\nStatus: **{display_status}**\nPlaced on: **{order_date}**\n\nIs there anything else I can help you with?"
+                    })
+                except Exception:
+                    # Fallback to general FAQ if no orders exist
+                    pass
+
+            # 3. Check for common greetings (High Priority)
             greetings = {'hi', 'hello', 'hey', 'greetings', 'namaste', 'morning', 'evening'}
             if any(greet in user_words for greet in greetings):
                 return JsonResponse({"response": "Hello! I'm Elegance Bot. How can I help you today?"})
 
-            # 3. Improved matching logic: Keyword overlap scoring
+            # 4. Improved matching logic: Keyword overlap scoring
             faqs = FAQ.objects.all()
             
             matches = [] # To store all matches for "Did you mean?"

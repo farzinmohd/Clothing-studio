@@ -40,6 +40,11 @@ def seed_faqs():
             "category": "Sizing"
         },
         {
+            "question": "Size help",
+            "answer": "For the best fit, we recommend checking the **Size Chart** on the product page. Typically, our items are true to size. If you are between sizes, we recommend sizing up for a relaxed fit or down for a slim fit!",
+            "category": "Sizing"
+        },
+        {
             "question": "Do you have a loyalty program?",
             "answer": "Yes! Our **Elegance Club** lets you earn points on every purchase. Points can be redeemed for exclusive discounts and early access to new collections.",
             "category": "Loyalty"

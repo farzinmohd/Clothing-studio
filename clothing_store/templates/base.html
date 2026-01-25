@@ -8,7 +8,37 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{% static 'css/navbar.css' %}" rel="stylesheet">
-    <link href="{% static 'css/chatbot.css' %}" rel="stylesheet">
+    <!-- Cache busting for chatbot.css -->
+    <link href="{% static 'css/chatbot.css' %}?v={% now 'U' %}" rel="stylesheet">
+    <style>
+        /* Force carousel visibility if external CSS fails/caches */
+        .product-carousel {
+            display: flex !important;
+            min-height: 210px !important;
+            height: 210px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            flex-shrink: 0 !important;
+            padding-bottom: 5px !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        .bot-product-card {
+            min-width: 140px !important;
+            height: 195px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            flex-shrink: 0 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        .bot-product-card img {
+            height: 110px !important;
+            min-height: 110px !important;
+            display: block !important;
+            object-fit: cover !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -302,12 +332,13 @@ document.addEventListener('click', function (e) {
         </div>
 
         <div class="chatbot-messages" id="chatMessages">
-            <div class="message bot">
-                Hello! I'm Elegance Bot. How can I help you today?
-            </div>
+            <div class="message bot">Hello! I'm Elegance Bot. How can I help you today?</div>
         </div>
 
         <div class="chatbot-suggestions" id="chatSuggestions">
+            {% if product %}
+            <button class="suggestion-btn context-btn" data-query="Size help for {{ product.name }}">Size help for this item</button>
+            {% endif %}
             <button class="suggestion-btn">Return policy</button>
             <button class="suggestion-btn">Shipping time</button>
             <button class="suggestion-btn">Track my order</button>
@@ -337,6 +368,10 @@ document.addEventListener('DOMContentLoaded', function() {
     chatToggle.addEventListener('click', () => {
         const isOpen = chatWindow.classList.toggle('open');
         if (isOpen) {
+            // Hide tooltip if open
+            const tooltip = document.querySelector('.chat-proactive-tooltip');
+            if (tooltip) tooltip.style.display = 'none';
+
             gsap.fromTo(chatWindow, 
                 { scale: 0, opacity: 0, transformOrigin: 'bottom right' },
                 { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.4)' }
@@ -357,17 +392,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Proactive Contextual Tooltip
+    {% if product %}
+    setTimeout(() => {
+        if (!chatWindow.classList.contains('open')) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chat-proactive-tooltip';
+            tooltip.innerHTML = 'Need size help for <strong>{{ product.name|escapejs }}</strong>? <i class="fas fa-times close-tooltip"></i>';
+            document.querySelector('.chatbot-widget').appendChild(tooltip);
+
+            gsap.fromTo(tooltip, 
+                { opacity: 0, y: 20, x: -20 }, 
+                { opacity: 1, y: 0, duration: 0.6, ease: 'back.out(1.7)' }
+            );
+
+            tooltip.querySelector('.close-tooltip').onclick = (e) => {
+                e.stopPropagation();
+                tooltip.remove();
+            };
+            
+            tooltip.onclick = () => {
+                chatToggle.click();
+                tooltip.remove();
+            };
+        }
+    }, 5000); // Show after 5 seconds
+    {% endif %}
+
     closeChat.addEventListener('click', () => {
         chatWindow.classList.remove('open');
         gsap.to(chatWindow, { scale: 0, opacity: 0, duration: 0.3, ease: 'power2.in' });
     });
 
     // Suggestion Buttons Logic
-    document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const text = btn.innerText;
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('suggestion-btn')) {
+            const text = e.target.getAttribute('data-query') || e.target.innerText;
             handleSend(text);
-        });
+        }
     });
 
     // Input handling
@@ -405,21 +467,32 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            removeTypingIndicator(typingId);
-            appendMessage(data.response, 'bot');
-            
-            // Handle "Did you mean?" suggestions
-            if (data.suggestion) {
-                const suggestionBtn = document.createElement('button');
-                suggestionBtn.className = 'suggestion-btn mt-2';
-                suggestionBtn.style.display = 'block';
-                suggestionBtn.innerText = data.suggestion;
-                suggestionBtn.onclick = () => handleSend(data.suggestion);
+            // Add a small delay for realism
+            setTimeout(() => {
+                removeTypingIndicator(typingId);
+                appendMessage(data.response, 'bot');
                 
-                const lastMsg = chatMessages.lastElementChild;
-                lastMsg.appendChild(suggestionBtn);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+                // Handle Product Discovery Carousel
+                if (data.products && data.products.length > 0) {
+                    appendProductCarousel(data.products);
+                }
+
+                // Handle "Did you mean?" suggestions
+                if (data.suggestion) {
+                    const suggContainer = document.createElement('div');
+                    suggContainer.className = 'chatbot-suggestions mt-2 p-0';
+                    suggContainer.style.background = 'transparent';
+
+                    const suggestionBtn = document.createElement('button');
+                    suggestionBtn.className = 'suggestion-btn';
+                    suggestionBtn.innerHTML = `<i class="fas fa-lightbulb me-1"></i> ${data.suggestion}`;
+                    suggestionBtn.onclick = () => handleSend(data.suggestion);
+                    
+                    suggContainer.appendChild(suggestionBtn);
+                    chatMessages.appendChild(suggContainer);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }, 800);
         })
         .catch(err => {
             removeTypingIndicator(typingId);
@@ -431,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${side}`;
         
-        // Convert **bold** to <strong> tags
+        // Convert **bold** to <strong> and handle newlines if not handled by CSS
         let processedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         msgDiv.innerHTML = processedText;
         
@@ -447,6 +520,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Scroll to bottom
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendProductCarousel(products) {
+        const carousel = document.createElement('div');
+        carousel.className = 'product-carousel';
+        
+        products.forEach(p => {
+            const card = document.createElement('a');
+            card.href = p.url;
+            card.className = 'bot-product-card';
+            card.innerHTML = `
+                <img src="${p.image || '/static/images/placeholder.jpg'}" alt="${p.name}">
+                <div class="bot-product-info">
+                    <div class="bot-product-name">${p.name}</div>
+                    <div class="bot-product-price">₹${p.price}</div>
+                </div>
+            `;
+            carousel.appendChild(card);
+        });
+
+        chatMessages.appendChild(carousel);
+        
+        // GSAP for carousel
+        gsap.fromTo(carousel, 
+            { x: 30, opacity: 0 },
+            { x: 0, opacity: 1, duration: 0.5, delay: 0.2, ease: 'power2.out' }
+        );
+
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 300);
     }
 
     function showTypingIndicator() {
