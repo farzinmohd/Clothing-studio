@@ -311,6 +311,10 @@ def cancel_order(request, order_id):
 def download_invoice(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
+    if order.status != 'delivered':
+        messages.error(request, "Invoice can only be downloaded after the product is delivered.")
+        return redirect('order_detail', order_id=order.id)
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="invoice_{order.id}.pdf"'
 

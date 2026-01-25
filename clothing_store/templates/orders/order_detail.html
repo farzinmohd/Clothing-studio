@@ -125,9 +125,11 @@
         
         <!-- Left: Actions -->
         <div class="order-actions-area">
+            {% if order.status == 'delivered' %}
             <a href="{% url 'download_invoice' order.id %}" class="btn-invoice text-decoration-none">
                 📄 Download Invoice
             </a>
+            {% endif %}
 
             {% if order.status == 'pending' or order.status == 'paid' %}
             <form method="post" action="{% url 'cancel_order' order.id %}">
