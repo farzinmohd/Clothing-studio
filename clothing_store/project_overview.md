@@ -52,7 +52,8 @@
 ### AI Features (Highlights)
 
 - **✨ AI Stylist**: A personalized recommendation engine that suggests products based on user interactions.
-- **📷 Visual Search**: Allows users to search for products using images, leveraging object detection.
+- **🤖 Elegance Bot**: A hybrid FAQ and discovery bot that answers customer queries and performs keyword-based product searches.
+- **📷 Visual Search**: Allows users to search for products using images, leveraging deep learning and color analysis.
 - **Smart Tagging**: Automatically generates tags and detects dominant colors for products using computer vision, streamlining inventory management.
 - **Dynamic Pricing**: An AI module that adjusts product prices based on demand scores and other metrics to optimize sales.
 
@@ -61,7 +62,6 @@
 The project leverages Python's rich data science ecosystem to implement intelligent features:
 
 - **Frameworks**:
-
   - **TensorFlow (Keras)**: Runs the pre-trained **MobileNetV2** model (trained on ImageNet) for object detection and image classification.
   - **Scikit-Learn**: Uses **KMeans Clustering** to extract dominant colors from product images.
   - **NumPy**: Handles efficient array manipulations for image processing.
@@ -109,22 +109,21 @@ The database schema is designed to support a robust e-commerce workflow with spe
 
 ## 6. Detailed AI Technology Breakdown
 
-| Feature                       | Tech Stack & Libraries                                              | Analysis of Implementation                                                                                                                                                                                                                                      |
-| :---------------------------- | :------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Real-Time Dynamic Pricing** | **Scikit-Learn** (`RandomForestRegressor`), **Pandas**, **NumPy**   | Uses a **Random Forest** model trained on synthetic data (Views + Cart Adds + Sales). It calculates a `demand_score` (0-100) and adjusts the base price by **+10% to -10%** based on this score.                                                                |
-| **AI Size Recommendation**    | **Scikit-Learn** (`joblib` for loading model), **Pandas**           | Uses a pre-trained classification model (`size_model.pkl`) to predict clothing size (S/M/L/XL) based on user inputs: `height`, `weight`, `age`, and `gender`.                                                                                                   |
-| **Visual Search**             | **TensorFlow / Keras** (`ResNet50`), **Pillow** (PIL), **NumPy**    | **Deep Learning approach**: Extracts features from images using a pre-trained **ResNet50** (structure) and combines them with **Color Histograms** (color). It uses **Cosine Similarity** to find the closest matching products in the catalog.                 |
-| **Smart Tagging**             | **TensorFlow / Keras** (`MobileNetV2`), **Scikit-Learn** (`KMeans`) | **Object Detection**: Uses **MobileNetV2** (ImageNet weights) to identify the item type (e.g., "Sweatshirt").<br>**Color Detection**: Uses **KMeans Clustering** to find the dominant colors in the image pixel data.                                           |
-| **Skin Tone Recommendation**  | **OpenCV** (`cv2`), **Haar Cascades**                               | **Computer Vision approach**: Detects faces using a standard Haar Cascade classifier. It then analyzes the **HSV** (Hue, Saturation, Value) brightness channel of the face region to categorize skin tone into 5 heuristic buckets (Fair, Medium, Olive, etc.). |
-| **Fake Review Detection**     | **Python Standard Logic** (No AI/ML)                                | **Rule-Based System**: It is _not_ AI-based. It flags reviews based on:<br>1. Short length (< 4 words)<br>2. Repeated words (> 60% frequency)<br>3. Low variance in user's rating history.                                                                      |
-| **AI Based Sentiment NLP**    | **TextBlob**                                                        | Uses `TextBlob` library to calculate the **polarity** of the review text. <br>- `Polarity > 0.1` = **Positive**<br>- `Polarity < -0.1` = **Negative**<br>- Otherwise = **Neutral**                                                                              |
+| Feature                       | Tech Stack & Libraries                                                 | Analysis of Implementation                                                                                                                                                                                                                                                                                                            |
+| :---------------------------- | :--------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Real-Time Dynamic Pricing** | **Scikit-Learn** (`RandomForestRegressor`), **Pandas**, **NumPy**      | Uses a **Random Forest** model trained on synthetic data (Views + Cart Adds + Sales). It calculates a `demand_score` (0-100) and adjusts the base price by **+10% to -10%** based on this score.                                                                                                                                      |
+| **AI Size Recommendation**    | **Scikit-Learn** (`joblib` for loading model), **Pandas**              | Uses a pre-trained classification model (`size_model.pkl`) to predict clothing size (S/M/L/XL) based on user inputs: `height`, `weight`, `age`, and `gender`.                                                                                                                                                                         |
+| **Visual Search**             | **TensorFlow / Keras** (`EfficientNetB0`), **Pillow** (PIL), **NumPy** | **Deep Learning approach**: Extracts features from images using a pre-trained **EfficientNetB0** (architecture chosen for higher accuracy and efficiency) and combines them with **HSV/RGB Histograms** and **K-Means Dominant Colors**. It uses **Cosine Similarity** with extreme color weighting (95%+) to find matching products. |
+| **Smart Tagging**             | **TensorFlow / Keras** (`MobileNetV2`), **Scikit-Learn** (`KMeans`)    | **Object Detection**: Uses **MobileNetV2** (ImageNet weights) to identify the item type (e.g., "Sweatshirt").<br>**Color Detection**: Uses **KMeans Clustering** to find the dominant colors in the image pixel data.                                                                                                                 |
+| **Skin Tone Recommendation**  | **OpenCV** (`cv2`), **Haar Cascades**                                  | **Computer Vision approach**: Detects faces using a standard Haar Cascade classifier. It then analyzes the **HSV** (Hue, Saturation, Value) brightness channel of the face region to categorize skin tone into 5 heuristic buckets (Fair, Medium, Olive, etc.).                                                                       |
+| **Fake Review Detection**     | **Python Standard Logic** (No AI/ML)                                   | **Rule-Based System**: It is _not_ AI-based. It flags reviews based on:<br>1. Short length (< 4 words)<br>2. Repeated words (> 60% frequency)<br>3. Low variance in user's rating history.                                                                                                                                            |
+| **AI Based Sentiment NLP**    | **TextBlob**                                                           | Uses `TextBlob` library to calculate the **polarity** of the review text. <br>- `Polarity > 0.1` = **Positive**<br>- `Polarity < -0.1` = **Negative**<br>- Otherwise = **Neutral**                                                                                                                                                    |
 
 ## 7. API Usage
 
 The project utilizes APIs primarily for internal communication between the frontend and backend, with some external integrations.
 
 - **Internal APIs**:
-
   - The project does **not** use the Django Rest Framework (DRF) for a public REST API.
   - Instead, it employs standard Django Views returning `JsonResponse` to serve data to frontend AJAX calls (using `fetch()` in JavaScript).
   - **Key Internal Endpoints**:

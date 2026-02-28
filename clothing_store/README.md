@@ -11,6 +11,9 @@
 - **📷 Visual Search ("Shop the Look")**: Upload any photo (e.g., from Pinterest), and our **EfficientNetB0 + Enhanced Color Matching** engine will find the most similar products in your catalog based on **Style, Color Distribution & Dominant Colors**. Results include confidence scores showing match quality.
 
 * **🏷️ Smart Tagging**: Automatically tagging products using **MobileNetV2** (Object Detection) and **K-Means Clustering** (Color Analysis).
+
+- **🤖 Elegance Bot (Shopping Assistant)**: A smart chat interface that answers FAQs (Shipping, Returns, etc.) and offers **AI Product Discovery**. It can find specific items like "blue shirts" or "formal wear" and display them in an interactive carousel.
+
 * **📏 Smart Size Predictor**: Enter your height, weight, and age to get an instant size recommendation (S/M/L/XL) with confidence scoring.
 * **🎨 Skin Tone Analysis**: Upload a selfie to detect your skin tone (Cool/Warm/Neutral) and get personalized color recommendations.
 * **🤖 Virtual Try-On**: (Beta) Visualize how clothes might look on your body shape.
@@ -118,8 +121,9 @@ Visit `http://127.0.0.1:8000` to start shopping! 🚀
 ## 🧪 Testing AI Features
 
 1.  **Visual Search**: Click the 📷 icon in the navbar. Upload a photo of a red dress. Watch it find red dresses in your store!
-2.  **Size Predictor**: Go to any product page -> "What's my size?".
-3.  **Skin Tone**: Go to "AI Stylist" in the navbar.
+2.  **Elegance Bot**: Click the chat bubble in the bottom right. Ask "What is your return policy?" or "Show me blue shirts".
+3.  **Size Predictor**: Go to any product page -> "What's my size?".
+4.  **Skin Tone**: Go to "AI Stylist" in the navbar.
 
 ---
 
