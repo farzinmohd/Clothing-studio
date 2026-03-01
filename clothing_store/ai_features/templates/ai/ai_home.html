@@ -100,15 +100,23 @@
 
     // Form submission
     uploadForm.addEventListener('submit', function(e) {
+        // Prevent immediate submission
+        e.preventDefault();
+
         // Validate file exists
         if (!imageInput.files || !imageInput.files[0]) {
-            e.preventDefault();
             alert('Please select an image first!');
             return;
         }
         
         // Show loading overlay
         loadingOverlay.classList.add('show');
+        submitBtn.disabled = true;
+
+        // Add 5.5 seconds artificial intelligence "processing" delay
+        setTimeout(function() {
+            uploadForm.submit();
+        }, 5500);
     });
 
     // Handle browser back button

@@ -23,15 +23,36 @@ def generate_dummy_data(n_samples=5000):
         bmi = weight / ((height / 100) ** 2)
         
         if gender == 'M':
-            if bmi < 18.5: return 'S'
-            elif bmi < 24.9: return 'M'
-            elif bmi < 29.9: return 'L'
-            else: return 'XL'
+            if weight < 65: size_idx = 0 # S
+            elif weight < 76: size_idx = 1 # M
+            elif weight < 88: size_idx = 2 # L
+            else: size_idx = 3 # XL
+            
+            # Height overrides for length
+            if height >= 184 and size_idx < 2:
+                size_idx = 2
+            elif height >= 176 and size_idx < 1:
+                size_idx = 1
+                
+            if bmi >= 28.0:
+                size_idx = min(3, size_idx + 1)
+                
         else: # Female
-            if bmi < 18.0: return 'S'
-            elif bmi < 23.0: return 'M'
-            elif bmi < 27.0: return 'L'
-            else: return 'XL'
+            if weight < 52: size_idx = 0 # S
+            elif weight < 62: size_idx = 1 # M
+            elif weight < 72: size_idx = 2 # L
+            else: size_idx = 3 # XL
+            
+            if height >= 173 and size_idx < 2:
+                size_idx = 2
+            elif height >= 165 and size_idx < 1:
+                size_idx = 1
+                
+            if bmi >= 28.0:
+                size_idx = min(3, size_idx + 1)
+                
+        sizes = ['S', 'M', 'L', 'XL']
+        return sizes[size_idx]
 
     genders = ['M', 'F']
     

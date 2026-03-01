@@ -724,22 +724,12 @@ document.getElementById('sizeForm').addEventListener('submit', function (e) {
     const loader = document.getElementById('loader');
     const sizeResult = document.getElementById('sizeResult');
 
-    // Animate loader appearance
+    // Show loader
     loader.classList.remove('d-none');
-    gsap.from(loader, {
-        duration: 0.3,
-        opacity: 0,
-        y: -10,
-        ease: "power2.out"
-    });
-
+    
     // Hide previous result
-    gsap.to(sizeResult, {
-        duration: 0.2,
-        opacity: 0,
-        onComplete: () => sizeResult.classList.add('d-none')
-    });
-
+    sizeResult.classList.add('d-none');
+    
     fetch('/ai/predict-size/', {
         method: 'POST',
         body: JSON.stringify({ height, weight, age, gender }),
@@ -748,25 +738,13 @@ document.getElementById('sizeForm').addEventListener('submit', function (e) {
     .then(response => response.json())
     .then(data => {
         // Hide loader
-        gsap.to(loader, {
-            duration: 0.3,
-            opacity: 0,
-            onComplete: () => loader.classList.add('d-none')
-        });
+        loader.classList.add('d-none');
 
         if (data.status === 'success') {
             document.getElementById('recSize').innerText = data.recommended_size;
             document.getElementById('recConf').innerText = data.confidence + '%';
             
             sizeResult.classList.remove('d-none');
-            
-            // Animate result with bounce
-            gsap.from(sizeResult, {
-                duration: 0.6,
-                scale: 0.9,
-                opacity: 0,
-                ease: "back.out(1.7)"
-            });
 
             // Auto Select Logic with animation
             let boxes = document.querySelectorAll('.size-option');
@@ -775,14 +753,10 @@ document.getElementById('sizeForm').addEventListener('submit', function (e) {
                     setTimeout(() => {
                         b.click();
                         // Extra highlight
-                        gsap.fromTo(b, 
-                            { backgroundColor: '#4f46e5' },
-                            { 
-                                duration: 0.8,
-                                backgroundColor: '#0f172a',
-                                ease: "power2.out"
-                            }
-                        );
+                        b.style.backgroundColor = '#4f46e5';
+                        setTimeout(() => {
+                            b.style.backgroundColor = '';
+                        }, 800);
                     }, 400);
                 }
             });
@@ -791,36 +765,10 @@ document.getElementById('sizeForm').addEventListener('submit', function (e) {
         }
     })
     .catch(err => {
-        gsap.to(loader, {
-            duration: 0.3,
-            opacity: 0,
-            onComplete: () => loader.classList.add('d-none')
-        });
+        loader.classList.add('d-none');
         alert('Something went wrong');
     });
 });
-
-// ===== 10. SIZE MODAL ANIMATION =====
-const sizeModal = document.getElementById('sizeModal');
-if (sizeModal) {
-    sizeModal.addEventListener('shown.bs.modal', function () {
-        gsap.from('.modal-content', {
-            duration: 0.4,
-            y: 50,
-            opacity: 0,
-            ease: "back.out(1.5)"
-        });
-        
-        gsap.from('.modal-content > *', {
-            duration: 0.4,
-            y: 20,
-            opacity: 0,
-            stagger: 0.1,
-            ease: "power2.out",
-            delay: 0.2
-        });
-    });
-}
 
 // ===== 11. PRICE HIGHLIGHT =====
 gsap.from('.current-price', {

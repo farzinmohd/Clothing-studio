@@ -10,6 +10,7 @@ _model_artifacts = None
 
 def load_model():
     global _model_artifacts
+    # Added comment to trigger Django auto-reload
     if _model_artifacts is None:
         if not os.path.exists(MODEL_PATH):
             return None
