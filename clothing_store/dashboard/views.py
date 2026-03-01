@@ -606,31 +606,76 @@ def coupon_delete(request, pk):
 
 
 # ================= PDF REPORT =================
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from django.db.models import Sum
+
 @staff_member_required
 def sales_report_pdf(request):
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="Tailored_Elegance_Sales_Report.pdf"'
 
-    p = canvas.Canvas(response)
-    p.setFont("Helvetica", 12)
+    doc = SimpleDocTemplate(response, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+    elements = []
+    styles = getSampleStyleSheet()
 
-    y = 800
-    p.drawString(200, y, "Sales Report")
-    y -= 40
+    # Title
+    title_style = styles['Heading1']
+    title_style.alignment = 1 # Center
+    elements.append(Paragraph("Tailored Elegence - Sales Report", title_style))
+    elements.append(Spacer(1, 20))
 
-    orders = Order.objects.all()
+    # Table Header
+    data = [['Order ID', 'Customer', 'Date', 'Status', 'Amount (₹)']]
+    
+    orders = Order.objects.all().order_by('-created_at')
+    total_revenue = 0
 
     for order in orders:
-        line = f"Order #{order.id} | {order.user} | {order.total_amount} | {order.status}"
-        p.drawString(50, y, line)
-        y -= 20
+        data.append([
+            f"#{order.id}",
+            order.user.username,
+            order.created_at.strftime('%Y-%m-%d'),
+            order.get_status_display(),
+            f"{order.total_amount:.2f}"
+        ])
+        if order.status in ['paid', 'shipped', 'delivered']:
+            total_revenue += order.total_amount
 
-        if y < 50:
-            p.showPage()
-            y = 800
+    # Create Table
+    table = Table(data, colWidths=[70, 120, 100, 100, 100])
+    
+    # Add Style
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('TOPPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8fafc')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor('#334155')),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
+        ('TOPPADDING', (0, 1), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#cbd5e1')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f1f5f9')])
+    ])
+    table.setStyle(style)
+    elements.append(table)
+    
+    # Total Summary
+    elements.append(Spacer(1, 30))
+    summary_style = styles['Heading3']
+    summary_style.alignment = 2 # Right
+    elements.append(Paragraph(f"Total Confirmed Revenue: ₹{total_revenue:.2f}", summary_style))
 
-    p.showPage()
-    p.save()
+    doc.build(elements)
     return response
 
 
