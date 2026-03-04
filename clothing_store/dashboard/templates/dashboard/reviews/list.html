@@ -39,6 +39,7 @@
                     <th>User</th>
                     <th>Rating</th>
                     <th>Comment</th>
+                    <th>AI Analysis</th>
                     <th>Date</th>
                     <th>Actions</th>
                 </tr>
@@ -58,6 +59,25 @@
                         {% endfor %}
                     </td>
                     <td>{{ review.comment|truncatewords:10 }}</td>
+                    <td>
+                        <!-- SPAM BADGE -->
+                        {% if review.is_flagged_spam %}
+                            <span class="badge bg-danger mb-1"><i class="fas fa-ban"></i> Spam Flagged</span><br>
+                        {% endif %}
+                        
+                        <!-- SENTIMENT BADGE -->
+                        {% if review.sentiment_polarity != None %}
+                            {% if review.sentiment_polarity > 0.1 %}
+                                <span class="badge bg-success"><i class="fas fa-smile"></i> Positive ({{ review.sentiment_polarity|floatformat:2 }})</span>
+                            {% elif review.sentiment_polarity < -0.1 %}
+                                <span class="badge bg-danger"><i class="fas fa-frown"></i> Negative ({{ review.sentiment_polarity|floatformat:2 }})</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="fas fa-meh"></i> Neutral ({{ review.sentiment_polarity|floatformat:2 }})</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="badge bg-light text-dark"><i class="fas fa-clock"></i> Pending AI</span>
+                        {% endif %}
+                    </td>
                     <td>{{ review.created_at|date:"M d, Y" }}</td>
                     <td>
                         <a href="{% url 'admin_review_delete' review.id %}" class="btn btn-sm btn-danger">

@@ -223,11 +223,31 @@ def add_review(request, product_id):
         messages.error(request, 'You already reviewed this product.')
         return redirect('product_detail', product_id=product.id)
 
+    comment_text = request.POST.get('comment', '')
+    
+    # 1. Calculate Sentiment
+    try:
+        sentiment = analyze_review_sentiment(comment_text)
+        sentiment_polarity = sentiment.get('polarity', 0.0)
+    except Exception:
+        sentiment_polarity = 0.0
+        
+    # 2. Check Spam Heuristics (without needing the DB instance first)
+    is_spam = False
+    words = comment_text.lower().split()
+    if len(words) < 4:
+        is_spam = True
+    elif len(words) > 0 and (1 - (len(set(words)) / len(words))) > 0.6:
+        is_spam = True
+
+    # 3. Save Review with AI metrics
     Review.objects.create(
         user=request.user,
         product=product,
         rating=request.POST.get('rating'),
-        comment=request.POST.get('comment')
+        comment=comment_text,
+        sentiment_polarity=sentiment_polarity,
+        is_flagged_spam=is_spam
     )
 
     messages.success(request, 'Review added successfully.')

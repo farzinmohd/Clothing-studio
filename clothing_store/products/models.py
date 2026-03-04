@@ -121,6 +121,11 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     comment = models.TextField()
+    
+    # ✅ AI REVIEW ANALYSIS
+    sentiment_polarity = models.FloatField(null=True, blank=True, help_text="TextBlob Polarity: -1.0 (Negative) to +1.0 (Positive)")
+    is_flagged_spam = models.BooleanField(default=False, help_text="Flagged by heuristic spam detection for short length or repeated words")
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
