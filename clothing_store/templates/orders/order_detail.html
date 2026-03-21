@@ -129,6 +129,14 @@
             <a href="{% url 'download_invoice' order.id %}" class="btn-invoice text-decoration-none">
                 📄 Download Invoice
             </a>
+            {% if order.can_return %}
+            <form method="post" action="{% url 'request_return' order.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn-cancel ms-2" style="background: #f59e0b; color: white;" onclick="return confirm('Are you sure you want to request a return?')">
+                    Request Return
+                </button>
+            </form>
+            {% endif %}
             {% endif %}
 
             {% if order.status == 'pending' or order.status == 'paid' %}
@@ -149,7 +157,7 @@
             </div>
             <div class="total-row">
                 <span>Shipping</span>
-                <span>Free</span>
+                <span>{% if order.shipping_fee == 0 %}Free{% else %}₹{{ order.shipping_fee }}{% endif %}</span>
             </div>
             {% if order.discount_amount > 0 %}
             <div class="total-row">

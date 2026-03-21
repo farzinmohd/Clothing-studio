@@ -110,8 +110,8 @@
                 <span>₹{{ cart.get_total_price }}</span>
             </div>
             <div class="summary-row">
-                <span>Shipping estimate</span>
-                <span>Calculated at checkout</span>
+                <span>Shipping</span>
+                <span>{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee }}{% endif %}</span>
             </div>
             <div class="summary-row">
                 <span>Tax estimate</span>
@@ -120,7 +120,7 @@
 
             <div class="summary-total">
                 <span>Total</span>
-                <span>₹{{ cart.get_total_price }}</span>
+                <span>₹{{ cart.get_grand_total }}</span>
             </div>
 
             <a href="{% url 'checkout' %}" class="btn btn-checkout">

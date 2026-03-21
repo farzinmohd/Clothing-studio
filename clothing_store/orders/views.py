@@ -75,8 +75,10 @@ def checkout(request):
                     messages.error(request, 'Coupon is not valid')
             except Coupon.DoesNotExist:
                 messages.error(request, 'Invalid coupon code')
+                
+        shipping_fee = cart.get_shipping_fee()
 
-        final_amount = cart_total - discount_amount
+        final_amount = cart_total - discount_amount + shipping_fee
         if final_amount < 0:
             final_amount = Decimal('0')
 
@@ -88,6 +90,7 @@ def checkout(request):
             address=selected_address,
             total_amount=cart_total,
             discount_amount=discount_amount,
+            shipping_fee=shipping_fee,
             final_amount=final_amount,
             coupon=applied_coupon,
             payment_method=payment_method,
@@ -200,13 +203,15 @@ def validate_coupon_ajax(request):
                 else:
                     discount = coupon.discount_value
                 
-                final_total = cart_total - discount
+                shipping_fee = cart.get_shipping_fee()
+                final_total = cart_total - discount + shipping_fee
                 if final_total < 0:
                     final_total = Decimal('0')
                 
                 return JsonResponse({
                     'valid': True,
                     'discount_amount': float(discount),
+                    'shipping_fee': float(shipping_fee),
                     'final_total': float(final_total),
                     'cart_total': float(cart_total),
                     'message': f'Coupon applied! You saved ₹{discount:.2f}'
@@ -302,6 +307,23 @@ def cancel_order(request, order_id):
     order.save()
     messages.success(request, 'Order cancelled successfully and stock restored.')
     return redirect('my_orders')
+
+
+# ----------------------------------
+# REQUEST RETURN
+# ----------------------------------
+@login_required
+def request_return(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.can_return():
+        order.status = 'return_requested'
+        order.save()
+        messages.success(request, 'Return request has been submitted successfully.')
+    else:
+        messages.error(request, 'This order is not eligible for return.')
+
+    return redirect('order_detail', order_id=order.id)
 
 
 # ----------------------------------
@@ -424,6 +446,11 @@ def download_invoice(request, order_id):
         p.drawString(300, y, "Discount:")
         p.drawRightString(480, y, f"- ₹{order.discount_amount}")
         p.setFillColorRGB(0, 0, 0)
+        y -= 14
+
+    if order.shipping_fee > 0:
+        p.drawString(300, y, "Shipping Fee:")
+        p.drawRightString(480, y, f"+ ₹{order.shipping_fee}")
         y -= 14
 
     p.setFont("Helvetica-Bold", 11)

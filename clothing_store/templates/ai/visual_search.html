@@ -65,33 +65,33 @@
                         <div class="position-absolute top-0 end-0 p-2">
                             {% if item.confidence >= 80 %}
                                 <span class="badge bg-success shadow-sm" style="font-size: 0.9rem;">
-                                    <i class="fas fa-check-circle"></i> {{ item.confidence }}% Match
+                                    <i class="fas fa-check-circle"></i> {{ item.confidence|floatformat:"0" }}% Match
                                 </span>
                             {% elif item.confidence >= 60 %}
                                 <span class="badge bg-primary shadow-sm" style="font-size: 0.9rem;">
-                                    <i class="fas fa-star"></i> {{ item.confidence }}% Match
+                                    <i class="fas fa-star"></i> {{ item.confidence|floatformat:"0" }}% Match
                                 </span>
                             {% else %}
                                 <span class="badge bg-secondary shadow-sm" style="font-size: 0.9rem;">
-                                    {{ item.confidence }}% Match
+                                    {{ item.confidence|floatformat:"0" }}% Match
                                 </span>
                             {% endif %}
                         </div>
                     </div>
                     <div class="card-body">
                         <h5 class="card-title text-truncate">{{ item.product.name }}</h5>
-                        <p class="card-text text-primary fw-bold">${{ item.product.price }}</p>
+                        <p class="card-text text-primary fw-bold">₹{{ item.product.price|floatformat:"0" }}</p>
                         
                         <!-- Match Quality Indicator -->
                         <div class="mb-2">
                             <small class="text-muted">Match Quality:</small>
                             <div class="progress" style="height: 6px;">
                                 {% if item.confidence >= 80 %}
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ item.confidence }}%"></div>
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ item.confidence|floatformat:"0" }}%"></div>
                                 {% elif item.confidence >= 60 %}
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ item.confidence }}%"></div>
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ item.confidence|floatformat:"0" }}%"></div>
                                 {% else %}
-                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ item.confidence }}%"></div>
+                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: {{ item.confidence|floatformat:"0" }}%"></div>
                                 {% endif %}
                             </div>
                         </div>

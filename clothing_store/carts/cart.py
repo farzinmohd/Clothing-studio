@@ -225,6 +225,22 @@ class Cart:
             return sum(item.total_price for item in self.db_cart.items.all())
         return sum(Decimal(item['price']) * item['quantity'] for item in self.session_cart.values())
 
+    def get_shipping_fee(self):
+        total = self.get_total_price()
+        if total == 0:
+            return Decimal('0.00')
+        elif total < Decimal('1000.00'):
+            return Decimal('50.00')
+        else:
+            return Decimal('0.00')
+
+    def get_grand_total(self, discount_amount=Decimal('0.00')):
+        total = self.get_total_price()
+        if total == 0:
+            return Decimal('0.00')
+        shipping = self.get_shipping_fee()
+        return total - discount_amount + shipping
+
     def clear(self):
         if self.request.user.is_authenticated:
             self.db_cart.items.all().delete()

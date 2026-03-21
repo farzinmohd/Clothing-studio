@@ -54,10 +54,11 @@
             <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
             <hr>
             <p><strong>Subtotal:</strong> ₹{{ order.total_amount }}</p>
+            <p><strong>Shipping Fee:</strong> ₹{{ order.shipping_fee }}</p>
             {% if order.discount_amount %}
                 <p><strong>Discount:</strong> -₹{{ order.discount_amount }}</p>
-                <p><strong>Final Amount:</strong> ₹{{ order.final_amount }}</p>
             {% endif %}
+            <p><strong>Final Amount:</strong> ₹{{ order.final_amount }}</p>
         </div>
         
         <!-- Update Status -->

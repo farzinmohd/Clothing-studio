@@ -154,7 +154,7 @@
                         </div>
                         <div class="total-row">
                             <span>Shipping</span>
-                            <span class="text-success">Free</span>
+                            <span class="text-success">{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee }}{% endif %}</span>
                         </div>
                         <div class="total-row discount-row" id="discountRow" style="display: none;">
                             <span>Discount</span>
@@ -162,12 +162,12 @@
                         </div>
                         <div class="total-row grand-total">
                             <span>Total</span>
-                            <span id="finalTotal">₹{{ cart.get_total_price }}</span>
+                            <span id="finalTotal">₹{{ cart.get_grand_total }}</span>
                         </div>
                     </div>
 
                     <button type="submit" class="btn-place-order">
-                        Place Order (₹{{ cart.get_total_price }})
+                        Place Order (₹{{ cart.get_grand_total }})
                     </button>
                     
                     <div class="text-center mt-3 text-muted small">
@@ -210,6 +210,7 @@
 
     // ===== REAL-TIME COUPON VALIDATION =====
     const cartTotal = {{ cart.get_total_price }};
+    const cartGrandTotal = {{ cart.get_grand_total }};
     
     // Apply button click
     document.getElementById('applyCouponBtn').addEventListener('click', function() {
@@ -296,8 +297,8 @@
         discountRow.style.display = 'none';
         
         // Reset to original total
-        document.getElementById('finalTotal').textContent = `₹${cartTotal.toFixed(2)}`;
-        document.querySelector('.btn-place-order').textContent = `Place Order (₹${cartTotal.toFixed(2)})`;
+        document.getElementById('finalTotal').textContent = `₹${cartGrandTotal.toFixed(2)}`;
+        document.querySelector('.btn-place-order').textContent = `Place Order (₹${cartGrandTotal.toFixed(2)})`;
     }
 
     function showCouponMessage(message, type) {

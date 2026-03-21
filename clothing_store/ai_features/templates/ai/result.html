@@ -61,7 +61,7 @@
                 <!-- CARD BODY -->
                 <div class="card-body d-flex flex-column text-center">
                     <h6 class="card-title">{{ product.name }}</h6>
-                    <p class="fw-bold text-success">₹{{ product.price }}</p>
+                    <p class="fw-bold text-success">₹{{ product.price|floatformat:"0" }}</p>
 
                     <!-- VIEW PRODUCT -->
                     <a href="{% url 'product_detail' product.id %}"

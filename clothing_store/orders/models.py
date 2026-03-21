@@ -43,6 +43,8 @@ class Order(models.Model):
         ('paid', 'Paid'),
         ('shipped', 'Shipped'),
         ('delivered', 'Delivered'),
+        ('return_requested', 'Return Requested'),
+        ('returned', 'Returned'),
         ('cancelled', 'Cancelled'),
     )
 
@@ -74,6 +76,10 @@ class Order(models.Model):
         max_digits=10, decimal_places=2, default=0
     )
 
+    shipping_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+
     final_amount = models.DecimalField(
         max_digits=10, decimal_places=2, default=0
     )
@@ -91,9 +97,18 @@ class Order(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def can_cancel(self):
         return self.status in ['pending', 'paid']
+
+    def can_return(self):
+        # Allow returns if status is delivered and within 7 days
+        if self.status == 'delivered':
+            delta = timezone.now() - self.updated_at
+            if delta.days <= 7:
+                return True
+        return False
 
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
