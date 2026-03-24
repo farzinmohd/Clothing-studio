@@ -15,8 +15,10 @@ from accounts.models import UserMeasurements
 
 # New Imports
 from django.db.models import Q
+from django.utils import timezone
 from .recommendations.similarity import find_similar_products
 from products.models import Product, Category
+from orders.models import Order, OrderItem, Coupon
 
 def ai_home(request):
     return render(request, "ai/ai_home.html")
@@ -334,10 +336,28 @@ def chatbot_response(request):
                     expanded_user_intent.add(stem_word(synonyms[w]))
 
             # 2. Check for Product Discovery Intent (High Priority)
-            discovery_keywords = {'show', 'find', 'search', 'buy', 'look', 'want', 'need', 'browse'}
-            if any(w in expanded_user_intent for w in discovery_keywords):
+            discovery_keywords = {'show', 'find', 'search', 'buy', 'look', 'want', 'need', 'browse', 'shop', 'get'}
+            
+            # Common clothing terms that should also trigger a search
+            clothing_categories = {'shirt', 'pant', 'jean', 'tshirt', 'shoes', 'trouser', 'suit', 'jacket', 't-shirt', 'top', 'bottom'}
+            clothing_colors = {'red', 'blue', 'green', 'black', 'white', 'yellow', 'pink', 'brown', 'beige'}
+            
+            # Larger stop words list for cleaning search queries
+            search_stop_words = {
+                'can', 'you', 'please', 'could', 'me', 'for', 'the', 'a', 'an', 'some', 'any', 'i', 
+                'tell', 'is', 'are', 'am', 'do', 'does', 'want', 'need', 'to', 'show', 'of', 'in', 
+                'on', 'at', 'with', 'about', 'my', 'your', 'his', 'her', 'their'
+            }
+            
+            # Should we trigger search? Yes if:
+            # - Explicit discovery keyword (show, find, etc.)
+            # - OR user mentions a color AND a clothing category
+            is_discovery_intent = any(w in expanded_user_intent for w in discovery_keywords) or \
+                                 (any(w in expanded_user_intent for w in clothing_colors) and any(w in expanded_user_intent for w in clothing_categories))
+            
+            if is_discovery_intent:
                 # Extract search terms using stemmed words for plural handling
-                search_keywords = [stem_word(w) for w in user_words if w not in discovery_keywords and w not in {'me', 'for', 'the', 'a', 'an', 'some', 'any', 'i'}]
+                search_keywords = [stem_word(w) for w in user_words if w not in search_stop_words]
                 
                 if search_keywords:
                     query = Q()
@@ -408,7 +428,30 @@ def chatbot_response(request):
                     # Fallback to general FAQ if no orders exist
                     pass
 
-            # 3. Check for common greetings (High Priority)
+            # 3. Check for Coupon/Offer Intent (High Priority)
+            coupon_keywords = {'coupon', 'offer', 'discount', 'promo', 'code', 'sale', 'deal'}
+            if any(w in expanded_user_intent for w in coupon_keywords):
+                from django.utils import timezone
+                active_coupons = Coupon.objects.filter(
+                    active=True, 
+                    expiry_date__gte=timezone.now().date()
+                ).order_by('-created_at')
+                
+                if active_coupons.exists():
+                    coupon_text = "Here are the currently active coupons you can use during checkout!\n\n"
+                    for c in active_coupons:
+                        discount_str = f"**{c.discount_value}% OFF**" if c.discount_type == 'percent' else f"**₹{c.discount_value} OFF**"
+                        min_text = f" (on orders above ₹{int(c.min_order_amount)})" if c.min_order_amount > 0 else ""
+                        coupon_text += f"🎫 **{c.code}** — {discount_str}{min_text}\n"
+                    
+                    coupon_text += "\nJust copy and paste these codes on the checkout page to save!"
+                    return JsonResponse({"response": coupon_text})
+                else:
+                    return JsonResponse({
+                        "response": "I'm sorry, I couldn't find any active coupon codes at the moment. Check back soon for new offers!"
+                    })
+
+            # 4. Check for common greetings (High Priority)
             greetings = {'hi', 'hello', 'hey', 'greetings', 'namaste', 'morning', 'evening'}
             if any(greet in user_words for greet in greetings):
                 return JsonResponse({"response": "Hello! I'm Elegance Bot. How can I help you today?"})
