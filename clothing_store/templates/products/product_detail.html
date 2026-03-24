@@ -176,14 +176,20 @@
             <p class="mb-2 text-secondary">{{ review.comment }}</p>
             
             <div class="d-flex gap-2">
+                {% if review.is_flagged_spam %}
+                <span class="badge bg-danger text-white border-0"><i class="fas fa-ban"></i> Spam Flagged</span>
+                {% endif %}
+
                 {% if review.sentiment.label == "Positive" %}
                 <span class="sentiment-badge sentiment-positive">😊 Positive</span>
                 {% elif review.sentiment.label == "Negative" %}
                 <span class="sentiment-badge sentiment-negative">😞 Negative</span>
+                {% else %}
+                <span class="sentiment-badge sentiment-neutral text-muted border">😐 Neutral</span>
                 {% endif %}
                 
-                {% if review.ml_confidence %}
-                <span class="badge bg-light text-muted border">ML Confidence: {{ review.ml_confidence|floatformat:0 }}%</span>
+                {% if review.spam_probability is not None %}
+                <span class="badge bg-light text-muted border">Spam Probability: {{ review.spam_probability|floatformat:0 }}%</span>
                 {% endif %}
             </div>
         </div>

@@ -143,16 +143,18 @@ def product_detail(request, product_id):
                 rule_score
             ]
 
-            prob = get_fake_probability(features)
-
-            # 🔹 Smooth extreme values for UI clarity
-            prob = min(max(prob, 0.05), 0.95)
-
+            # 🔹 Sync with Hard Rules: If flagged by rules, force high probability
+            if getattr(review, 'is_flagged_spam', False):
+                prob = 0.99
+            else:
+                prob = get_fake_probability(features)
+                prob = min(max(prob, 0.05), 0.95)
+                
             # Convert to percentage
-            review.ml_confidence = round(prob * 100, 2)
+            review.spam_probability = round(prob * 100, 2)
 
         except Exception:
-            review.ml_confidence = None
+            review.spam_probability = None
 
         enriched_reviews.append(review)
 

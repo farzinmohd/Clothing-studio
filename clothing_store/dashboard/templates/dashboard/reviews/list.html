@@ -65,6 +65,10 @@
                             <span class="badge bg-danger mb-1"><i class="fas fa-ban"></i> Spam Flagged</span><br>
                         {% endif %}
                         
+                        {% if review.spam_probability %}
+                            <span class="badge bg-light text-dark border mb-1"><i class="fas fa-robot"></i> Spam Prob: {{ review.spam_probability|floatformat:0 }}%</span><br>
+                        {% endif %}
+                        
                         <!-- SENTIMENT BADGE -->
                         {% if review.sentiment_polarity != None %}
                             {% if review.sentiment_polarity > 0.1 %}

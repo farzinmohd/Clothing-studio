@@ -11,7 +11,11 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 
 import csv
+import statistics
 from reportlab.pdfgen import canvas
+
+from ai_features.reviews.fake_detector import detect_fake_review
+from ai_features.reviews.ml_detector import get_fake_probability
 
 from orders.models import Order, OrderItem, Coupon
 from products.models import Product, Category, ProductImage, ProductVariant, Review
@@ -529,6 +533,39 @@ def review_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
+    # AI Enrichment for Admin View
+    for review in page_obj:
+        try:
+            words = review.comment.lower().split()
+            review_length = len(words)
+            repetition_ratio = 1 - (len(set(words)) / review_length) if review_length > 0 else 0.0
+            
+            user_reviews = Review.objects.filter(user=review.user)
+            fake_result = detect_fake_review(review, user_reviews)
+            
+            ratings = [r.rating for r in user_reviews]
+            rating_variance = statistics.pvariance(ratings) if len(ratings) >= 2 else 0.0
+            
+            # Simplified feature extraction for admin view
+            features = [
+                review_length,
+                repetition_ratio,
+                rating_variance,
+                review.sentiment_polarity or 0.0,
+                fake_result.get('score', 0.0)
+            ]
+            
+            # Sync with Hard Rules
+            if review.is_flagged_spam:
+                prob = 0.99
+            else:
+                prob = get_fake_probability(features)
+                prob = min(max(prob, 0.05), 0.95)
+                
+            review.spam_probability = round(prob * 100, 2)
+        except Exception:
+            review.spam_probability = None
+
     context = {
         'page_obj': page_obj,
         'rating_filter': rating_filter,
