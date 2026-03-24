@@ -427,7 +427,7 @@ def download_invoice(request, order_id):
 
         p.drawString(260, y, variant_text)
         p.drawRightString(385, y, str(item.quantity))
-        p.drawRightString(480, y, f"₹{item.price}")
+        p.drawRightString(480, y, f"₹{int(item.price)}")
 
         y -= 18
 
@@ -438,24 +438,24 @@ def download_invoice(request, order_id):
 
     p.setFont("Helvetica", 10)
     p.drawString(300, y, "Subtotal:")
-    p.drawRightString(480, y, f"₹{order.total_amount}")
+    p.drawRightString(480, y, f"₹{int(order.total_amount)}")
     y -= 14
 
     if order.discount_amount > 0:
         p.setFillColorRGB(0.75, 0, 0)
         p.drawString(300, y, "Discount:")
-        p.drawRightString(480, y, f"- ₹{order.discount_amount}")
+        p.drawRightString(480, y, f"- ₹{int(order.discount_amount)}")
         p.setFillColorRGB(0, 0, 0)
         y -= 14
 
     if order.shipping_fee > 0:
         p.drawString(300, y, "Shipping Fee:")
-        p.drawRightString(480, y, f"+ ₹{order.shipping_fee}")
+        p.drawRightString(480, y, f"+ ₹{int(order.shipping_fee)}")
         y -= 14
 
     p.setFont("Helvetica-Bold", 11)
     p.drawString(300, y, "Final Amount:")
-    p.drawRightString(480, y, f"₹{order.final_amount}")
+    p.drawRightString(480, y, f"₹{int(order.final_amount)}")
 
     # ================= FOOTER =================
     y -= 40

@@ -101,7 +101,7 @@
                             <button type="button" class="btn btn-sm btn-outline-success dashed-border" onclick="applyCoupon('{{ coupon.code }}')">
                                 <span class="fw-bold">{{ coupon.code }}</span>
                                 <small class="text-dark ms-1">
-                                    -{% if coupon.discount_type == 'percent' %}{{ coupon.discount_value|floatformat:0 }}%{% else %}₹{{ coupon.discount_value }}{% endif %}
+                                    -{% if coupon.discount_type == 'percent' %}{{ coupon.discount_value|floatformat:0 }}%{% else %}₹{{ coupon.discount_value|floatformat:0 }}{% endif %}
                                 </small>
                             </button>
                             {% endfor %}
@@ -140,7 +140,7 @@
                                 </div>
                             </div>
                             <div class="item-price">
-                                ₹{{ item.total_price }}
+                                ₹{{ item.total_price|floatformat:0 }}
                             </div>
                         </div>
                         {% endfor %}
@@ -150,11 +150,11 @@
                     <div class="summary-totals">
                         <div class="total-row">
                             <span>Subtotal</span>
-                            <span>₹{{ cart.get_total_price }}</span>
+                            <span>₹{{ cart.get_total_price|floatformat:0 }}</span>
                         </div>
                         <div class="total-row">
                             <span>Shipping</span>
-                            <span class="text-success">{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee }}{% endif %}</span>
+                            <span class="text-success">{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee|floatformat:0 }}{% endif %}</span>
                         </div>
                         <div class="total-row discount-row" id="discountRow" style="display: none;">
                             <span>Discount</span>
@@ -162,12 +162,12 @@
                         </div>
                         <div class="total-row grand-total">
                             <span>Total</span>
-                            <span id="finalTotal">₹{{ cart.get_grand_total }}</span>
+                            <span id="finalTotal">₹{{ cart.get_grand_total|floatformat:0 }}</span>
                         </div>
                     </div>
 
                     <button type="submit" class="btn-place-order">
-                        Place Order (₹{{ cart.get_grand_total }})
+                        Place Order (₹{{ cart.get_grand_total|floatformat:0 }})
                     </button>
                     
                     <div class="text-center mt-3 text-muted small">
@@ -274,13 +274,13 @@
         // Show discount row with animation
         const discountRow = document.getElementById('discountRow');
         discountRow.style.display = 'flex';
-        document.getElementById('discountAmount').textContent = `-₹${discount.toFixed(2)}`;
+        document.getElementById('discountAmount').textContent = `-₹${Math.round(discount)}`;
         
         // Update total
-        document.getElementById('finalTotal').textContent = `₹${finalTotal.toFixed(2)}`;
+        document.getElementById('finalTotal').textContent = `₹${Math.round(finalTotal)}`;
         
         // Update button text
-        document.querySelector('.btn-place-order').textContent = `Place Order (₹${finalTotal.toFixed(2)})`;
+        document.querySelector('.btn-place-order').textContent = `Place Order (₹${Math.round(finalTotal)})`;
         
         // Add GSAP animation if available
         if (typeof gsap !== 'undefined') {
@@ -297,8 +297,8 @@
         discountRow.style.display = 'none';
         
         // Reset to original total
-        document.getElementById('finalTotal').textContent = `₹${cartGrandTotal.toFixed(2)}`;
-        document.querySelector('.btn-place-order').textContent = `Place Order (₹${cartGrandTotal.toFixed(2)})`;
+        document.getElementById('finalTotal').textContent = `₹${Math.round(cartGrandTotal)}`;
+        document.querySelector('.btn-place-order').textContent = `Place Order (₹${Math.round(cartGrandTotal)})`;
     }
 
     function showCouponMessage(message, type) {

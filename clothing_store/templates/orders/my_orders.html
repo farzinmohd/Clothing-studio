@@ -30,7 +30,7 @@
             <!-- Total -->
             <div class="order-info-group">
                 <span class="order-label">Total Amount</span>
-                <span class="order-value">₹{{ order.total_amount }}</span>
+                <span class="order-value">₹{{ order.total_amount|floatformat:0 }}</span>
             </div>
 
             <!-- Status -->

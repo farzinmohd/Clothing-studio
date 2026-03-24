@@ -84,7 +84,7 @@ def admin_dashboard(request):
     )
 
     months = [m['month'].strftime('%b %Y') for m in monthly_sales]
-    totals = [float(m['total']) for m in monthly_sales]
+    totals = [int(m['total']) for m in monthly_sales]
 
     # Top selling products
     top_products = (
@@ -639,7 +639,7 @@ def sales_report_pdf(request):
             order.user.username,
             order.created_at.strftime('%Y-%m-%d'),
             order.get_status_display(),
-            f"{order.total_amount:.2f}"
+            f"{int(order.total_amount)}"
         ])
         if order.status in ['paid', 'shipped', 'delivered']:
             total_revenue += order.total_amount
@@ -673,7 +673,7 @@ def sales_report_pdf(request):
     elements.append(Spacer(1, 30))
     summary_style = styles['Heading3']
     summary_style.alignment = 2 # Right
-    elements.append(Paragraph(f"Total Confirmed Revenue: ₹{total_revenue:.2f}", summary_style))
+    elements.append(Paragraph(f"Total Confirmed Revenue: ₹{int(total_revenue)}", summary_style))
 
     doc.build(elements)
     return response
@@ -693,7 +693,7 @@ def sales_report_excel(request):
         writer.writerow([
             order.id,
             order.user.username,
-            order.total_amount,
+            int(order.total_amount),
             order.status,
             order.created_at.strftime('%Y-%m-%d')
         ])

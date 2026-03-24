@@ -34,8 +34,8 @@
                             <td>{{ item.size }}</td>
                             <td>{{ item.color|default:"-" }}</td>
                             <td>{{ item.quantity }}</td>
-                            <td>₹{{ item.price }}</td>
-                            <td><strong>₹{{ item.price|floatformat:2 }}</strong></td>
+                            <td>₹{{ item.price|floatformat:0 }}</td>
+                            <td><strong>₹{{ item.get_total_price|default:item.price|floatformat:0 }}</strong></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -53,12 +53,12 @@
             <p><strong>Date:</strong> {{ order.created_at|date:"M d, Y H:i" }}</p>
             <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
             <hr>
-            <p><strong>Subtotal:</strong> ₹{{ order.total_amount }}</p>
-            <p><strong>Shipping Fee:</strong> ₹{{ order.shipping_fee }}</p>
+            <p><strong>Subtotal:</strong> ₹{{ order.total_amount|floatformat:0 }}</p>
+            <p><strong>Shipping Fee:</strong> ₹{{ order.shipping_fee|floatformat:0 }}</p>
             {% if order.discount_amount %}
-                <p><strong>Discount:</strong> -₹{{ order.discount_amount }}</p>
+                <p><strong>Discount:</strong> -₹{{ order.discount_amount|floatformat:0 }}</p>
             {% endif %}
-            <p><strong>Final Amount:</strong> ₹{{ order.final_amount }}</p>
+            <p><strong>Final Amount:</strong> ₹{{ order.final_amount|floatformat:0 }}</p>
         </div>
         
         <!-- Update Status -->

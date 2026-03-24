@@ -83,7 +83,7 @@
                             </button>
                         </form>
 
-                        <span class="cart-price ms-auto">₹{{ item.total_price }}</span>
+                        <span class="cart-price ms-auto">₹{{ item.total_price|floatformat:0 }}</span>
                     </div>
                 </div>
 
@@ -107,11 +107,11 @@
             
             <div class="summary-row">
                 <span>Subtotal</span>
-                <span>₹{{ cart.get_total_price }}</span>
+                <span>₹{{ cart.get_total_price|floatformat:0 }}</span>
             </div>
             <div class="summary-row">
                 <span>Shipping</span>
-                <span>{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee }}{% endif %}</span>
+                <span>{% if cart.get_shipping_fee == 0 %}Free{% else %}₹{{ cart.get_shipping_fee|floatformat:0 }}{% endif %}</span>
             </div>
             <div class="summary-row">
                 <span>Tax estimate</span>
@@ -120,7 +120,7 @@
 
             <div class="summary-total">
                 <span>Total</span>
-                <span>₹{{ cart.get_grand_total }}</span>
+                <span>₹{{ cart.get_grand_total|floatformat:0 }}</span>
             </div>
 
             <a href="{% url 'checkout' %}" class="btn btn-checkout">
