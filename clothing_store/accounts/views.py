@@ -258,12 +258,19 @@ def check_email_availability(request):
     AJAX endpoint to check if an email is available.
     Returns JSON: {"available": true/false}
     """
-    email = request.GET.get('email', '').strip()
+    email = request.GET.get('email', '').strip().lower()
     
     if not email:
         return JsonResponse({'available': False, 'message': 'Email cannot be empty'})
     
-    # Check if email exists
+    # 1. Domain Check: Only @gmail.com allowed
+    if not email.endswith('@gmail.com'):
+        return JsonResponse({
+            'available': False, 
+            'message': 'We only accept Gmail addresses (ending in @gmail.com) at this time.'
+        })
+
+    # 2. Check if email exists
     exists = User.objects.filter(email=email).exists()
     
     return JsonResponse({

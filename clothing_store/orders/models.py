@@ -24,10 +24,14 @@ class Coupon(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def is_expired(self):
+        return timezone.now().date() > self.expiry_date
+
     def is_valid(self, order_total):
         if not self.active:
             return False
-        if timezone.now().date() > self.expiry_date:
+        if self.is_expired:
             return False
         if order_total < self.min_order_amount:
             return False

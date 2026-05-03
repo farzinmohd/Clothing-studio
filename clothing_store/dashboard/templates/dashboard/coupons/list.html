@@ -40,7 +40,9 @@
                     <td>₹{{ coupon.min_order_amount }}</td>
                     <td>{{ coupon.expiry_date|date:"M d, Y" }}</td>
                     <td>
-                        {% if coupon.active %}
+                        {% if coupon.is_expired %}
+                            <span class="badge badge-warning">Expired</span>
+                        {% elif coupon.active %}
                             <span class="badge badge-success">Active</span>
                         {% else %}
                             <span class="badge badge-danger">Inactive</span>

@@ -50,9 +50,13 @@ class UserRegistrationForm(forms.ModelForm):
         return username
     
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get('email', '').lower()
         
-        # Check if email already exists
+        # 1. Domain Check: Only @gmail.com allowed
+        if not email.endswith('@gmail.com'):
+            raise ValidationError("We only accept Gmail addresses (ending in @gmail.com) at this time.")
+        
+        # 2. Check if email already exists
         if User.objects.filter(email=email).exists():
             raise ValidationError("This email is already registered. Please use a different email or login.")
         

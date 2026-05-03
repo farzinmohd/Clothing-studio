@@ -128,6 +128,19 @@ class CouponForm(forms.ModelForm):
             'active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        expiry_date = cleaned_data.get('expiry_date')
+        active = cleaned_data.get('active')
+        
+        from django.utils import timezone
+        
+        if expiry_date and active:
+            if expiry_date < timezone.now().date():
+                self.add_error('active', 'Coupon cannot be active after its expiry date.')
+                
+        return cleaned_data
+
 
 # ================= USER MANAGEMENT FORM =================
 class UserStatusForm(forms.ModelForm):

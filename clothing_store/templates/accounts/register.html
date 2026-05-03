@@ -458,8 +458,14 @@ window.addEventListener('load', function() {
 
     // Check email availability
     async function checkEmail(email) {
-        if (!email || !email.includes('@')) {
+        if (!email) {
             hideIndicator(emailIndicator, emailMessage);
+            return;
+        }
+
+        // Domain check before API call
+        if (!email.toLowerCase().endsWith('@gmail.com')) {
+            showTaken(emailIndicator, emailMessage, 'We only accept Gmail addresses (ending in @gmail.com)');
             return;
         }
 
