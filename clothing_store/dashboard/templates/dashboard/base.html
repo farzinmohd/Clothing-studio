@@ -94,20 +94,32 @@
                 <div class="dropdown me-3">
                     <button class="btn btn-link text-dark text-decoration-none position-relative dropdown-toggle p-0 d-flex align-items-center" type="button" id="stockAlertsDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.2rem; border: none; background: transparent;">
                         <i class="fas fa-bell"></i>
-                        {% if total_stock_alerts > 0 %}
+                        {% if total_alerts > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                {{ total_stock_alerts }}
+                                {{ total_alerts }}
                             </span>
                         {% endif %}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="stockAlertsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
                         <li class="dropdown-header fw-bold border-bottom">
-                            Inventory Alerts
+                            Notifications
                         </li>
                         
-                        {% if total_stock_alerts == 0 %}
-                            <li><span class="dropdown-item text-muted py-3 text-center">All products have sufficient stock.</span></li>
+                        {% if total_alerts == 0 %}
+                            <li><span class="dropdown-item text-muted py-3 text-center">No new notifications.</span></li>
                         {% else %}
+                            <!-- Return Requests -->
+                            {% for r in return_requests %}
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center py-2 border-bottom" href="{% url 'admin_order_detail' r.id %}" style="background-color: #f8f9fc;">
+                                        <div class="text-truncate me-2" style="max-width: 200px;" title="Order #{{ r.id }}">
+                                            <i class="fas fa-undo-alt text-primary me-1"></i> Order #{{ r.id }}
+                                        </div>
+                                        <span class="badge bg-primary rounded-pill">Return Requested</span>
+                                    </a>
+                                </li>
+                            {% endfor %}
+
                             <!-- Out of Stock -->
                             {% for p in out_of_stock_products %}
                                 <li>

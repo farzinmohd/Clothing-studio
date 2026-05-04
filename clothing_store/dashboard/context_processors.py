@@ -1,12 +1,13 @@
 from products.models import Product
+from orders.models import Order
 
 def stock_alerts(request):
     """
-    Context processor to inject low stock and out-of-stock products
-    into the admin dashboard templates.
+    Context processor to inject low stock, out-of-stock products,
+    and return requests into the admin dashboard templates.
     """
     if request.user.is_authenticated and request.user.is_staff:
-        # Fetch products with stock < 5
+        # 1. Fetch products with stock < 5
         alert_products = Product.objects.filter(stock__lt=5, is_active=True).order_by('stock')
         
         out_of_stock = []
@@ -18,11 +19,15 @@ def stock_alerts(request):
             else:
                 low_stock.append(p)
                 
-        total_alerts = len(out_of_stock) + len(low_stock)
+        # 2. Fetch return requests
+        return_requests = Order.objects.filter(status='return_requested').order_by('-updated_at')
+        
+        total_alerts = len(out_of_stock) + len(low_stock) + len(return_requests)
         
         return {
             'out_of_stock_products': out_of_stock,
             'low_stock_products': low_stock,
-            'total_stock_alerts': total_alerts,
+            'return_requests': return_requests,
+            'total_alerts': total_alerts,
         }
     return {}
