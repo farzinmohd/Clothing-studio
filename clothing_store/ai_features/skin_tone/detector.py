@@ -9,7 +9,7 @@ try:
     DLIB_AVAILABLE = True
 except ImportError:
     DLIB_AVAILABLE = False
-    print("⚠️ dlib not available, using Haar Cascade fallback")
+    print("dlib not available, using Haar Cascade fallback")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CASCADE_PATH = os.path.join(
@@ -168,16 +168,16 @@ def detect_skin_tone(image_path):
     if DLIB_AVAILABLE:
         face_coords = detect_face_dlib(gray)
         if face_coords:
-            print("✅ Face detected using dlib")
+            print("Face detected using dlib")
     
     if face_coords is None:
         face_coords = detect_face_haar(gray)
         if face_coords:
-            print("✅ Face detected using Haar Cascade (fallback)")
+            print("Face detected using Haar Cascade (fallback)")
     
-    # ❌ If no face detected at all
+    # If no face detected at all
     if face_coords is None:
-        print("❌ No face detected")
+        print("No face detected")
         return "Medium", None
     
     x, y, w, h = face_coords
@@ -208,13 +208,13 @@ def detect_skin_tone(image_path):
         1
     )
     
-    # 🧬 CALCULATE ITA° (Individual Typology Angle)
+    # Calculate ITA° (Individual Typology Angle)
     try:
         ita_angle = calculate_ita_angle(forehead_roi)
         skin_tone = classify_skin_tone_ita(ita_angle)
-        print(f"📊 ITA° = {ita_angle:.2f}° → Skin Tone: {skin_tone}")
+        print(f"ITA° = {ita_angle:.2f}° -> Skin Tone: {skin_tone}")
     except Exception as e:
-        print(f"⚠️ ITA° calculation failed: {e}, using fallback")
+        print(f"ITA° calculation failed: {e}, using fallback")
         # Fallback to old HSV method
         hsv = cv2.cvtColor(forehead_roi, cv2.COLOR_BGR2HSV)
         avg_v = np.mean(hsv[:, :, 2])

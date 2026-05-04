@@ -17,7 +17,7 @@ from .views import (
     # Coupons
     coupon_list, coupon_create, coupon_update, coupon_delete,
     # Reports
-    sales_report_pdf, sales_report_excel, trigger_pricing_update
+    sales_report_pdf, sales_report_excel, trigger_pricing_update, trigger_low_demand_pricing
 )
 
 urlpatterns = [
@@ -66,4 +66,5 @@ urlpatterns = [
     path('report/pdf/', sales_report_pdf, name='sales_report_pdf'),
     path('report/excel/', sales_report_excel, name='sales_report_excel'),
     path('trigger-pricing/', trigger_pricing_update, name='trigger_pricing_update'),
+    path('trigger-low-demand-pricing/', trigger_low_demand_pricing, name='trigger_low_demand_pricing'),
 ]

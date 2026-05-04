@@ -92,9 +92,10 @@ def calculate_new_price(product, demand_score):
     but uses base_price as the floor for decreases.
     """
     # Use current price for increases (cumulative effect)
-    # Use base_price as minimum floor for decreases
+    # Define a minimum floor for decreases so price can actually drop below base price (e.g. up to 50% of base price)
     current = float(product.price)
     base = float(product.base_price) if product.base_price else current
+    min_floor = base * 0.5
     
     if demand_score > 80:
         factor = 1.06  # +6%
@@ -104,12 +105,12 @@ def calculate_new_price(product, demand_score):
         new_price = round(current * factor, 2)
     elif demand_score < 20:
         factor = 0.94  # -6%
-        # Don't go below base price
-        new_price = max(round(current * factor, 2), base)
+        # Don't go below min_floor
+        new_price = max(round(current * factor, 2), min_floor)
     elif demand_score < 40:
         factor = 0.97  # -3%
-        # Don't go below base price
-        new_price = max(round(current * factor, 2), base)
+        # Don't go below min_floor
+        new_price = max(round(current * factor, 2), min_floor)
     else:
         # Neutral - gradually return to base price
         if current > base:

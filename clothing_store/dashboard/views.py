@@ -745,5 +745,32 @@ def trigger_pricing_update(request):
         messages.success(request, 'Dynamic Pricing Update Triggered Successfully! 🚀')
     except Exception as e:
         messages.error(request, f'Error updating prices: {str(e)}')
+    return redirect('admin_dashboard')
+
+@staff_member_required
+def trigger_low_demand_pricing(request):
+    try:
+        from ai_features.dynamic_pricing_ml import predict_demand_score, calculate_new_price
+        products = Product.objects.filter(is_dynamic_pricing=True)
+        count = 0
+        for p in products:
+            score = predict_demand_score(p)
+            p.current_demand_score = score
+            
+            if score < 40:
+                old_price = float(p.price)
+                new_price = calculate_new_price(p, score)
+                # Ensure it only reduces the price
+                if new_price < old_price:
+                    p.price = new_price
+                    count += 1
+            p.save()
+        
+        if count > 0:
+            messages.success(request, f'Clearance Applied: Reduced prices for {count} low-demand products! 📉')
+        else:
+            messages.info(request, 'No low-demand products required a price reduction at this time.')
+    except Exception as e:
+        messages.error(request, f'Error reducing prices: {str(e)}')
     
     return redirect('admin_dashboard')

@@ -35,35 +35,55 @@ def get_dominant_colors(img_path, num_colors=2):
     try:
         pil_img = Image.open(img_path).convert('RGB')
         
-        # Tighter Center Crop (Take the middle 40% of the image)
+        # Tighter Center Crop (Take the middle 20% of the image to avoid hands/background)
         width, height = pil_img.size
-        left = width * 0.30
-        top = height * 0.30
-        right = width * 0.70
-        bottom = height * 0.70
+        left = width * 0.40
+        top = height * 0.40
+        right = width * 0.60
+        bottom = height * 0.60
         pil_img = pil_img.crop((left, top, right, bottom))
         
         pil_img = pil_img.resize((50, 50))
         img_array = np.array(pil_img).reshape(-1, 3)
 
         kmeans = KMeans(n_clusters=num_colors)
-        kmeans.fit(img_array)
+        labels = kmeans.fit_predict(img_array)
         
-        colors = kmeans.cluster_centers_.astype(int)
+        # Sort clusters by size to prioritize the true garment color
+        counts = np.bincount(labels)
+        sorted_indices = np.argsort(counts)[::-1]
         
-        # Simple RGB to Name mapping (Heuristic)
+        # Use only the most dominant color to avoid background/skin tones
+        colors = [kmeans.cluster_centers_[sorted_indices[0]].astype(int)]
+        
+        # Better color mapping using Euclidean distance
+        BASIC_COLORS = {
+            "White": (255, 255, 255),
+            "Black": (20, 20, 20),
+            "Red": (255, 0, 0),
+            "Green": (0, 200, 0),
+            "Blue": (0, 0, 255),
+            "Yellow": (255, 255, 0),
+            "Cyan": (0, 255, 255),
+            "Magenta": (255, 0, 255),
+            "Grey": (128, 128, 128),
+            "Dark Grey": (64, 64, 64),
+            "Navy": (0, 0, 128),
+            "Maroon": (128, 0, 0),
+            "Olive": (128, 128, 0),
+            "Teal": (0, 128, 128),
+            "Purple": (128, 0, 128),
+            "Brown": (139, 69, 19),
+            "Dark Brown": (70, 40, 30),
+            "Orange": (255, 140, 0),
+            "Pink": (255, 192, 203),
+            "Beige": (245, 245, 220)
+        }
+        
         color_names = set()
         for rgb in colors:
-            r, g, b = rgb
-            
-            # Adjusted thresholds to capture more realistic photo colors
-            if r > 200 and g > 200 and b > 200: color_names.add("White")
-            elif r < 60 and g < 60 and b < 60: color_names.add("Black")
-            elif r > 150 and g < 100 and b < 100: color_names.add("Red")
-            elif r < 100 and g > 150 and b < 100: color_names.add("Green")
-            elif r < 100 and g < 100 and b > 150: color_names.add("Blue")
-            elif r > 180 and g > 180 and b < 100: color_names.add("Yellow")
-            elif 80 < r < 180 and 80 < g < 180 and 80 < b < 180: color_names.add("Grey")
+            closest_color = min(BASIC_COLORS.keys(), key=lambda k: sum((c1 - c2) ** 2 for c1, c2 in zip(rgb, BASIC_COLORS[k])))
+            color_names.add(closest_color)
             
         return list(color_names)
     except Exception:
@@ -77,7 +97,7 @@ def predict_image_tags(img_path):
     
     # Menswear Specific Mapping dictionary
     CLOTHING_MAP = {
-        'jersey': 'Shirt',
+        'jersey': 'T-Shirt',
         'sweatshirt': 'Sweatshirt',
         'trench_coat': 'Jacket',
         'cardigan': 'Sweater',
@@ -87,7 +107,30 @@ def predict_image_tags(img_path):
         'running_shoe': 'Shoes',
         'Loafer': 'Shoes',
         'bow_tie': 'Accessory',
-        'sombrero': 'Hat'
+        'sombrero': 'Hat',
+        'fur_coat': 'Coat',
+        'cloak': 'Coat',
+        'poncho': 'Outerwear',
+        'vestment': 'Outerwear',
+        'Windsor_tie': 'Tie',
+        'bolo_tie': 'Tie',
+        'stole': 'Accessory',
+        'sunglasses': 'Accessories',
+        'sunglass': 'Accessories',
+        'miniskirt': 'Skirt',
+        'overskirt': 'Skirt',
+        'pajama': 'Sleepwear',
+        'swimming_trunks': 'Swimwear',
+        'sandal': 'Footwear',
+        'cowboy_boot': 'Boots',
+        'half_track': 'Boots',
+        'kimono': 'Traditional',
+        'apron': 'Apron',
+        'diaper': 'Bottoms',
+        'bulletproof_vest': 'Vest',
+        'backpack': 'Bag',
+        'purse': 'Bag',
+        'wallet': 'Accessory'
     }
     
     # 1. Object Detection (MobileNet)
@@ -106,17 +149,27 @@ def predict_image_tags(img_path):
         clean_labels.add(clothes_tag)
     else:
         # --- FALLBACK LOGIC (Generic ImageNet model) ---
-        decoded = decode_predictions(preds, top=5)[0] # Check top 5
+        decoded = decode_predictions(preds, top=15)[0] # Check top 15
         
-        # Extract labels and map them
-        raw_labels = [d[1] for d in decoded]
+        # Extract labels and confidences
+        raw_labels = [(d[1], d[2]) for d in decoded]
         
-        for label in raw_labels:
+        # Heuristic: ImageNet struggles with basic button-up shirts, predicting them as suits/coats
+        upper_body_classes = ['jersey', 'sweatshirt', 'cardigan', 'suit', 'trench_coat', 'cloak', 'fur_coat', 'lab_coat', 'pajama']
+        
+        for label, conf in raw_labels:
+            if len(clean_labels) >= 2:
+                break # Limit to top 2 clothing categories
+                
+            # If the model thinks it's an upper body garment but isn't highly confident, it's usually a Shirt
+            if len(clean_labels) == 0 and label in upper_body_classes and conf < 0.4:
+                clean_labels.add('Shirt')
+                
             # Check if the ImageNet label is in our map
             if label in CLOTHING_MAP:
                 clean_labels.add(CLOTHING_MAP[label])
             # If it's a generic clothing term, add it directly capitalized
-            elif 'shirt' in label or 'jacket' in label or 'pant' in label or 'coat' in label:
+            elif any(term in label for term in ['shirt', 'jacket', 'pant', 'coat', 'shoe', 'boot', 'dress', 'skirt', 'sweater', 'hoodie', 'jean']):
                 clean_labels.add(label.replace('_', ' ').title())
                 
         # If it couldn't find ANY mapped clothing, default to "Apparel"
